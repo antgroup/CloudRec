@@ -59,8 +59,8 @@ func GetBucketResource() schema.Resource {
 			return nil
 		},
 		RowField: schema.RowField{
-			ResourceId:   "$.Item.id",
-			ResourceName: "$.Item.name",
+			ResourceId:   "$.Bucket.id",
+			ResourceName: "$.Bucket.name",
 		},
 		Dimension: schema.Global,
 	}

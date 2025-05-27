@@ -3,18 +3,19 @@ import rego.v1
 
 default risk := false
 risk if {
-    exist_AccessKey
+    exist_active_AccessKey
     exist_Policies != null
     without_network_acl
     not covered_by_ip_address_control
     not covered_by_vpc_control
 }
 
-exist_AccessKey := input.ExistAccessKey
+exist_active_AccessKey := input.ExistActiveAccessKey
 exist_Policies := input.Policies
 ActiveAccessKeys contains ak if {
-    some ActiveAccessKey in input.ActiveAccessKeys[_]
-    ak := ActiveAccessKey.AccessKeyId
+    some AccessKey in input.AccessKeys[_]
+    AccessKey.Status == "Active"
+    ak := AccessKey.AccessKeyId
 }
 
 without_network_acl if {

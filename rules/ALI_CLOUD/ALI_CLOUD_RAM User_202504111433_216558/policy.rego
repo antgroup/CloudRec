@@ -3,7 +3,7 @@ import rego.v1
 
 default risk := false
 risk if {
-    input.ExistAccessKey == true
+    input.ExistActiveAccessKey == true
     not allow_covered_by_deny
     count(allow_sts_with_oss) > 0
 }
@@ -18,8 +18,14 @@ messages contains message if {
     risk == true
     message := {
         "Description": "账号下AK列表",
-        "AKs": input.ActiveAccessKeys[_].ActiveAccessKey.AccessKeyId
+        "AKs": ActiveAccessKeys
     }
+}
+
+ActiveAccessKeys contains ak if {
+    some AccessKey in input.AccessKeys[_]
+    AccessKey.Status == "Active"
+    ak := AccessKey.AccessKeyId
 }
 
 ## 综合 allow策略、无条件deny策略，来综合判断一个账号是否可访问OSS

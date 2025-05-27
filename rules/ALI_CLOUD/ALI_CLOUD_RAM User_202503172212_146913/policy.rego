@@ -3,7 +3,7 @@ import rego.v1
 
 default risk := false
 risk if {
-    input.ExistAccessKey
+    input.ExistActiveAccessKey
     exist_Policies != null
     without_network_acl
     not covered_by_ip_address_control
@@ -13,7 +13,7 @@ messages contains message if {
     risk == true
     message := {
         "Description": "账号拥有敏感权限，但部分权限未设置网络ACL",
-        "RiskStatment": allow_sts_without_network_acl,
+        "RiskStatement": allow_sts_without_network_acl,
         "AKList": ActiveAccessKeys,
         "Policies": exist_Policies,
     }
@@ -22,8 +22,9 @@ messages contains message if {
 
 exist_Policies := input.Policies
 ActiveAccessKeys contains ak if {
-    some ActiveAccessKey in input.ActiveAccessKeys[_]
-    ak := ActiveAccessKey.AccessKeyId
+    some AccessKey in input.AccessKeys[_]
+    AccessKey.Status == "Active"
+    ak := AccessKey.AccessKeyId
 }
 
 without_network_acl if {

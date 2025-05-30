@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Collector name, if not configured, hostname will be used
-AgentName: "CloudRec Alibaba Cloud、Huawei Cloud,AWS,Tencent Cloud,Baidu Cloud Collector"
+AgentName: "CloudRec Alibaba Cloud, Huawei Cloud, AWS, Tencent Cloud, Baidu Cloud Collector"
 # The server URL, http://localhost:8080 is used by default, and can be adjusted according to actual conditions
 ServerUrl: "http://localhost:8080"
 

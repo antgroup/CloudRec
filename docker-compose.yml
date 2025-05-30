@@ -1,0 +1,27 @@
+services:
+  cloud-rec:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      JAVA_OPTS: -Dspring.profiles.active=opensource
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      - mysql-local
+
+  mysql-local:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password --init-file /docker-entrypoint-initdb.d/init.sql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - "db-data:/var/lib/mysql"
+      - "$PWD/db/my.cnf:/etc/my.cnf"
+      - "$PWD/db/init.sql:/docker-entrypoint-initdb.d/init.sql"
+    ports:
+      - "3306:3306"
+volumes:
+  db-data: {}

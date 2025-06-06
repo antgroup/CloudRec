@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["网络访问"],"code":"KINGSOFT_CLOUD_SLB_202505292004_380541","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"SLB 非标端口对全网开放","level":"Medium","link":null,"linkedDataList":null,"name":"金山云-SLB-非标端口对全网开放","platform":"KINGSOFT_CLOUD","resourceType":"SLB"}

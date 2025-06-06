@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["身份安全"],"code":"KINGSOFT_CLOUD_IAM User_202506041641_801177","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"IAM User未登录控制台、未使用AK","level":"Low","link":null,"linkedDataList":null,"name":"金山云-IAM-User账号从未使用","platform":"KINGSOFT_CLOUD","resourceType":"IAM User"}

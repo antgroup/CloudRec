@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["日志审计"],"code":"KINGSOFT_CLOUD_KS3_202506041452_1024251","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"Bucket 未启用日志审计","level":"Medium","link":null,"linkedDataList":null,"name":"金山云-KS3-Bucket 未启用日志审计","platform":"KINGSOFT_CLOUD","resourceType":"KS3"}

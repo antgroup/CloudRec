@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["日志审计"],"code":"KINGSOFT_CLOUD_PostgreSQL_202506041624_145378","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"POSTGRESQL 未启用审计","level":"Low","link":null,"linkedDataList":null,"name":"金山云-PGSQL-未启用审计","platform":"KINGSOFT_CLOUD","resourceType":"PostgreSQL"}

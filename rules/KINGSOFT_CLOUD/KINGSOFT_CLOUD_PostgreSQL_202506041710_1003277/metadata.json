@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["日志审计"],"code":"KINGSOFT_CLOUD_PostgreSQL_202506041710_1003277","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"MySQL 未启用审计","level":"Low","link":null,"linkedDataList":null,"name":"金山云-KRDS-未启用审计","platform":"KINGSOFT_CLOUD","resourceType":"KRDS"}

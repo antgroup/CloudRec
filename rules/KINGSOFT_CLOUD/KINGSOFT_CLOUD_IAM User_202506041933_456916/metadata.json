@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["身份安全"],"code":"KINGSOFT_CLOUD_IAM User_202506041933_456916","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"AK 超过一年未使用","level":"Medium","link":null,"linkedDataList":null,"name":"金山云-IAM-User AK 超过一年未使用","platform":"KINGSOFT_CLOUD","resourceType":"IAM User"}

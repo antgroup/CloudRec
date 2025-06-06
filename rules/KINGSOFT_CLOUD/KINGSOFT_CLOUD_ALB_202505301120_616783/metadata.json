@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["网络访问"],"code":"KINGSOFT_CLOUD_ALB_202505301120_616783","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"ALB端口开放未配置ACL，直接对公网开放","level":"Low","link":null,"linkedDataList":null,"name":"金山云-ALB-端口未配置ACL直接对公网开放","platform":"KINGSOFT_CLOUD","resourceType":"ALB"}

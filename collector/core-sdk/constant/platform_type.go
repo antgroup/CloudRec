@@ -30,6 +30,7 @@ const (
 	IBM                 PlatformType = "AZURE"                // AZURE
 	// [1] ADD_NEW_CLOUD : Add a new cloud provider enum.
 	//MyCloudProvider PlatformType = "My_Cloud_Provider"
+	KingsoftCloud PlatformType = "KINGSOFT_CLOUD"
 )
 
 type PlatformDescription map[PlatformType]string
@@ -45,6 +46,7 @@ var platformDescriptions = PlatformDescription{
 	AWS:                 "AWS",
 	GCP:                 "GCP",
 	IBM:                 "AZURE",
+	KingsoftCloud:       "金山云",
 }
 
 // GetPlatformName Get the name of the platform

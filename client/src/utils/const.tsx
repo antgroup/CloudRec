@@ -27,6 +27,8 @@ import TENCENT_ACCOUNT from '@/assets/images/TENCENT_ACCOUNT.png';
 import TENCENT_CLOUD from '@/assets/images/TENCENT_CLOUD.png';
 // [4] ADD_NEW_CLOUD : Add cloud provider icon
 // import My_Cloud_Provider from '@/assets/images/My_Cloud_Provider.png';
+import KINGSOFT_ACCOUNT from '@/assets/images/KINGSOFT_ACCOUNT.svg';
+import KINGSOFT_CLOUD from '@/assets/images/KINGSOFT_CLOUD.svg';
 import { FormattedMessage } from '@umijs/max';
 import { TimeRangePickerProps } from 'antd';
 import dayjs from 'dayjs';
@@ -100,6 +102,7 @@ export const platformURLMap = {
   AZURE_URL: AZURE, // AZURE
   // [5.1] ADD_NEW_CLOUD : Reference this icon address
   // My_Cloud_Provider_URL: My_Cloud_Provider
+  KINGSOFT_CLOUD_URL: KINGSOFT_CLOUD,
 };
 
 export const overviewURLMap = {
@@ -124,6 +127,7 @@ export const accountURLMap = {
   AZURE: AZURE_ACCOUNT,
   // [5.2] ADD_NEW_CLOUD : Reference this icon address
   // My_Cloud_Provider: My_Cloud_Provider_ACCOUNT
+  KINGSOFT_CLOUD: KINGSOFT_ACCOUNT,
 };
 
 export const RangePresets: TimeRangePickerProps['presets'] = [

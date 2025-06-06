@@ -1,0 +1,8 @@
+!.gitignore
+config/account.yaml
+task
+*.log
+*.json
+deploy.log
+task.log
+lunar_collector_tencent

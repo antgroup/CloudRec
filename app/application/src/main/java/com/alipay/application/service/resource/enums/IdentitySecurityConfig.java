@@ -34,6 +34,7 @@ public enum IdentitySecurityConfig {
     ALI_CLOUD_RAM_User(PlatformType.Enum.ALI_CLOUD, "RAM User", "User"),
     HUAWEI_CLOUD_IAM_User(PlatformType.Enum.HUAWEI_CLOUD, "IAM User", "User"),
     GCP_IAM_ServiceAccount(PlatformType.Enum.GCP, "IAM ServiceAccount","Service Account"),
+    KINGSOFT_CLOUD_IAM_User(PlatformType.Enum.KINGSOFT_CLOUD, "IAM User","User"),
     ;
 
     private String platformType;

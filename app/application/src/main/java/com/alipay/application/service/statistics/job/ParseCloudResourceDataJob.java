@@ -22,6 +22,7 @@ import com.alipay.application.service.resource.enums.IdentitySecurityConfig;
 import com.alipay.application.service.resource.identitySecurity.AliRamUserResourceParse;
 import com.alipay.application.service.resource.identitySecurity.GCPServiceAccountParse;
 import com.alipay.application.service.resource.identitySecurity.HuaweiIamUserResourceParse;
+import com.alipay.application.service.resource.identitySecurity.KsyunIamUserResourceParse;
 import com.alipay.application.service.risk.RiskService;
 import com.alipay.application.service.rule.enums.RuleType;
 import com.alipay.application.share.vo.ApiResponse;
@@ -66,6 +67,9 @@ public class ParseCloudResourceDataJob {
     private HuaweiIamUserResourceParse huaweiIamUserResourceParse;
 
     @Resource
+    private KsyunIamUserResourceParse ksyunIamUserResourceParse;
+
+	@Resource
     private RuleScanResultMapper ruleScanResultMapper;
 
     @Resource
@@ -166,6 +170,9 @@ public class ParseCloudResourceDataJob {
         }
         if (Objects.equals(config, IdentitySecurityConfig.HUAWEI_CLOUD_IAM_User)) {
             huaweiIamUserResourceParse.parse(identitySecurityPO, resourceInstance);
+        }
+        if (Objects.equals(config, IdentitySecurityConfig.KINGSOFT_CLOUD_IAM_User)) {
+            ksyunIamUserResourceParse.parse(identitySecurityPO, resourceInstance);
         }
         return identitySecurityPO;
     }

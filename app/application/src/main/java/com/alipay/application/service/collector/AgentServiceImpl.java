@@ -285,10 +285,14 @@ public class AgentServiceImpl implements AgentService {
         String alibabCloudPrivateScript = parseScript(scriptTemplate, "deploy_alicloud_private", "cloudrec_collector_alicloud_private", bucketUrl, serverUrl, existPO.getOnceToken());
         result.add(createOnceToken(Platform.getPlatformName(PlatformType.ALI_CLOUD_PRIVATE.getPlatform()), alibabCloudPrivateScript, userPO, existPO));
 
+        // ksyun  account
+        String ksyunScript = parseScript(scriptTemplate, "deploy_ksyun", "cloudrec_collector_ksyun", bucketUrl, serverUrl, existPO.getOnceToken());
+        result.add(createOnceToken(Platform.getPlatformName(PlatformType.KINGSOFT_CLOUD.getPlatform()), ksyunScript, userPO, existPO));
+
         // all account platforms
         String cloudRecScript = parseScript(scriptTemplate, "deploy_cloudrec", "cloudrec_collector", bucketUrl, serverUrl, existPO.getOnceToken());
         List<String> platformList = Platform.getPlatformNameList(PlatformType.ALI_CLOUD, PlatformType.TENCENT_CLOUD,
-                PlatformType.BAIDU_CLOUD, PlatformType.HUAWEI_CLOUD, PlatformType.TENCENT_CLOUD, PlatformType.BAIDU_CLOUD);
+                PlatformType.BAIDU_CLOUD, PlatformType.HUAWEI_CLOUD, PlatformType.TENCENT_CLOUD, PlatformType.BAIDU_CLOUD, PlatformType.KINGSOFT_CLOUD);
         result.add(createOnceToken(Strings.join(platformList, ','), cloudRecScript, userPO, existPO));
 
         OnceTokenVO onceToken = createOnceToken(Strings.join(platformList, ','), cloudRecScript, userPO, existPO);

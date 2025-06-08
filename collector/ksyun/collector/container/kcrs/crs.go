@@ -128,10 +128,7 @@ func getRepositories(ctx context.Context, cli *kcrs.Client, insId *string) (res 
 		}
 
 		for i := range response.NamespaceSet {
-			err = getRepoPerNamespace(ctx, cli, insId, response.NamespaceSet[i].Namespace, res)
-			if err != nil {
-				return
-			}
+			res = append(res, getRepoPerNamespace(ctx, cli, insId, response.NamespaceSet[i].Namespace)...)
 		}
 
 		count += len(response.NamespaceSet)
@@ -143,7 +140,7 @@ func getRepositories(ctx context.Context, cli *kcrs.Client, insId *string) (res 
 	return
 }
 
-func getRepoPerNamespace(ctx context.Context, cli *kcrs.Client, insId *string, ns *string, repo []any) error {
+func getRepoPerNamespace(ctx context.Context, cli *kcrs.Client, insId *string, ns *string) (repo []any) {
 	request := kcrs.NewDescribeRepositoryRequest()
 	request.InstanceId = insId
 	request.Namespace = ns
@@ -157,14 +154,14 @@ func getRepoPerNamespace(ctx context.Context, cli *kcrs.Client, insId *string, n
 		err := collector.CheckError(responseStr)
 		if err != nil {
 			log.CtxLogger(ctx).With(zap.String("response", responseStr)).Warn("KCRS DescribeRepository error", zap.Error(err))
-			return err
+			return repo
 		}
 
 		response := kcrs.NewDescribeRepositoryResponse()
 		err = json.NewDecoder(strings.NewReader(responseStr)).Decode(response)
 		if err != nil {
 			log.CtxLogger(ctx).With(zap.String("response", responseStr)).Warn("KCRS DescribeRepositoryResponse decode error", zap.Error(err))
-			return err
+			return repo
 		}
 		if len(response.RepoSet) == 0 {
 			break
@@ -181,5 +178,5 @@ func getRepoPerNamespace(ctx context.Context, cli *kcrs.Client, insId *string, n
 		}
 		request.Marker = common.StringPtr(strconv.Itoa(count))
 	}
-	return nil
+	return repo
 }

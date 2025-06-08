@@ -78,10 +78,26 @@ func GetPlatformConfig() *schema.Platform {
 		},
 		Service: &collector.Services{},
 		DefaultRegions: []string{
-			"cn-beijing-6",   // 华北1（北京）
-			"cn-shanghai-2",  // 华东1（上海）
-			"cn-guangzhou-1", // 华南1（广州）
-			"eu-east-1",      // 俄罗斯（莫斯科）
+			"cn-beijing-6",    // 华北1（北京）
+			"cn-shanghai-2",   // 华东1（上海）
+			"cn-guangzhou-1",  // 华南1（广州）
+			"cn-central-1",    // 华中1（武汉）
+			"cn-hongkong-2",   // 香港
+			"ap-singapore-1",  // 新加坡
+			"eu-east-1",       // 俄罗斯（莫斯科）
+			"cn-taipei-1",     // 台北
+			"cn-shanghai-fin", // 华东金融1（上海）
+			"cn-beijing-fin",  // 华北金融1（北京）
+			"cn-southwest-1",  // 西南1（重庆）
+			"cn-northwest-1",  // 西北1（庆阳）
+			"cn-northwest-2",  // 西北2区（庆阳）
+			"cn-northwest-3",  // 西北3区（宁夏）
+			"cn-northwest-4",  // 西北4（海东）
+			"cn-northwest-5",  // 西北5（克拉玛依)
+			"cn-north-vip1",   // 华北专属1区（天津-小米）
+			"cn-north-1-gov",  // 华北政务1（北京）
+			"cn-ningbo-1",     // 华东2（宁波）
+			"cn-qingdao-1",    // 自用（青岛）
 		},
 	})
 

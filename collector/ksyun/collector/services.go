@@ -425,7 +425,7 @@ func createWAFClient(region string, credential *common.Credential, domain string
 
 func createKNADClient(region string, credential *common.Credential, domain string) (client *knad.Client, err error) {
 	cpf := profile.NewClientProfile()
-	cpf.HttpProfile.ReqMethod = "POST"
+	cpf.HttpProfile.ReqMethod = "GET"
 	// 设置超时时间  可不设置
 	cpf.HttpProfile.ReqTimeout = 60
 	// 请求域名
@@ -436,7 +436,7 @@ func createKNADClient(region string, credential *common.Credential, domain strin
 
 func createKEADClient(region string, credential *common.Credential, domain string) (client *kead.Client, err error) {
 	cpf := profile.NewClientProfile()
-	cpf.HttpProfile.ReqMethod = "POST"
+	cpf.HttpProfile.ReqMethod = "GET"
 	// 设置超时时间  可不设置
 	cpf.HttpProfile.ReqTimeout = 60
 	// 请求域名

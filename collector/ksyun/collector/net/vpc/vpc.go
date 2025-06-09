@@ -29,7 +29,8 @@ import (
 )
 
 type KSyunVPCDetail struct {
-	VPC any
+	VPC  any
+	Acls []any
 }
 
 func GetVPCResource() schema.Resource {
@@ -64,7 +65,8 @@ func GetVPCResource() schema.Resource {
 
 				for i := range response.VpcSet {
 					res <- &KSyunVPCDetail{
-						VPC: &response.VpcSet[i],
+						VPC:  &response.VpcSet[i],
+						Acls: describeNetworkAcls(ctx, cli, response.VpcSet[i].VpcId),
 					}
 				}
 				if response.NextToken == nil || len(response.VpcSet) < *request.MaxResults {
@@ -100,4 +102,46 @@ func GetVPCResource() schema.Resource {
 		},
 		Dimension: schema.Regional,
 	}
+}
+
+func describeNetworkAcls(ctx context.Context, cli *vpc.Client, vpcId *string) (res []any) {
+	request := vpc.NewDescribeNetworkAclsRequest()
+	request.Filter = []*vpc.DescribeNetworkAclsFilter{
+		1: {
+			Name:  common.StringPtr("vpc-id"),
+			Value: []*string{1: vpcId},
+		},
+	}
+	request.MaxResults = common.IntPtr(100)
+
+	for {
+		responseStr := cli.DescribeNetworkAclsWithContext(ctx, request)
+		collector.ShowResponse(ctx, "VPC", "DescribeNetworkAcls", responseStr)
+		err := collector.CheckError(responseStr)
+		if err != nil {
+			log.CtxLogger(ctx).With(zap.String("response", responseStr)).Warn("VPC DescribeNetworkAcls error", zap.Error(err))
+			return nil
+		}
+
+		response := vpc.NewDescribeNetworkAclsResponse()
+		err = json.NewDecoder(strings.NewReader(responseStr)).Decode(response)
+		if err != nil {
+			log.CtxLogger(ctx).With(zap.String("response", responseStr)).Warn("VPC DescribeNetworkAclsResponse decode error", zap.Error(err))
+			return nil
+		}
+		if len(response.NetworkAclSet) == 0 {
+			break
+		}
+
+		for i := range response.NetworkAclSet {
+			res = append(res, &response.NetworkAclSet[i])
+		}
+
+		if response.NextToken == nil || len(response.NetworkAclSet) < *request.MaxResults {
+			break
+		}
+		request.NextToken = response.NextToken
+	}
+
+	return res
 }

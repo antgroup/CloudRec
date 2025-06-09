@@ -20,4 +20,4 @@ RunOnlyOnce: false
 AccessToken: "change your AccessToken"
 AttentionErrorTexts: [ "InvalidRegion", "NextTokenInvalid", "InvalidParameter", "RegionNotSupported", "INVALID_ACTION",
                        "IamDenied", "AccessDenied", "InvalidAccesskey", "SignatureNotMatch", "IncompleteSignature", "InvalidAuthenticationCode",
-                       "InternalFailure", "ServiceTimeout", "ServiceUnavailable", "LimitExceeded"]
+                       "InternalFailure", "ServiceTimeout", "ServiceUnavailable", "LimitExceeded" ]

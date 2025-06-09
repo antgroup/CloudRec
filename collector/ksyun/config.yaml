@@ -17,7 +17,7 @@ AgentName: "KingSoft Cloud"
 ServerUrl: "http://localhost:8080"
 Cron: "@every 5m"
 RunOnlyOnce: false
-AccessToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhdXRoMCIsImV4cCI6MTc0OTIxMDgyMSwidXNlcklkIjoiY2xvdWRyZWMiLCJ1c2VybmFtZSI6ImNsb3VkcmVjIn0.nYfD5YuiPQuLS7XwueDSYFRR9skg2yxXbWCQB03jUBg"
-AttentionErrorTexts: [ "InvalidRegion", "NextTokenInvalid", "InvalidParameter", "RegionNotSupported",
-                       "AccessDenied", "InvalidAccesskey", "SignatureNotMatch", "IncompleteSignature", "InvalidAuthenticationCode",
-                       "ServiceTimeout", "ServiceUnavailable", "LimitExceeded"]
+AccessToken: "change your AccessToken"
+AttentionErrorTexts: [ "InvalidRegion", "NextTokenInvalid", "InvalidParameter", "RegionNotSupported", "INVALID_ACTION",
+                       "IamDenied", "AccessDenied", "InvalidAccesskey", "SignatureNotMatch", "IncompleteSignature", "InvalidAuthenticationCode",
+                       "InternalFailure", "ServiceTimeout", "ServiceUnavailable", "LimitExceeded" ]

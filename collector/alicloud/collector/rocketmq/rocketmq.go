@@ -36,8 +36,8 @@ func GetRocketMQResource() schema.Resource {
 		Desc:               "https://api.aliyun.com/product/RocketMQ",
 		ResourceDetailFunc: GetInstanceDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.Instance.InstanceId",
-			ResourceName: "$.Instance.InstanceName",
+			ResourceId:   "$.Instance.instanceId",
+			ResourceName: "$.Instance.instanceName",
 		},
 		Dimension: schema.Regional,
 	}

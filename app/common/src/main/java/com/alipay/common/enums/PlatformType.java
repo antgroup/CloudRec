@@ -42,9 +42,11 @@ public enum PlatformType {
 
     GCP(Enum.GCP, "GCP", "GCP"),
 
-    AZURE(Enum.AZURE, "AZURE", "AZURE");
+    AZURE(Enum.AZURE, "AZURE", "AZURE"),
     // [2] ADD_NEW_CLOUD : Add a new cloud provider.
     // MyCloudProvider(Enum.MyCloudProvider, "我的云", "My Cloud Provider");
+
+    KINGSOFT_CLOUD(Enum.KINGSOFT_CLOUD, "金山云", "Kingsoft Cloud");
 
     private String platform;
     private String cnName;
@@ -109,5 +111,6 @@ public enum PlatformType {
         public static final String AZURE = "AZURE";
         // [1] ADD_NEW_CLOUD : Add a new cloud provider enum.
         // public static final String MyCloudProvider = "My_Cloud_Provider";
+        public static final String KINGSOFT_CLOUD = "KINGSOFT_CLOUD";
     }
 }

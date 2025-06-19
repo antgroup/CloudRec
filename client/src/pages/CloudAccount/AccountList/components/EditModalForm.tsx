@@ -37,12 +37,15 @@ interface IEditFormProps {
   requestCurrentData: () => Promise<void>;
 }
 
+// [5.3] ADD_NEW_CLOUD: Display of ak/sk information
 export const BASIC_EDITOR_LIST: Array<string> = [
   'ALI_CLOUD',
   'HUAWEI_CLOUD',
   'BAIDU_CLOUD',
   'AWS',
   'TENCENT_CLOUD',
+  // 'My_Cloud_Provider'
+  'KINGSOFT_CLOUD',
 ];
 export const JSON_EDITOR_LIST: Array<string> = ['GCP'];
 export const EXCLUSIVE_EDITOR_LIST: Array<string> = ['ALI_CLOUD_PRIVATE'];

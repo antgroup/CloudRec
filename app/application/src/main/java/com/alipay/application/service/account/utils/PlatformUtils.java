@@ -26,6 +26,7 @@ import com.alipay.application.service.account.cloud.gcp.GcpCredential;
 import com.alipay.application.service.account.cloud.hws.HwsCredential;
 import com.alipay.application.service.account.cloud.hwsprivate.HwsPrivateCredential;
 import com.alipay.application.service.account.cloud.tencent.TencentCredential;
+import com.alipay.application.service.account.cloud.ksyun.KsyunCredential;
 import com.alipay.common.constant.MarkConstants;
 import com.alipay.common.enums.PlatformType;
 import com.google.gson.Gson;
@@ -104,6 +105,10 @@ public class PlatformUtils {
                     break;
 //                case PlatformType.Enum.My_Cloud_Provider:
 //                    [3] ADD_NEW_CLOUD : To adapt the logic of parsing authentication information, you need to add a class corresponding to the cloud platform authentication information
+                case PlatformType.Enum.KINGSOFT_CLOUD:
+                    KsyunCredential ksyunCredential = new Gson().fromJson(credentialsJson, KsyunCredential.class);
+                    map.put("ak", ksyunCredential.getAk());
+                    map.put("sk", ksyunCredential.getSk());
                 default:
                     throw new IllegalStateException("Unexpected value: " + platform);
             }

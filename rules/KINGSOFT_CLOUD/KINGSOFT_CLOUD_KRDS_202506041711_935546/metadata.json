@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["日志审计"],"code":"KINGSOFT_CLOUD_KRDS_202506041711_935546","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"Redis 未启用审计","level":"Low","link":null,"linkedDataList":null,"name":"金山云-KCS-未启用审计","platform":"KINGSOFT_CLOUD","resourceType":"KCS"}

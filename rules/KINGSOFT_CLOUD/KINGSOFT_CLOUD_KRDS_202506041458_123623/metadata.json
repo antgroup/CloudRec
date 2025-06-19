@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["网络访问"],"code":"KINGSOFT_CLOUD_KRDS_202506041458_123623","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"数据库未配置安全组","level":"High","link":null,"linkedDataList":null,"name":"金山云-KRDS-未配置安全组","platform":"KINGSOFT_CLOUD","resourceType":"KRDS"}

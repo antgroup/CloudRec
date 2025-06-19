@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["身份安全"],"code":"KINGSOFT_CLOUD_IAM User_202506042004_752571","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"子账号存在AK，且拥有访问OSS服务的权限","level":"Medium","link":null,"linkedDataList":null,"name":"金山云-IAM-User AK存在可访问OSS的权限","platform":"KINGSOFT_CLOUD","resourceType":"IAM User"}

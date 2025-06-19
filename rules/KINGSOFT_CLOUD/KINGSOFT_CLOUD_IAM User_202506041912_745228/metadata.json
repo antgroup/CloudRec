@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["身份安全"],"code":"KINGSOFT_CLOUD_IAM User_202506041912_745228","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"使用密码登录控制台的的账号应启用MFA","level":"Medium","link":null,"linkedDataList":null,"name":"金山云-IAM-使用密码登录控制台的的账号应启用MFA","platform":"KINGSOFT_CLOUD","resourceType":"IAM User"}

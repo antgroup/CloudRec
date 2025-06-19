@@ -36,7 +36,7 @@ import java.util.Objects;
 public class SecurityProductType {
 
     public static List<String> getSupportedPlatformList() {
-        return List.of(PlatformType.Enum.ALI_CLOUD, PlatformType.Enum.GCP);
+        return List.of(PlatformType.Enum.ALI_CLOUD, PlatformType.Enum.GCP, PlatformType.Enum.KINGSOFT_CLOUD);
     }
 
     public static final String unknown = "unknown";
@@ -52,6 +52,8 @@ public class SecurityProductType {
             return Arrays.stream(AwsSecurityProductType.values()).map(AwsSecurityProductType::getCode).toList();
         } else if (PlatformType.Enum.GCP.equals(platform)) {
             return Arrays.stream(GCPSecurityProductType.values()).map(GCPSecurityProductType::getCode).toList();
+        } else if (PlatformType.Enum.KINGSOFT_CLOUD.equals(platform)) {
+            return Arrays.stream(KingsoftCloudSecurityProductType.values()).map(KingsoftCloudSecurityProductType::getCode).toList();
         }
 
         // ...
@@ -183,6 +185,29 @@ public class SecurityProductType {
 
         public static GCPSecurityProductType getByCode(String code) {
             for (GCPSecurityProductType value : values()) {
+                if (value.getCode().equals(code)) {
+                    return value;
+                }
+            }
+            throw new BizException("暂不支持该产品类型");
+        }
+    }
+
+    /**
+     * KINGSOFT_CLOUD安全产品类型枚举
+     */
+    @Getter
+    @AllArgsConstructor
+    public enum KingsoftCloudSecurityProductType {
+        DDOS("DDoS", "DDoS 高防", "KNAD"),
+        FIREWALL("FIRE WALL", "防火墙", "FIREWALL"),
+        WAF("WAF", "WAF", "WAF");
+        private final String code;
+        private final String desc;
+        private final String relatedResourceType;
+
+        public static KingsoftCloudSecurityProductType getByCode(String code) {
+            for (KingsoftCloudSecurityProductType value : values()) {
                 if (value.getCode().equals(code)) {
                     return value;
                 }

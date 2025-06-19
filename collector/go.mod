@@ -14,16 +14,20 @@ replace github.com/cloudrec/tencent => ./tencent
 
 replace github.com/cloudrec/baidu => ./baidu
 
+replace github.com/cloudrec/ksyun => ./ksyun
+
 require (
 	github.com/cloudrec/alicloud v0.0.0-00010101000000-000000000000
 	github.com/cloudrec/aws v0.0.0-00010101000000-000000000000
 	github.com/cloudrec/baidu v0.0.0-00010101000000-000000000000
 	github.com/cloudrec/hws v0.0.0-00010101000000-000000000000
+	github.com/cloudrec/ksyun v0.0.0-00010101000000-000000000000
 	github.com/cloudrec/tencent v0.0.0-00010101000000-000000000000
 	github.com/core-sdk v0.0.0-00010101000000-000000000000
 )
 
 require (
+	github.com/KscSDK/ksc-sdk-go v0.10.0 // indirect
 	github.com/alibabacloud-go/adb-20190315/v4 v4.1.4 // indirect
 	github.com/alibabacloud-go/alb-20200616/v2 v2.2.3 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-pop v0.0.6 // indirect
@@ -86,6 +90,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.48 // indirect
 	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1 // indirect
 	github.com/aliyun/credentials-go v1.3.10 // indirect
+	github.com/aws/aws-sdk-go v1.44.320 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.32.5 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.6 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.27.35 // indirect
@@ -130,6 +135,8 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kingsoftcloud/sdk-go/v2 v2.1.8 // indirect
+	github.com/ks3sdklib/aws-sdk-go v1.6.1 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -160,6 +167,9 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sqlserver v1.0.1113 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1113 // indirect
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.59 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 // indirect
 	go.mongodb.org/mongo-driver v1.12.0 // indirect

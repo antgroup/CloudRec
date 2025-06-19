@@ -13,9 +13,9 @@ hero:
       link: /QuickStart/DepolyCloudRec
 
 features:
-  - title: Rich inspection rules
+  - title: 🔗 <a href='https://docs.cloudrec.cloud/Introductions/Detectionrules/' target='_blank'>Rich inspection rules</a>
     details: "In addition to the built-in high-risk rules, it provides a flexible rule configuration engine based on OPA and supports multiple asset association analysis."
-  - title: Multi-Cloud support
+  - title: 🔗 <a href='https://docs.cloudrec.cloud/Introductions/Multi-Cloudsupport/' target='_blank'>Multi-Cloud support</a>
     details: "Built-in support for Alibaba Cloud, AWS, GCP and other cloud service providers, and can expand proprietary cloud on demand; It also provides Collector collection framework, which can be expanded and support other cloud vendors on demand."
   - title: User-friendly page
     details: "Intuitive UI interface, convenient for users to carry out asset management, rule editing, risk operation, support multi-tenant"

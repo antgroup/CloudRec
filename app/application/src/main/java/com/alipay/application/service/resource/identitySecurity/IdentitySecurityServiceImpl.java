@@ -174,7 +174,7 @@ public class IdentitySecurityServiceImpl implements IdentitySecurityService {
     @Override
     public List<PlatformPO> getPlatformList() {
         List<PlatformPO> res = new ArrayList<>();
-        List<String> platformList = List.of(PlatformType.Enum.ALI_CLOUD, PlatformType.Enum.GCP, PlatformType.HUAWEI_CLOUD.getPlatform());
+        List<String> platformList = List.of(PlatformType.Enum.ALI_CLOUD, PlatformType.Enum.GCP, PlatformType.HUAWEI_CLOUD.getPlatform(), PlatformType.Enum.KINGSOFT_CLOUD);
         for (String platform : platformList) {
             PlatformPO platformPO = platformMapper.findByPlatform(platform);
             if (platformPO != null) {

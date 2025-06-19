@@ -17,14 +17,15 @@ package collector
 
 import (
 	"context"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
 	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 	"github.com/core-sdk/constant"
 	"go.uber.org/zap"
-	"net/http"
-	"strings"
-	"time"
 
 	adb20190315 "github.com/alibabacloud-go/adb-20190315/v4/client"
 	alb20200616 "github.com/alibabacloud-go/alb-20200616/v2/client"
@@ -195,6 +196,10 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.SLB, err = createSlbClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init slb client failed", zap.Error(err))
+		}
+		s.VPC, err = createVPCClient(param.Region, s.Config)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init vpc client failed", zap.Error(err))
 		}
 	case RAMUser, RAMRole, RMAGroup:
 		s.RAM, err = ram.NewClientWithAccessKey(param.Region, param.AK, param.SK)
@@ -419,6 +424,11 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 	}
 
 	return nil
+}
+
+func createVPCClient(region string, config *openapi.Config) (client *vpc.Client, err error) {
+	client, err = vpc.NewClientWithAccessKey(region, *config.AccessKeyId, *config.AccessKeySecret)
+	return client, err
 }
 
 func createENSClient(config *openapi.Config) (client *ens.Client, err error) {

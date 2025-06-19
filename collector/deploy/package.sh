@@ -87,6 +87,16 @@ fi
 # Compress tencent deployment directory
 tar -czvf "${DEPLOY_DIR}/deploy_tencent.tar.gz" -C "${DEPLOY_DIR}/../tencent" deploy_tencent
 
+# Build ksyun deployment directory
+echo "Building ksyun deployment..."
+if ! (cd "${DEPLOY_DIR}/../ksyun/deploy_ksyun" && ./build.sh); then
+    echo "Error: ksyun build failed"
+    exit 1
+fi
+
+# Compress ksyun deployment directory
+tar -czvf "${DEPLOY_DIR}/deploy_ksyun.tar.gz" -C "${DEPLOY_DIR}/../ksyun" deploy_ksyun
+
 # Build cloudrec deployment directory
 echo "Building cloudrec deployment..."
 if ! (cd "${DEPLOY_DIR}/../deploy_cloudrec" && ./build.sh); then

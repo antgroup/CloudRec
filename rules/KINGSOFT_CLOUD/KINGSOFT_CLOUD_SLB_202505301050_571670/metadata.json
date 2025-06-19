@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["网络访问"],"code":"KINGSOFT_CLOUD_SLB_202505301050_571670","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"SLB实例监听端口（包括标准、非标端口）的ACL设置掩码小于8","level":"Medium","link":null,"linkedDataList":null,"name":"金山云-SLB-互联网实例ACL网段掩码小于8","platform":"KINGSOFT_CLOUD","resourceType":"SLB"}

@@ -18,7 +18,10 @@ package oss
 import (
 	"context"
 	"encoding/json"
+
+	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
+	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -27,7 +30,7 @@ import (
 )
 
 type BucketDetail struct {
-	BucketProperties       *oss.BucketProperties
+	BucketProperties       oss.BucketProperties
 	BucketInfo             *oss.BucketInfo
 	LoggingEnabled         *oss.LoggingEnabled
 	BucketPolicy           interface{}
@@ -55,7 +58,7 @@ func GetBucketResource() schema.Resource {
 
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).OSS
-
+	config := service.(*collector.Services).Config
 	p := cli.NewListBucketsPaginator(&oss.ListBucketsRequest{
 		MaxKeys: 200,
 	})
@@ -68,24 +71,41 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 			return err
 		}
 
-		// Print the objects found
-		for _, obj := range page.Buckets {
-			d := &BucketDetail{
-				BucketProperties:       &obj,
-				BucketInfo:             getBucketInfo(ctx, cli, obj.Name),
-				LoggingEnabled:         getBucketLogging(ctx, cli, obj.Name),
-				BucketPolicy:           getBucketPolicy(ctx, cli, obj.Name),
-				SSEDefaultRule:         getBucketEncryption(ctx, cli, obj.Name),
-				VersioningConfig:       getBucketVersioning(ctx, cli, obj.Name),
-				RefererConfiguration:   getBucketReferer(ctx, cli, obj.Name),
-				CORSConfiguration:      getBucketCORS(ctx, cli, obj.Name),
-				InventoryConfiguration: listBucketInventory(ctx, cli, obj.Name),
+		// Since ListBuckets returns all buckets in regions,
+		// and other apis can't be invoked across regions.
+		regionBuckets := make(map[string][]oss.BucketProperties)
+		for _, bucket := range page.Buckets {
+			regionBuckets[*bucket.Region] = append(regionBuckets[*bucket.Region], bucket)
+		}
+
+		for region, buckets := range regionBuckets {
+			cli = createOSSClient(region, config)
+			for _, bucket := range buckets {
+				d := &BucketDetail{
+					BucketProperties:       bucket,
+					BucketInfo:             getBucketInfo(ctx, cli, bucket.Name),
+					LoggingEnabled:         getBucketLogging(ctx, cli, bucket.Name),
+					BucketPolicy:           getBucketPolicy(ctx, cli, bucket.Name),
+					SSEDefaultRule:         getBucketEncryption(ctx, cli, bucket.Name),
+					VersioningConfig:       getBucketVersioning(ctx, cli, bucket.Name),
+					RefererConfiguration:   getBucketReferer(ctx, cli, bucket.Name),
+					CORSConfiguration:      getBucketCORS(ctx, cli, bucket.Name),
+					InventoryConfiguration: listBucketInventory(ctx, cli, bucket.Name),
+				}
+				res <- d
 			}
-			res <- d
 		}
 	}
 
 	return nil
+}
+
+func createOSSClient(region string, config *openapi.Config) *oss.Client {
+	cfg := oss.LoadDefaultConfig().
+		WithCredentialsProvider(ossCredentials.NewStaticCredentialsProvider(*config.AccessKeyId, *config.AccessKeySecret)).
+		WithRegion(region)
+
+	return oss.NewClient(cfg)
 }
 
 func getBucketInfo(ctx context.Context, cli *oss.Client, name *string) (bucketInfo *oss.BucketInfo) {
@@ -125,6 +145,10 @@ func getBucketPolicy(ctx context.Context, cli *oss.Client, name *string) (policy
 
 	data := make(map[string]interface{})
 	err = json.Unmarshal([]byte(r.Body), &data)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("Unmarshal Bucket Policy error", zap.Error(err))
+		return
+	}
 	return data
 }
 

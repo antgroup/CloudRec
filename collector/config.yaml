@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Collector name, if not configured, hostname will be used
-AgentName: "Alibaba Cloud, Huawei Cloud, AWS, Tencent Cloud, GCP, Baidu Cloud Collector"
+AgentName: "Alibaba Cloud, Huawei Cloud, AWS, Tencent Cloud, Kingsoft Cloud, GCP, Baidu Cloud, Kingsoft Cloud Collector"
 # The server URL, http://localhost:8080 is used by default, and can be adjusted according to actual conditions
 ServerUrl: "http://localhost:8080"
 
@@ -37,3 +37,4 @@ Sites: [  ]
 # Pay attention to the risk error information. If the error message contains text, the risk will be submitted to the server
 AttentionErrorTexts: [ "NoPermission", "NotAuthorized", "NotApplicable",
                        "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable", "Forbidden" ]
+

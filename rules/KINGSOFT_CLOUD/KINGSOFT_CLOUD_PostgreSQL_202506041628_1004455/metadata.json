@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["网络访问","数据保护"],"code":"KINGSOFT_CLOUD_PostgreSQL_202506041628_1004455","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"实例开通公网，且安全组未限制来源IP","level":"High","link":null,"linkedDataList":null,"name":"金山云-PGSQL-数据库实例全网可访问","platform":"KINGSOFT_CLOUD","resourceType":"PostgreSQL"}

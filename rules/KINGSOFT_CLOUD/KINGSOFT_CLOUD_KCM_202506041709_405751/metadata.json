@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["安全防护"],"code":"KINGSOFT_CLOUD_KCM_202506041709_405751","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"云上购买SSL证书过期或者即将过期","level":"Low","link":null,"linkedDataList":null,"name":"金山云-KCM-云上购买SSL证书过期或者即将过期","platform":"KINGSOFT_CLOUD","resourceType":"KCM"}

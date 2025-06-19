@@ -34,9 +34,23 @@ CloudRec is an open source multi-cloud security posture management (CSPM) platfo
 ---
 
 # 🚀 Quick Start
+### Deploy Server
+```
+git clone https://github.com/antgroup/CloudRec.git
 
-+ [Deploy CloudRec](https://docs.cloudrec.cloud/QuickStart/DepolyCloudRec.html)
-+ [Developments](https://docs.cloudrec.cloud/QuickStart/DevelopmentGuide/Server&&Collector.html)
+cd CloudRec
+
+MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16) docker-compose up -d
+```
+Access http://localhost:8080 after deployment.
+### Deploy Collector
+Login and get AccessToken for authentication of collector.
+![accesstoken](doc/images/accesstoken.jpg)
+```
+docker exec -it cloudrec-cloud-rec-1 bash
+
+nohup ./collectors --accessToken "${AccessToken}" > logs/task.log 2>&1 < /dev/null &
+```
 
 # 🏗 Architecture
 
@@ -48,7 +62,7 @@ CloudRec is an open source multi-cloud security posture management (CSPM) platfo
 
 ```yaml
 # Collector name, if not configured, hostname will be used
-AgentName: "Alibaba CloudHuawei Cloud,AWS,Tencent Cloud,GCP,Baidu Cloud Collector"
+AgentName: "Alibaba CloudHuawei Cloud, AWS,Tencent Cloud,GCP,Baidu Cloud Collector"
 # The server URL, http://localhost:8080 is used by default, and can be adjusted according to actual conditions
 ServerUrl: "http://localhost:8080"
 
@@ -105,6 +119,11 @@ security_groups_misconfig contains sg_rule if {
 # 🤝 How to contribute
 
 To check detailed guidelines for new contributions, please refer (https://docs.cloudrec.cloud/ContributionGuide/ContributionStep.html)
+
+## Contributors Wall
+<a href="https://github.com/antgroup/CloudRec/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=antgroup/CloudRec&max=200" />
+</a>
 
 # **<font style="color:rgb(38, 38, 38);">📬</font>** Community
 

@@ -144,12 +144,17 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.CtxLogger(ctx).Warn("Failed to create sql admin client:", zap.Error(err))
 		}
 		s.CloudSQL = svc
-		//case GoogleGroup, User:
-		//	svc, err := admin.NewService(ctx, clientOption)
-		//	if err != nil {
-		//		log.GetWLogger().Warn(fmt.Sprintf("Failed to create cloud identity client: %v", err))
-		//	}
-		//	s.Admin = svc
+	case GoogleGroup:
+		svc, err := admin.NewService(ctx, clientOption)
+		if err != nil {
+			log.GetWLogger().Warn(fmt.Sprintf("Failed to create admin client: %v", err))
+		}
+		s.Admin = svc
+
+		s.OrganizationsClient, err = resourcemanager.NewOrganizationsClient(ctx, clientOption)
+		if err != nil {
+			log.GetWLogger().Warn(fmt.Sprintf("Failed to create Organizations client: %v", err))
+		}
 	}
 
 	return nil

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package admin
+package workspace
 
 //import (
 //	"github.com/core-sdk/constant"

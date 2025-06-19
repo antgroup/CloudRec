@@ -86,7 +86,7 @@ public class AliCloudDataProducer extends Producer implements DataProducer {
                 cloudRamPO.setTenantId(cloudResourceInstancePO.getTenantId());
 
                 // Analyze the number of ak
-                int akNum = JsonUtils.getFieldSize(cloudResourceInstancePO.getInstance(), "ActiveAccessKeys");
+                int akNum = JsonUtils.getFieldSize(cloudResourceInstancePO.getInstance(), "AccessKeys");
                 cloudRamPO.setAkNum(akNum);
                 cloudRamPO.setUserType(CloudRamUserType.not_main.getType());
 

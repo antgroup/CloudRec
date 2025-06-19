@@ -1,10 +1,17 @@
-package ecs_open_any_ports_to_pub_6900003_160
+package cloudrec_6900003_160
 import rego.v1
 
 default risk := false
 risk if {
-	count(have_unrestricted_ports) > 0
+	count(exist_port_exposed) > 0
     has_public_address
+}
+messages contains message if {
+	risk == true
+	message := {
+		"Description": "There exists port(s) exposed",
+		"UnrestrictedPermission": exist_port_exposed,
+	}
 }
 
 public_ip_address := input.Instance.PublicIpAddress.IpAddress
@@ -12,52 +19,58 @@ has_public_address if {
     count(public_ip_address) > 0
 }
 
-have_unrestricted_ports contains port if {
-	port_range := numbers.range(1,65535)
-	
-	# 1. get allowd/denied ranges
-    some port in port_range
-    allowd_ranges := get_allowd_ranges(input.SecurityGroups[_].Permissions, port)
-    denied_ranges := get_denied_ranges(input.SecurityGroups[_].Permissions, port)
-
-	# 2. check if denied_ranges had the lowest priority
-	ranges := array.concat(allowd_ranges, denied_ranges)
-	min_priority := min(ranges)
-	not min_priority in denied_ranges
+exist_port_exposed contains {"port":port, "priority":allow_priority} if {
+	some p in unrestricted_allow_permission
+	allow_priority := p.priority
+	some port in p.port_range
+	denied_priority_list := get_denied_priority_list(port)
+	min_denied_priority := get_min_denied_priority(denied_priority_list)
+	min_denied_priority > allow_priority
 }
 
-unrestricted_ranges := {"0.0.0.0/0", "::/0"}
+get_min_denied_priority(denied_priority_list) := min_denied_priority if {
+	count(denied_priority_list) > 0
+	min_denied_priority = min(denied_priority_list)
+}else := min_denied_priority if {
+	count(denied_priority_list) = 0
+	min_denied_priority := 101
+}
 
-get_allowd_ranges(permissions, port) := allowd_ranges if {
-	allowd_ranges := [priority |
-		some permission in permissions
-		permission.Direction == "ingress"
-		permission.Policy == "Accept"
-		permission.IpProtocol != "ICMP"
-
-		parts := split(permission.PortRange, "/")
-		port_range := numbers.range(to_number(parts[0]),to_number(parts[1]))
-        port in port_range
-
-		permission.SourceCidrIp in unrestricted_ranges
-
-		priority := permission.Priority
+get_denied_priority_list(port) := denied_priority_list if {
+	denied_priority_list := [deny_priority |
+		some p in restricted_deny_permission
+        port in p.port_range
+		deny_priority := p.priority
 	]
 }
 
-get_denied_ranges(permissions, port) := denied_ranges if {
-	denied_ranges := [priority |
-		some permission in permissions
-		permission.Direction == "ingress"
-		permission.Policy == "Drop"
-		permission.IpProtocol != "ICMP"
+unrestricted_cidr := {"0.0.0.0/0", "::/0"}
+unrestricted_allow_permission contains p if {
+	some permission in input.SecurityGroups[_].Permissions
+	permission.Policy = "Accept"
+	permission.Direction == "ingress"
+	permission.IpProtocol != "ICMP"
+	permission.SourceCidrIp in unrestricted_cidr
 
-		parts := split(permission.PortRange, "/")
-		port_range := numbers.range(to_number(parts[0]),to_number(parts[1]))
-        port in port_range
+	parts := split(permission.PortRange, "/")
+	port_range := numbers.range(to_number(parts[0]),to_number(parts[1]))
+	p := {
+		"priority": to_number(permission.Priority),
+		"port_range": port_range,
+	}
+}
 
-		permission.SourceCidrIp in unrestricted_ranges
+restricted_deny_permission contains p if {
+	some permission in input.SecurityGroups[_].Permissions
+	permission.Policy = "Drop"
+	permission.Direction == "ingress"
+	permission.IpProtocol != "ICMP"
+	permission.SourceCidrIp in unrestricted_cidr
 
-		priority := permission.Priority
-	]
+	parts := split(permission.PortRange, "/")
+	port_range := numbers.range(to_number(parts[0]),to_number(parts[1]))
+	p := {
+		"priority": to_number(permission.Priority),
+		"port_range": port_range,
+	}
 }

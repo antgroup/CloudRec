@@ -26,6 +26,7 @@ import (
 	"github.com/cloudrec/gcp/collector/iam"
 	"github.com/cloudrec/gcp/collector/k8sengine"
 	"github.com/cloudrec/gcp/collector/vpc"
+	"github.com/cloudrec/gcp/collector/workspace"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/schema"
 )
@@ -60,6 +61,7 @@ func GetPlatformConfig() *schema.Platform {
 			cloudresourcemanager.GetOrganizationResource(),
 			cloudresourcemanager.GetProjectResource(),
 			cloudsql.GetInstanceResource(),
+			workspace.GetGroupResource(),
 		},
 
 		Service:        &collector.Services{},

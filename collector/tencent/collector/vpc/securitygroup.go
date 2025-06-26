@@ -17,6 +17,7 @@ package vpc
 
 import (
 	"context"
+
 	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -37,6 +38,7 @@ func GetSecurityGroupResource() schema.Resource {
 			ResourceId:   "$.SecurityGroup.SecurityGroupId",
 			ResourceName: "$.SecurityGroup.SecurityGroupName",
 		},
+		Regions:   []string{},
 		Dimension: schema.Regional,
 	}
 }

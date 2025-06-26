@@ -16,14 +16,13 @@
 package ec2
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"context"
-
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/cloudrec/aws/collector"
 	"github.com/cloudrec/aws/collector/ec2/utils"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 // GetNetworkAclResource returns a NetworkAcl Resource

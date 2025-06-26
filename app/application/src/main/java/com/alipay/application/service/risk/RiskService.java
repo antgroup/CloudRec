@@ -46,8 +46,6 @@ public interface RiskService {
 
     ApiResponse<String> cancelIgnoreRisk(RuleScanResultDTO dto);
 
-
-
     void exportRiskList(HttpServletResponse response, RuleScanResultDTO dto) throws IOException;
 
     List<RuleStatisticsDTO> listRuleStatistics(RuleScanResultDTO ruleScanResultDTO);

@@ -16,14 +16,13 @@
 package cloudfront
 
 import (
-	"github.com/cloudrec/aws/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"github.com/cloudrec/aws/collector"
 	"go.uber.org/zap"
 
 	"context"
-
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 )

@@ -18,6 +18,5 @@ ServerUrl: "http://localhost:8080"
 Cron: "@every 360m"
 RunOnlyOnce: false
 AccessToken: "change your AccessToken"
-Sites: [ ]
 AttentionErrorTexts: [ "NoPermission", "NotAuthorized", "NotApplicable",
-                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable", "Forbidden" ]
+                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable", "Forbidden" ,"UnknownError","SDKError","CollectorError"]

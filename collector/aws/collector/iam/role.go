@@ -16,18 +16,17 @@
 package iam
 
 import (
+	"github.com/core-sdk/log"
 	"context"
 	"encoding/json"
+	"go.uber.org/zap"
 	"net/url"
 
-	"github.com/core-sdk/log"
-	"go.uber.org/zap"
-
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/cloudrec/aws/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 // GetRoleResource returns a Role Resource

@@ -16,14 +16,14 @@
 package oceanbase
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	oceanbasepro20190901 "github.com/alibabacloud-go/oceanbasepro-20190901/v8/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -37,6 +37,26 @@ func GetOceanbaseResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.Instance.InstanceId",
 			ResourceName: "$.Instance.InstanceName",
+		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"ap-southeast-3",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
 		},
 		Dimension: schema.Regional,
 	}

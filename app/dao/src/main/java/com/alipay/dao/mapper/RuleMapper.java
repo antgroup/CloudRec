@@ -43,6 +43,8 @@ public interface RuleMapper {
 
     RulePO findOne(String code);
 
+    List<RulePO> findByIdList(@Param("idList") List<Long> idList);
+
     RulePO findOneByCond(@Param("platform") String platform, @Param("ruleName") String ruleName);
 
 }

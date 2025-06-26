@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alipay.dao.mapper.CollectorRecordMapper">
+    <resultMap id="BaseResultMap" type="com.alipay.dao.po.CollectorRecordPO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="platform" jdbcType="VARCHAR" property="platform"/>
+        <result column="cloud_account_id" jdbcType="VARCHAR" property="cloudAccountId"/>
+        <result column="registry_value" jdbcType="VARCHAR" property="registryValue"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id
+        , gmt_create, gmt_modified, platform, cloud_account_id,registry_value, start_time, end_time
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from collector_record
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="findLastOne" resultType="com.alipay.dao.po.CollectorRecordPO">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM collector_record WHERE cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR}
+        ORDER BY id DESC LIMIT 1
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete
+        from collector_record
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insertSelective" parameterType="com.alipay.dao.po.CollectorRecordPO" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into collector_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="gmtCreate != null">
+                gmt_create,
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified,
+            </if>
+            <if test="platform != null">
+                platform,
+            </if>
+            <if test="cloudAccountId != null">
+                cloud_account_id,
+            </if>
+            <if test="registryValue != null">
+                registry_value,
+            </if>
+            <if test="startTime != null">
+                start_time,
+            </if>
+            <if test="endTime != null">
+                end_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="gmtCreate != null">
+                #{gmtCreate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="gmtModified != null">
+                #{gmtModified,jdbcType=TIMESTAMP},
+            </if>
+            <if test="platform != null">
+                #{platform,jdbcType=VARCHAR},
+            </if>
+            <if test="cloudAccountId != null">
+                #{cloudAccountId,jdbcType=VARCHAR},
+            </if>
+            <if test="registryValue != null">
+                #{registryValue,jdbcType=VARCHAR},
+            </if>
+            <if test="startTime != null">
+                #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null">
+                #{endTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.alipay.dao.po.CollectorRecordPO">
+        update collector_record
+        <set>
+            <if test="gmtCreate != null">
+                gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
+            </if>
+            <if test="platform != null">
+                platform = #{platform,jdbcType=VARCHAR},
+            </if>
+            <if test="cloudAccountId != null">
+                cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR},
+            </if>
+            <if test="registryValue != null">
+                registry_value = #{registryValue,jdbcType=VARCHAR},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="findCount" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT t1.id) FROM collector_record t1 LEFT JOIN collector_log t2 ON t1.id =
+        t2.collector_record_id
+        <include refid="getListWhere"></include>
+    </select>
+    <select id="findList" resultMap="BaseResultMap">
+        SELECT
+        t1.*
+        FROM collector_record t1 LEFT JOIN collector_log t2 ON t1.id = t2.collector_record_id
+        <include refid="getListWhere"></include>
+        GROUP BY t1.id
+        ORDER BY t1.id DESC
+        <include refid="getListLimit"></include>
+    </select>
+
+    <sql id="getListLimit">
+        <if test="offset != null and size != null">
+            LIMIT
+            #{offset},
+            #{size}
+        </if>
+    </sql>
+    <sql id="getListWhere">
+        <where>
+            <if test="cloudAccountId != null and cloudAccountId != ''">
+                AND t1.cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR}
+            </if>
+            <if test="platform != null and platform != ''">
+                AND t1.platform = #{platform,jdbcType=VARCHAR}
+            </if>
+            <if test="startTimeArray != null and startTimeArray.size() == 2">
+                AND t1.start_time BETWEEN #{startTimeArray[0],jdbcType=TIMESTAMP} AND
+                #{startTimeArray[1],jdbcType=TIMESTAMP}
+            </if>
+            <if test="errorCode != null and errorCode != ''">
+                AND t2.description = #{errorCode,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </sql>
+</mapper>

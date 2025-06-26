@@ -1,0 +1,15 @@
+!.gitignore
+*.zip
+cloudrec_collector
+cloudrec_collector_alicloud
+cloudrec_collector_alicloud_private
+cloudrec_collector_aws
+cloudrec_collector_baidu
+cloudrec_collector_gcp
+cloudrec_collector_hws
+cloudrec_collector_tencent
+
+*.misc.xml
+deploy/*.tar.gz
+*.idea
+

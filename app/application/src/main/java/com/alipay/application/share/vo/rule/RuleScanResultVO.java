@@ -229,7 +229,7 @@ public class RuleScanResultVO {
         ResourcePO resourcePO = resourceMapper.findOne(ruleScanResultPO.getPlatform(), ruleScanResultPO.getResourceType());
         if (resourcePO != null) {
             ResourceGroupType resourceGroupType = ResourceGroupType.getByCode(resourcePO.getResourceGroupType());
-            ruleScanResultVO.setResourceGroupTypeName(resourceGroupType.getDesc());
+            ruleScanResultVO.setResourceGroupTypeName(ResourceGroupType.getDescByCode(resourcePO.getResourceGroupType()));
             ruleScanResultVO.setResourceGroupType(resourceGroupType.getCode());
             ruleScanResultVO.setIcon(ImageUtil.ImageToBase64(resourceGroupType.getIcon()));
         }

@@ -16,17 +16,21 @@
 package blb
 
 import (
-	"context"
-	"github.com/baidubce/bce-sdk-go/services/blb"
-	"github.com/cloudrec/baidu/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/baidubce/bce-sdk-go/services/blb"
+	"github.com/cloudrec/baidu/collector"
 	"go.uber.org/zap"
 )
 
 type Detail struct {
-	Blb blb.BLBModel
+	Blb                         blb.BLBModel
+	ListenerList                []blb.AllListenerModel
+	BlbSecurityGroups           []blb.BlbSecurityGroupModel
+	BlbEnterpriseSecurityGroups []blb.BlbEnterpriseSecurityGroupModel
+	BackendServerList           []blb.BackendServerModel
 }
 
 func GetResource() schema.Resource {
@@ -57,7 +61,11 @@ func GetResource() schema.Resource {
 				}
 				for _, i := range response.BlbList {
 					d := Detail{
-						Blb: i,
+						Blb:                         i,
+						ListenerList:                describeAllListeners(ctx, client, i.BlbId),
+						BlbSecurityGroups:           describeSecurityGroups(ctx, client, i.BlbId),
+						BlbEnterpriseSecurityGroups: describeEnterpriseSecurityGroups(ctx, client, i.BlbId),
+						BackendServerList:           describeBackendServers(ctx, client, i.BlbId),
 					}
 					res <- d
 				}
@@ -72,8 +80,71 @@ func GetResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.Blb.blbId",
 			ResourceName: "$.Blb.name",
-			Address:      "$.Blb.PublicIp",
+			Address:      "$.Blb.publicIp",
 		},
-		Dimension: schema.Global,
+		Dimension: schema.Regional,
 	}
+}
+
+func describeAllListeners(ctx context.Context, client *blb.Client, blbId string) (listenerList []blb.AllListenerModel) {
+	args := &blb.DescribeListenerArgs{
+		Marker:  "",
+		MaxKeys: 50,
+	}
+
+	for {
+		response, err := client.DescribeAllListeners(blbId, args)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("DescribeAllListeners error", zap.Error(err))
+			return
+		}
+		listenerList = append(listenerList, response.AllListenerList...)
+		if response.NextMarker == "" {
+			break
+		}
+		args.Marker = response.NextMarker
+	}
+
+	return listenerList
+}
+
+func describeSecurityGroups(ctx context.Context, client *blb.Client, blbId string) []blb.BlbSecurityGroupModel {
+	resp, err := client.DescribeSecurityGroups(blbId)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("DescribeSecurityGroups error", zap.Error(err))
+		return nil
+	}
+
+	return resp.BlbSecurityGroups
+}
+
+func describeEnterpriseSecurityGroups(ctx context.Context, client *blb.Client, blbId string) []blb.BlbEnterpriseSecurityGroupModel {
+	resp, err := client.DescribeEnterpriseSecurityGroups(blbId)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("DescribeEnterpriseSecurityGroups error", zap.Error(err))
+		return nil
+	}
+
+	return resp.BlbEnterpriseSecurityGroups
+}
+
+func describeBackendServers(ctx context.Context, client *blb.Client, blbId string) (backendServerList []blb.BackendServerModel) {
+	args := &blb.DescribeBackendServersArgs{
+		Marker:  "",
+		MaxKeys: 50,
+	}
+	for {
+		response, err := client.DescribeBackendServers(blbId, args)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("describeBackendServers error", zap.Error(err))
+			return
+		}
+		backendServerList = append(backendServerList, response.BackendServerList...)
+		if response.NextMarker == "" {
+			break
+		}
+		args.Marker = response.NextMarker
+	}
+
+	return backendServerList
 }

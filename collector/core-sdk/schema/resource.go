@@ -19,6 +19,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 )
@@ -215,7 +218,16 @@ type ResourceDetailFunc func(ctx context.Context, service ServiceInterface, res 
 type ResourceDetailFuncWithCancel func(ctx context.Context, cancel context.CancelFunc, service ServiceInterface, res chan<- any) error
 
 // Submit batch submit resource to server
-func Submit(client *Client, account CloudAccount, resource Resource, res chan *ResourceInstance, registered bool, version string) {
+func Submit(client *Client, account CloudAccount, resource Resource, res chan *ResourceInstance, registered bool, version string, submitWait *sync.WaitGroup) {
+	if submitWait != nil {
+		defer func() {
+			if r := recover(); r != nil {
+				log.GetWLogger().Error(fmt.Sprintf("Panic recovered in Submit function: %v", r))
+			}
+			submitWait.Done()
+		}()
+	}
+
 	if !registered {
 		for ret := range res {
 			log.GetWLogger().Info(fmt.Sprintf("resourceId %s resourceName %s address %s", ret.ResourceId, ret.ResourceName, ret.Address))
@@ -234,7 +246,24 @@ func Submit(client *Client, account CloudAccount, resource Resource, res chan *R
 			if end > len(resourceInstances) {
 				end = len(resourceInstances)
 			}
-			client.SendResource(account, resource, resourceInstances[i:end], version)
+
+			const maxRetries = 3
+			var err error
+			for retry := 0; retry < maxRetries; retry++ {
+				err = client.SendResource(account, resource, resourceInstances[i:end], version)
+				if err == nil {
+					break
+				}
+
+				log.GetWLogger().Warn(fmt.Sprintf("Failed to send resource batch (retry %d/%d): %s", retry+1, maxRetries, err.Error()))
+				if retry < maxRetries-1 {
+					time.Sleep(time.Duration(retry+1) * time.Second)
+				}
+			}
+
+			if err != nil {
+				log.GetWLogger().Error(fmt.Sprintf("Failed to send resource batch after %d retries: %s", maxRetries, err.Error()))
+			}
 		}
 		resourceInstances = resourceInstances[:0]
 	}

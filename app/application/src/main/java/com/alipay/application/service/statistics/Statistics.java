@@ -40,6 +40,7 @@ import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.mapper.*;
 import com.alipay.dao.po.*;
 import jakarta.annotation.Resource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -189,13 +190,15 @@ public class Statistics {
                 resourceData.setResourceType(resourceType);
                 // Query resource group name
                 ResourcePO resourcePO = resourceMapper.findOne(platform, resourceType);
-                if (resourcePO != null) {
-                    ResourceGroupType resourceGroupType = ResourceGroupType
-                            .getByCode(resourcePO.getResourceGroupType());
-                    resourceData.setResourceGroupTypeName(resourceGroupType.getDesc());
-                    resourceData.setResourceGroupType(resourceGroupType.getCode());
-                    resourceData.setIcon(ImageUtil.ImageToBase64(resourceGroupType.getIcon()));
+                if (resourcePO == null) {
+                    continue;
                 }
+
+                ResourceGroupType resourceGroupType = ResourceGroupType.getByCode(resourcePO.getResourceGroupType());
+                resourceData.setResourceGroupTypeName(ResourceGroupType.getDescByCode(resourcePO.getResourceGroupType()));
+                resourceData.setResourceGroupType(resourceGroupType.getCode());
+                resourceData.setIcon(ImageUtil.ImageToBase64(resourceGroupType.getIcon()));
+
                 // Query the number of assets
                 resourceData.setCount(cloudResourceInstanceMapper.findCountByCond(IQueryResourceDTO.builder()
                         .platform(platform).resourceType(resourceType).tenantId(tenantId).build()));
@@ -254,8 +257,8 @@ public class Statistics {
         List<PlatformType> platformTypes = List.of(PlatformType.ALI_CLOUD);
         for (PlatformType platformType : platformTypes) {
 
-            int accessKeyCount = cloudRamMapper.getSumAkCountByPlatform(platformType.getPlatform(),tenantId);
-            int accessKeyExistAclCount = cloudRamMapper.getSumAkExistAclCountByPlatform(platformType.getPlatform(),tenantId);
+            int accessKeyCount = cloudRamMapper.getSumAkCountByPlatform(platformType.getPlatform(), tenantId);
+            int accessKeyExistAclCount = cloudRamMapper.getSumAkExistAclCountByPlatform(platformType.getPlatform(), tenantId);
             int accessKeyNotExistAclCount = accessKeyCount - accessKeyExistAclCount;
             Map<String, Object> d = new HashMap<>();
             d.put("platform", platformType.getPlatform());
@@ -270,7 +273,8 @@ public class Statistics {
     }
 
     public List<HomeTopRiskDTO> getTopRiskList(Long tenantId) {
-        String key = CacheUtil.buildKey("index::get_top_risk_list", tenantId);
+        Locale locale = LocaleContextHolder.getLocale();
+        String key = CacheUtil.buildKey("index::get_top_risk_list", tenantId, locale.getLanguage());
         DbCachePO dbCachePO = dbCacheUtil.get(key);
         if (dbCachePO != null) {
             return JSON.parseArray(dbCachePO.getValue(), HomeTopRiskDTO.class);

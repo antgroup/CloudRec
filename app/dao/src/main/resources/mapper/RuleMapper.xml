@@ -369,6 +369,15 @@
         FROM rule
         WHERE platform = #{platform} AND rule_name = #{ruleName}
     </select>
+    <select id="findByIdList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM rule
+        WHERE id IN
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 
 
     <sql id="getListLimit">

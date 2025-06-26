@@ -5,11 +5,11 @@
     <parent>
         <artifactId>cloudrec</artifactId>
         <groupId>com.alipay</groupId>
-        <version>${cloudrec.version}</version>
+        <version>0.2.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>common</artifactId>
-    <version>${cloudrec.version}</version>
+    <version>0.2.0-SNAPSHOT</version>
     <name>common</name>
     <description>common</description>
     <url/>
@@ -55,6 +55,12 @@
             <groupId>com.tencentcloudapi</groupId>
             <artifactId>tencentcloud-sdk-java</artifactId>
             <version>3.1.1107</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -4,10 +4,12 @@ import EditModalForm from '@/pages/CloudAccount/AccountList/components/EditModal
 import {
   removeCloudAccount,
   updateCloudAccountStatus,
+  createCollectTask,
 } from '@/services/account/AccountController';
 import { accountURLMap } from '@/utils/const';
 import { obtainPlatformEasyName } from '@/utils/shared';
 import { history, useIntl, useModel } from '@umijs/max';
+import { SyncOutlined, CloudSyncOutlined } from '@ant-design/icons';
 import {
   Button,
   Col,
@@ -235,16 +237,43 @@ const AccountCard = (props: IAccountCard) => {
                 id: 'cloudAccount.extend.title.collection.status',
               })}
             </div>
-            <Disposition
-              text={collectorStatus || '-'}
-              maxWidth={81}
-              rows={1}
-              style={{
-                color: '#999',
-                fontSize: 13,
-              }}
-              placement={'topLeft'}
-            />
+            <Flex align="center">
+              <Disposition
+                text={collectorStatus || '-'}
+                maxWidth={81}
+                rows={1}
+                style={{
+                  color: '#999',
+                  fontSize: 13,
+                }}
+                placement={'topLeft'}
+              />
+              {collectorStatus === '扫描中' ? (
+                <SyncOutlined
+                  style={{ marginLeft: 8, fontSize: 13, color: '#1677FF' }}
+                  spin
+                />
+              ) : collectorStatus === '待扫描' ? (
+                <Popconfirm
+                  title={intl.formatMessage({ id: 'cloudAccount.extend.collection.popconfirm' })}
+                  onConfirm={async () => {
+                    const res = await createCollectTask({ cloudAccountId });
+                    if (res.code === 200 || res.msg === 'success') {
+                      messageApi.success(
+                        intl.formatMessage({ id: 'common.message.text.add.success' })
+                      );
+                      await requestCurrentData();
+                    }
+                  }}
+                  okText={intl.formatMessage({ id: 'common.button.text.ok' })}
+                  cancelText={intl.formatMessage({ id: 'common.button.text.cancel' })}
+                >
+                  <CloudSyncOutlined
+                    style={{ marginLeft: 8, cursor: 'pointer', fontSize: 13, color: '#1677FF' }}
+                  />
+                </Popconfirm>
+              ) : null}
+            </Flex>
           </Col>
           <Col span={24} className={styles['propertyWrap']}>
             <div className={styles['propertyName']}>
@@ -325,26 +354,45 @@ const AccountCard = (props: IAccountCard) => {
               id: 'common.button.text.edit',
             })}
           </Button>
+          {/*<Button*/}
+          {/*  size={'small'}*/}
+          {/*  type="link"*/}
+          {/*  target={'_blank'}*/}
+          {/*  style={{*/}
+          {/*    width: 64,*/}
+          {/*    height: 30,*/}
+          {/*    borderRadius: 4,*/}
+          {/*    backgroundColor: '#E7F1FF',*/}
+          {/*    color: '#1677FF',*/}
+          {/*  }}*/}
+          {/*  onClick={(): void => {*/}
+          {/*    setAccountModalVisible(true);*/}
+          {/*    accountModalRef.current = {*/}
+          {/*      ...account,*/}
+          {/*    };*/}
+          {/*  }}*/}
+          {/*>*/}
+          {/*  {intl.formatMessage({*/}
+          {/*    id: 'common.button.text.detail',*/}
+          {/*  })}*/}
+          {/*</Button>*/}
           <Button
             size={'small'}
             type="link"
-            target={'_blank'}
             style={{
               width: 64,
               height: 30,
               borderRadius: 4,
               backgroundColor: '#E7F1FF',
               color: '#1677FF',
+              marginLeft: 8,
             }}
             onClick={(): void => {
-              setAccountModalVisible(true);
-              accountModalRef.current = {
-                ...account,
-              };
+              history.push(`/cloudAccount/collectionRecord?platform=${platform}&cloudAccountId=${cloudAccountId}`);
             }}
           >
             {intl.formatMessage({
-              id: 'common.button.text.detail',
+              id: 'cloudAccount.button.text.collection.record',
             })}
           </Button>
         </Flex>

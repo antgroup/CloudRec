@@ -17,6 +17,7 @@ package schema
 
 type ServiceInterface interface {
 	InitServices(param CloudAccountParam) error
+	Clone() ServiceInterface
 }
 
 type PlatformInterface interface {

@@ -32,8 +32,9 @@ const TimeOut = 30
 type contextKey string
 
 const (
-	CloudAccountId contextKey = "cloudAccountId"
-	RegionId       contextKey = "regionId"
-	ResourceType   contextKey = "resourceType"
-	TraceId        contextKey = "TraceId"
+	CloudAccountId  contextKey = "cloudAccountId"
+	RegionId        contextKey = "regionId"
+	ResourceType    contextKey = "resourceType"
+	TraceId         contextKey = "TraceId"
+	CollectRecordId contextKey = "CollectRecordId"
 )

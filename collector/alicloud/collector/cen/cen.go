@@ -16,15 +16,15 @@
 package cen
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	"fmt"
 	cbn20170912 "github.com/alibabacloud-go/cbn-20170912/v2/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -38,6 +38,34 @@ func GetCENResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.Cen.CenId",
 			ResourceName: "$.Cen.Name",
+		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"cn-heyuan",
+			"cn-guangzhou",
+			"ap-southeast-6",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"na-south-1",
+			"eu-west-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
 		},
 		Dimension: schema.Regional,
 	}

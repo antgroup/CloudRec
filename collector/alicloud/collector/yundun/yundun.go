@@ -16,12 +16,12 @@
 package yundun
 
 import (
-	"context"
-	yundun_bastionhost20191209 "github.com/alibabacloud-go/yundun-bastionhost-20191209/v2/client"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	yundun_bastionhost20191209 "github.com/alibabacloud-go/yundun-bastionhost-20191209/v2/client"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 	"strconv"
 )
@@ -34,13 +34,43 @@ func GetResource() schema.Resource {
 		Desc:              `https://next.api.aliyun.com/product/Yundun-bastionhost`,
 
 		ResourceDetailFunc: ListDescribeInstances,
-
-		// 使用json path 从detail中取值，其中只有ResourceId是必须的
 		RowField: schema.RowField{
 			ResourceId:   "$.Instance.InstanceId",
 			ResourceName: "$.Instance.Description",
 		},
 
+		Regions: []string{
+			// China Regions
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"cn-heyuan",
+			"cn-chengdu",
+			"cn-hongkong",
+
+			// Asia Pacific
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-1",
+			"ap-southeast-5",
+
+			// Europe & Americas
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+
+			// Middle East
+			"me-east-1",
+
+			// Financial Cloud
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
+		},
 		Dimension: schema.Regional,
 	}
 }

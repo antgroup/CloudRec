@@ -15,7 +15,7 @@
 
 AgentName: "Tencent Cloud"
 ServerUrl: "http://localhost:8080"
-Cron: "@every 5m"
+Cron: "@every 60m"
 RunOnlyOnce: false
 AccessToken: "change your AccessToken"
-AttentionErrorTexts: [ "Forbidden" ]
+AttentionErrorTexts: [ "UnknownError","SDKError","CollectorError"]

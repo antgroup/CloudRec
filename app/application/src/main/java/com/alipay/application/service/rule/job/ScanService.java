@@ -38,15 +38,20 @@ public interface ScanService {
     void scanByGroup(Long groupId);
 
 
-    /**
-     * 扫描全部，分片广播调度
-     */
     void shardingScanAll();
 
     /**
      * 扫描全部
      */
     void scanAll();
+
+    /**
+     * 扫描指定云账号、全部规则
+     *
+     * @param platform       platform
+     * @param cloudAccountId cloudAccountId
+     */
+    //void scanAll(String platform, String cloudAccountId);
 
     /**
      * 扫描指定规则、指定账号的数据

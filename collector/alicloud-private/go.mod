@@ -5,9 +5,9 @@ go 1.23
 replace github.com/core-sdk => ../core-sdk
 
 require (
+	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1140
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
-	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.27.0
 )
 

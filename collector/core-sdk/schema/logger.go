@@ -17,11 +17,13 @@ package schema
 
 import (
 	"bytes"
+	"container/ring"
 	"encoding/json"
 	"errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -29,17 +31,20 @@ import (
 
 // RemoteLogHook Is a custom zapcore.Core that sends logs to a remote service and deduplicates error logs
 type RemoteLogHook struct {
-	url      string
-	client   *http.Client
-	errorMap map[string]struct{} // Unique identifier for storing sent error logs
-	mu       sync.Mutex
+	url       string
+	client    *http.Client
+	mu        sync.Mutex
+	errorRing *ring.Ring // 使用环形缓冲区存储错误日志
+	ringSize  int        // 环形缓冲区大小
 }
 
 func NewRemoteLogHook(url string) *RemoteLogHook {
+	const defaultRingSize = 1000 // 默认存储最近1000条错误日志
 	return &RemoteLogHook{
-		url:      url,
-		client:   &http.Client{Timeout: 5 * time.Second},
-		errorMap: make(map[string]struct{}),
+		url:       url,
+		client:    &http.Client{Timeout: 5 * time.Second},
+		errorRing: ring.New(defaultRingSize),
+		ringSize:  defaultRingSize,
 	}
 }
 
@@ -73,18 +78,10 @@ func (remoteLogHook *RemoteLogHook) Write(entry zapcore.Entry, fields []zapcore.
 	// Extract fields and store log data
 	for _, field := range fields {
 		logData[field.Key] = field.String
+		if field.Integer != 0 {
+			logData[field.Key] = strconv.FormatInt(field.Integer, 10)
+		}
 	}
-
-	// De-duplicate log messages
-	remoteLogHook.mu.Lock()
-	_, exists := remoteLogHook.errorMap[entry.Message]
-	if exists {
-		remoteLogHook.mu.Unlock()
-		return nil
-	}
-
-	remoteLogHook.errorMap[entry.Message] = struct{}{}
-	remoteLogHook.mu.Unlock()
 
 	jsonData, err := json.Marshal(logData)
 	if err != nil {
@@ -109,12 +106,11 @@ func (remoteLogHook *RemoteLogHook) Sync() error {
 	return nil
 }
 
-// Clear the error log deduplication container
+// Clear the error log deduplication ring buffer
 func (remoteLogHook *RemoteLogHook) Clear() {
 	remoteLogHook.mu.Lock()
 	defer remoteLogHook.mu.Unlock()
-
-	remoteLogHook.errorMap = make(map[string]struct{})
+	remoteLogHook.errorRing = ring.New(remoteLogHook.ringSize)
 }
 
 type CloudRecLogger struct {
@@ -210,18 +206,42 @@ const (
 	SYSTEM  string = "SYSTEM"
 )
 
-func (cloudRecLogger *CloudRecLogger) logAccountError(platform, resourceType, cloudAccountId string, err error) {
+func (cloudRecLogger *CloudRecLogger) logAccountError(platform, resourceType, cloudAccountId string, collectRecordId int64, err error) {
 	match, description := cloudRecLogger.matchAttentionError(err)
 	if !match {
 		return
 	}
 
-	var uniqueKey = generateUniqueKey(ACCOUNT, platform, resourceType, cloudAccountId, description)
+	// generate unique key
+	collectRecordIdStr := strconv.FormatInt(collectRecordId, 10)
+	var uniqueKey = generateUniqueKey(ACCOUNT, platform, resourceType, cloudAccountId, description, collectRecordIdStr)
+
+	// De-duplicate log messages using ring buffer
+	cloudRecLogger.remoteLogHook.mu.Lock()
+	defer cloudRecLogger.remoteLogHook.mu.Unlock()
+
+	// Check whether it already exists in the circular buffer
+	current := cloudRecLogger.remoteLogHook.errorRing
+	for i := 0; i < cloudRecLogger.remoteLogHook.ringSize; i++ {
+		if current.Value != nil {
+			if msg, ok := current.Value.(string); ok && msg == uniqueKey {
+				return
+			}
+		}
+		current = current.Next()
+	}
+
+	// save to ring buffer
+	cloudRecLogger.remoteLogHook.errorRing.Value = uniqueKey
+	cloudRecLogger.remoteLogHook.errorRing = cloudRecLogger.remoteLogHook.errorRing.Next()
+
+	// send to remote log service
 	cloudRecLogger.logger.Error(err.Error(), zap.String("platform", platform),
 		zap.String("resourceType", resourceType),
 		zap.String("cloudAccountId", cloudAccountId),
 		zap.String("uniqueKey", uniqueKey),
 		zap.String("description", description),
+		zap.String("collectRecordId", collectRecordIdStr),
 		zap.String("type", ACCOUNT))
 }
 

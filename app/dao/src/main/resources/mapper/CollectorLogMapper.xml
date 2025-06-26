@@ -1,171 +1,210 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.alipay.dao.mapper.CollectorLogMapper">
-  <resultMap id="BaseResultMap" type="com.alipay.dao.po.CollectorLogPO">
-    <id column="id" jdbcType="BIGINT" property="id" />
-    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
-    <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
-    <result column="platform" jdbcType="VARCHAR" property="platform" />
-    <result column="cloud_account_id" jdbcType="VARCHAR" property="cloudAccountId" />
-    <result column="resource_type" jdbcType="VARCHAR" property="resourceType" />
-    <result column="type" jdbcType="VARCHAR" property="type" />
-    <result column="unique_key" jdbcType="VARCHAR" property="uniqueKey" />
-    <result column="description" jdbcType="VARCHAR" property="description" />
-    <result column="level" jdbcType="VARCHAR" property="level" />
-    <result column="time" jdbcType="VARCHAR" property="time" />
-  </resultMap>
-  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.alipay.dao.po.CollectorLogPO">
-    <result column="message" jdbcType="LONGVARCHAR" property="message" />
-  </resultMap>
-  <sql id="Base_Column_List">
-    id, gmt_create, gmt_modified, platform, cloud_account_id, resource_type, type, unique_key, 
-    description, level, time
-  </sql>
-  <sql id="Blob_Column_List">
-    message
-  </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
-    select 
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from collector_log
-    where id = #{id,jdbcType=BIGINT}
-  </select>
-  <select id="findByUniqueKey" resultMap="BaseResultMap">
-      SELECT
-      <include refid="Base_Column_List"></include>
-      FROM collector_log
-      WHERE unique_key = #{uniqueKey,jdbcType=VARCHAR} LIMIT 1
-  </select>
-  <select id="findLogLimit1" resultMap="BaseResultMap">
-      SELECT
-      <include refid="Base_Column_List"></include>
-      FROM collector_log
-      WHERE cloud_account_id = #{cloudAccountId} AND platform = #{platform} ORDER BY id DESC LIMIT 1
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-    delete from collector_log
-    where id = #{id,jdbcType=BIGINT}
-  </delete>
+    <resultMap id="BaseResultMap" type="com.alipay.dao.po.CollectorLogPO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="platform" jdbcType="VARCHAR" property="platform"/>
+        <result column="cloud_account_id" jdbcType="VARCHAR" property="cloudAccountId"/>
+        <result column="resource_type" jdbcType="VARCHAR" property="resourceType"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="unique_key" jdbcType="VARCHAR" property="uniqueKey"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="level" jdbcType="VARCHAR" property="level"/>
+        <result column="time" jdbcType="VARCHAR" property="time"/>
+        <result column="collector_record_id" jdbcType="BIGINT" property="collectorRecordId"/>
+    </resultMap>
+    <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.alipay.dao.po.CollectorLogPO">
+        <result column="message" jdbcType="LONGVARCHAR" property="message"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id
+        , gmt_create, gmt_modified, platform, cloud_account_id, resource_type, type, unique_key,
+    description, level, time,collector_record_id
+    </sql>
+    <sql id="Blob_Column_List">
+        message
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
+        select
+        <include refid="Base_Column_List"/>
+        ,
+        <include refid="Blob_Column_List"/>
+        from collector_log
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="findByUniqueKey" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM collector_log
+        WHERE unique_key = #{uniqueKey,jdbcType=VARCHAR} LIMIT 1
+    </select>
+    <select id="findLogLimit1" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM collector_log
+        WHERE cloud_account_id = #{cloudAccountId} AND platform = #{platform} ORDER BY id DESC LIMIT 1
+    </select>
+    <select id="findList" resultMap="ResultMapWithBLOBs">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        ,
+        <include refid="Blob_Column_List"></include>
+        FROM collector_log
+        WHERE collector_record_id = #{collectRecordId}
+    </select>
+    <select id="listErrorCode" resultType="java.util.Map">
+        SELECT description,
+        COUNT(*) AS count
+        FROM collector_log
+        WHERE
+        platform = #{platform}
+        <if test="cloudAccountId != null and cloudAccountId != ''">
+            AND cloud_account_id = #{cloudAccountId}
+        </if>
+        GROUP BY description
+        ORDER BY count DESC
+    </select>
 
-  <insert id="insertSelective" parameterType="com.alipay.dao.po.CollectorLogPO">
-    insert into collector_log
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        id,
-      </if>
-      <if test="gmtCreate != null">
-        gmt_create,
-      </if>
-      <if test="gmtModified != null">
-        gmt_modified,
-      </if>
-      <if test="platform != null">
-        platform,
-      </if>
-      <if test="cloudAccountId != null">
-        cloud_account_id,
-      </if>
-      <if test="resourceType != null">
-        resource_type,
-      </if>
-      <if test="type != null">
-        type,
-      </if>
-      <if test="uniqueKey != null">
-        unique_key,
-      </if>
-      <if test="description != null">
-        description,
-      </if>
-      <if test="level != null">
-        level,
-      </if>
-      <if test="time != null">
-        time,
-      </if>
-      <if test="message != null">
-        message,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=BIGINT},
-      </if>
-      <if test="gmtCreate != null">
-        #{gmtCreate,jdbcType=TIMESTAMP},
-      </if>
-      <if test="gmtModified != null">
-        #{gmtModified,jdbcType=TIMESTAMP},
-      </if>
-      <if test="platform != null">
-        #{platform,jdbcType=VARCHAR},
-      </if>
-      <if test="cloudAccountId != null">
-        #{cloudAccountId,jdbcType=VARCHAR},
-      </if>
-      <if test="resourceType != null">
-        #{resourceType,jdbcType=VARCHAR},
-      </if>
-      <if test="type != null">
-        #{type,jdbcType=VARCHAR},
-      </if>
-      <if test="uniqueKey != null">
-        #{uniqueKey,jdbcType=VARCHAR},
-      </if>
-      <if test="description != null">
-        #{description,jdbcType=VARCHAR},
-      </if>
-      <if test="level != null">
-        #{level,jdbcType=VARCHAR},
-      </if>
-      <if test="time != null">
-        #{time,jdbcType=VARCHAR},
-      </if>
-      <if test="message != null">
-        #{message,jdbcType=LONGVARCHAR},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.alipay.dao.po.CollectorLogPO">
-    update collector_log
-    <set>
-      <if test="gmtCreate != null">
-        gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
-      </if>
-      <if test="gmtModified != null">
-        gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
-      </if>
-      <if test="platform != null">
-        platform = #{platform,jdbcType=VARCHAR},
-      </if>
-      <if test="cloudAccountId != null">
-        cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR},
-      </if>
-      <if test="resourceType != null">
-        resource_type = #{resourceType,jdbcType=VARCHAR},
-      </if>
-      <if test="type != null">
-        type = #{type,jdbcType=VARCHAR},
-      </if>
-      <if test="uniqueKey != null">
-        unique_key = #{uniqueKey,jdbcType=VARCHAR},
-      </if>
-      <if test="description != null">
-        description = #{description,jdbcType=VARCHAR},
-      </if>
-      <if test="level != null">
-        level = #{level,jdbcType=VARCHAR},
-      </if>
-      <if test="time != null">
-        time = #{time,jdbcType=VARCHAR},
-      </if>
-      <if test="message != null">
-        message = #{message,jdbcType=LONGVARCHAR},
-      </if>
-    </set>
-    where id = #{id,jdbcType=BIGINT}
-  </update>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete
+        from collector_log
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <delete id="deleteByRecordId">
+        delete
+        from collector_log
+        where collector_record_id = #{collectorRecordId,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insertSelective" parameterType="com.alipay.dao.po.CollectorLogPO">
+        insert into collector_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="gmtCreate != null">
+                gmt_create,
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified,
+            </if>
+            <if test="platform != null">
+                platform,
+            </if>
+            <if test="cloudAccountId != null">
+                cloud_account_id,
+            </if>
+            <if test="resourceType != null">
+                resource_type,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+            <if test="uniqueKey != null">
+                unique_key,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="level != null">
+                level,
+            </if>
+            <if test="time != null">
+                time,
+            </if>
+            <if test="collectorRecordId != null">
+                collector_record_id,
+            </if>
+            <if test="message != null">
+                message,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="gmtCreate != null">
+                #{gmtCreate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="gmtModified != null">
+                #{gmtModified,jdbcType=TIMESTAMP},
+            </if>
+            <if test="platform != null">
+                #{platform,jdbcType=VARCHAR},
+            </if>
+            <if test="cloudAccountId != null">
+                #{cloudAccountId,jdbcType=VARCHAR},
+            </if>
+            <if test="resourceType != null">
+                #{resourceType,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="uniqueKey != null">
+                #{uniqueKey,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="level != null">
+                #{level,jdbcType=VARCHAR},
+            </if>
+            <if test="time != null">
+                #{time,jdbcType=VARCHAR},
+            </if>
+            <if test="collectorRecordId != null">
+                #{collectorRecordId,jdbcType=BIGINT},
+            </if>
+            <if test="message != null">
+                #{message,jdbcType=LONGVARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.alipay.dao.po.CollectorLogPO">
+        update collector_log
+        <set>
+            <if test="gmtCreate != null">
+                gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
+            </if>
+            <if test="platform != null">
+                platform = #{platform,jdbcType=VARCHAR},
+            </if>
+            <if test="cloudAccountId != null">
+                cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR},
+            </if>
+            <if test="resourceType != null">
+                resource_type = #{resourceType,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                type = #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="uniqueKey != null">
+                unique_key = #{uniqueKey,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="level != null">
+                level = #{level,jdbcType=VARCHAR},
+            </if>
+            <if test="time != null">
+                time = #{time,jdbcType=VARCHAR},
+            </if>
+            <if test="collectorRecordId != null">
+                collector_record_id = #{collectorRecordId,jdbcType=BIGINT},
+            </if>
+            <if test="message != null">
+                message = #{message,jdbcType=LONGVARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
 
 </mapper>

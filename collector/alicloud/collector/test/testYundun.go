@@ -16,11 +16,11 @@
 package test
 
 import (
-	yundun_bastionhost20191209 "github.com/alibabacloud-go/yundun-bastionhost-20191209/v2/client"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	yundun_bastionhost20191209 "github.com/alibabacloud-go/yundun-bastionhost-20191209/v2/client"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 	"strconv"

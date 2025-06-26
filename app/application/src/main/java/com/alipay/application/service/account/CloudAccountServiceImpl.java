@@ -20,10 +20,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.alipay.application.service.account.cloud.CredentialFactory;
 import com.alipay.application.service.account.utils.AESEncryptionUtils;
+import com.alipay.application.service.collector.domain.repo.CollectorTaskRepository;
+import com.alipay.application.service.collector.enums.CollectorTaskType;
 import com.alipay.application.service.common.utils.CacheUtil;
 import com.alipay.application.service.common.utils.DbCacheUtil;
 import com.alipay.application.service.resource.IQueryResource;
 import com.alipay.application.share.request.account.AcceptAccountRequest;
+import com.alipay.application.share.request.account.CreateCollectTaskRequest;
 import com.alipay.application.share.request.account.QueryCloudAccountListRequest;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
@@ -31,6 +34,7 @@ import com.alipay.application.share.vo.account.CloudAccountVO;
 import com.alipay.common.constant.MarkConstants;
 import com.alipay.common.enums.PlatformType;
 import com.alipay.common.enums.Status;
+import com.alipay.common.exception.BizException;
 import com.alipay.common.utils.ListUtils;
 import com.alipay.dao.context.UserInfoContext;
 import com.alipay.dao.context.UserInfoDTO;
@@ -70,6 +74,8 @@ public class CloudAccountServiceImpl implements CloudAccountService {
     private IQueryResource iQueryResource;
     @Resource
     private TenantMapper tenantMapper;
+    @Resource
+    private CollectorTaskRepository collectorTaskRepository;
     @Resource
     private DbCacheUtil dbCacheUtil;
 
@@ -151,7 +157,7 @@ public class CloudAccountServiceImpl implements CloudAccountService {
         if (cloudAccountDTO.getId() == null) {
             if (UserInfoContext.getCurrentUser() != null) {
                 cloudAccountPO.setUserId(UserInfoContext.getCurrentUser().getUserId());
-            }else {
+            } else {
                 cloudAccountPO.setUserId("SYSTEM");
             }
             cloudAccountPO.setCollectorStatus(Status.waiting.name());
@@ -325,5 +331,16 @@ public class CloudAccountServiceImpl implements CloudAccountService {
             }
         }
         return new ApiResponse<>(params);
+    }
+
+    @Override
+    public void createCollectTask(CreateCollectTaskRequest request) {
+        log.info("create collect task: {}", request.getCloudAccountId());
+        CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(request.getCloudAccountId());
+        if (Objects.isNull(cloudAccountPO)) {
+            throw new BizException("account is not exist");
+        }
+
+        collectorTaskRepository.initTask(request.getCloudAccountId(), CollectorTaskType.collect.name());
     }
 }

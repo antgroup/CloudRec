@@ -16,9 +16,11 @@
  */
 package com.alipay.application.service.collector;
 
+import com.alipay.application.service.collector.domain.TaskResp;
 import com.alipay.application.share.request.collector.AcceptSupportResourceTypeRequest;
 import com.alipay.application.share.request.collector.LogRequest;
-import com.alipay.application.share.vo.*;
+import com.alipay.application.share.vo.ApiResponse;
+import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.collector.AgentCloudAccountVO;
 import com.alipay.application.share.vo.collector.AgentRegistryVO;
 import com.alipay.application.share.vo.collector.OnceTokenVO;
@@ -52,11 +54,11 @@ public interface AgentService {
     AgentRegistryPO checkPersistentToken(String platform, String registryValue, String token);
 
 
-    void runningFinishSignal(String cloudAccountId);
+    void runningFinishSignal(String cloudAccountId, Long taskId);
 
 
     ApiResponse<List<AgentCloudAccountVO>> queryCloudAccountList(String persistentToken, String registryValue,
-                                                                 String platform, List<String> sites);
+                                                                 String platform, List<String> sites, List<Long> taskIds);
 
     void exitAgent(String onceToken);
 
@@ -71,4 +73,6 @@ public interface AgentService {
 
 
     void initCloudAccountCollectStatus();
+
+    List<TaskResp> listCollectorTask(String persistentToken, String registryValue, String platform) throws Exception;
 }

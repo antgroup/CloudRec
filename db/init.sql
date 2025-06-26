@@ -868,3 +868,48 @@ CREATE TABLE IF NOT EXISTS `whited_rule_config` (
   PRIMARY KEY(`id`),
   UNIQUE KEY `uk_ruletype_rulename`(`rule_type`, `rule_name`)
 ) AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COMMENT = '白名单规则配置';
+
+CREATE TABLE `collector_task` (
+      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+      `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+      `gmt_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+      `type` varchar(100) DEFAULT NULL COMMENT '任务类型',
+      `param` text DEFAULT NULL COMMENT '任务参数',
+      `cloud_account_id` varchar(255) DEFAULT NULL COMMENT '云账号ID',
+      `platform` varchar(255) DEFAULT NULL COMMENT '云平台',
+      `user_id` varchar(255) DEFAULT NULL COMMENT 'user_id',
+      `status` varchar(100) DEFAULT NULL COMMENT '状态',
+      `registry_value` varchar(255) DEFAULT NULL COMMENT '采集器唯一id',
+      `lock_time` timestamp NULL DEFAULT NULL COMMENT '锁定时间',
+      PRIMARY KEY(`id`),
+      KEY `idx_platform_status`(`platform`, `status`) ,
+      KEY `idx_account_status`(`cloud_account_id`, `status`)
+) DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '采集器任务';
+
+ALTER TABLE `agent_registry_cloud_account`
+DROP COLUMN `start_time`;
+
+ALTER TABLE `agent_registry_cloud_account`
+DROP COLUMN `end_time`;
+
+CREATE TABLE `collector_record` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+        `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+        `gmt_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+        `platform` varchar(255) NOT NULL COMMENT '云平台',
+        `cloud_account_id` varchar(255) NOT NULL COMMENT '账号id',
+        `start_time` timestamp NOT NULL COMMENT '开始时间',
+        `end_time` timestamp NULL DEFAULT NULL COMMENT '结束时间',
+        `registry_value` varchar(255) DEFAULT NULL COMMENT '采集器注册的唯一key',
+        PRIMARY KEY(`id`),
+        KEY `idx_platform_account_time`(`platform`, `cloud_account_id`, `start_time`)
+) DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '采集记录';
+
+ALTER TABLE `collector_log`
+    ADD COLUMN `collector_record_id` bigint(20) unsigned DEFAULT NULL COMMENT '采集记录id';
+
+ALTER TABLE `collector_log`
+    ADD KEY `idx_record_id_desp`(`collector_record_id`, `description`, `cloud_account_id`) ;
+
+ALTER TABLE `cloud_resource_instance_v1`
+    ADD COLUMN `del_num` int(11) unsigned DEFAULT '0' COMMENT '删除次数';

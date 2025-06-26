@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alipay.dao.mapper.CollectorTaskMapper">
+  <resultMap id="BaseResultMap" type="com.alipay.dao.po.CollectorTaskPO">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
+    <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+    <result column="cloud_account_id" jdbcType="VARCHAR" property="cloudAccountId" />
+    <result column="platform" jdbcType="VARCHAR" property="platform" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="registry_value" jdbcType="VARCHAR" property="registryValue" />
+    <result column="lock_time" jdbcType="TIMESTAMP" property="lockTime" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.alipay.dao.po.CollectorTaskPO">
+    <result column="param" jdbcType="LONGVARCHAR" property="param" />
+  </resultMap>
+  <sql id="Base_Column_List">
+      id
+      , gmt_create, gmt_modified, type, cloud_account_id, platform, user_id, status, registry_value, lock_time
+  </sql>
+  <sql id="Blob_Column_List">
+    param
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from collector_task
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from collector_task
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.alipay.dao.po.CollectorTaskPO">
+    insert into collector_task
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="gmtCreate != null">
+        gmt_create,
+      </if>
+      <if test="gmtModified != null">
+        gmt_modified,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+      <if test="cloudAccountId != null">
+        cloud_account_id,
+      </if>
+      <if test="platform != null">
+        platform,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="param != null">
+        param,
+      </if>
+        <if test="status != null">
+        status,
+      </if>
+      <if test="registryValue != null">
+        registry_value,
+      </if>
+      <if test="lockTime != null">
+        lock_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="gmtCreate != null">
+        #{gmtCreate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gmtModified != null">
+        #{gmtModified,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="cloudAccountId != null">
+        #{cloudAccountId,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null">
+        #{platform,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="param != null">
+        #{param,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="registryValue != null">
+        #{registryValue,jdbcType=VARCHAR},
+      </if>
+      <if test="lockTime != null">
+        #{lockTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.alipay.dao.po.CollectorTaskPO">
+    update collector_task
+    <set>
+      <if test="gmtCreate != null">
+        gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gmtModified != null">
+        gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="cloudAccountId != null">
+        cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null">
+        platform = #{platform,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="param != null">
+        param = #{param,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="registryValue != null">
+        registry_value = #{registryValue,jdbcType=VARCHAR},
+      </if>
+      <if test="lockTime != null">
+        lock_time = #{lockTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateStatus">
+      update collector_task
+      set status = #{status,jdbcType=VARCHAR},lock_time = NOW()
+      where id IN
+      <foreach collection="idList" item="id" open="(" separator="," close=")">
+          #{id,jdbcType=BIGINT}
+      </foreach>
+  </update>
+
+  <select id="findList" resultMap="BaseResultMap">
+      SELECT
+      <include refid="Base_Column_List"/>
+      ,
+      <include refid="Blob_Column_List"/>
+      FROM collector_task
+      WHERE platform = #{platform,jdbcType=VARCHAR}
+      AND status
+      IN
+      <foreach collection="statusList" item="status" open="(" separator="," close=")">
+          #{status,jdbcType=VARCHAR}
+      </foreach>
+      ORDER BY id ASC
+      LIMIT #{limit,jdbcType=BIGINT}
+  </select>
+  <select id="findByIds" resultMap="ResultMapWithBLOBs">
+      select
+      <include refid="Base_Column_List"/>
+      ,
+      <include refid="Blob_Column_List"/>
+      from collector_task
+      where id IN
+      <foreach collection="idList" item="id" open="(" separator="," close=")">
+          #{id,jdbcType=BIGINT}
+      </foreach>
+  </select>
+  <select id="findListByCloudAccount" resultMap="BaseResultMap">
+      SELECT
+      <include refid="Base_Column_List"/>
+      ,
+      <include refid="Blob_Column_List"/>
+      FROM collector_task
+      WHERE
+      cloud_account_id = #{cloudAccountId}
+      AND type = #{taskType}
+      AND status
+      IN
+      <foreach collection="statusList" item="status" open="(" separator="," close=")">
+          #{status}
+      </foreach>
+      ORDER BY id ASC
+  </select>
+  <delete id="deleteByCloudAccountId">
+      delete
+      from collector_task
+      where cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR}
+  </delete>
+
+</mapper>

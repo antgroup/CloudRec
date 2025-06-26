@@ -16,26 +16,30 @@
 package bos
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	"github.com/baidubce/bce-sdk-go/services/bos"
 	"github.com/baidubce/bce-sdk-go/services/bos/api"
 	"github.com/cloudrec/baidu/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
 type Detail struct {
 	Bucket api.BucketSummaryType
 
-	GetBucketAclResult *api.GetBucketAclResult
+	BucketAcl *api.GetBucketAclResult
+
+	BucketLogging *api.GetBucketLoggingResult
+
+	BucketEncryption *string
 }
 
 func GetResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:      collector.BOS,
-		ResourceTypeName:  "BOS",
+		ResourceTypeName:  collector.BOS,
 		ResourceGroupType: constant.STORE,
 		Desc:              `https://cloud.baidu.com/product/bos.html`,
 		Regions: []string{
@@ -45,19 +49,20 @@ func GetResource() schema.Resource {
 		},
 		ResourceDetailFunc: func(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 			client := service.(*collector.Services).BOSClient
-
 			if resp, err := client.ListBuckets(); err != nil {
 				log.CtxLogger(ctx).Warn("ListBuckets error", zap.Error(err))
+				return err
 			} else {
 				for _, b := range resp.Buckets {
 					detail := Detail{
-						Bucket:             b,
-						GetBucketAclResult: getBucketAcl(ctx, client, b.Name),
+						Bucket:           b,
+						BucketAcl:        getBucketAcl(ctx, client, b.Name),
+						BucketLogging:    getBucketLogging(ctx, client, b.Name),
+						BucketEncryption: getBucketEncryption(ctx, client, b.Name),
 					}
 					res <- detail
 				}
 			}
-
 			return nil
 		},
 		RowField: schema.RowField{
@@ -68,6 +73,7 @@ func GetResource() schema.Resource {
 	}
 }
 
+// 获取存储桶ACL配置
 func getBucketAcl(ctx context.Context, BOSClient *bos.Client, bucket string) *api.GetBucketAclResult {
 	acl, err := BOSClient.GetBucketAcl(bucket)
 	if err != nil {
@@ -75,5 +81,24 @@ func getBucketAcl(ctx context.Context, BOSClient *bos.Client, bucket string) *ap
 		return nil
 	}
 	return acl
+}
 
+// 获取存储桶日志配置
+func getBucketLogging(ctx context.Context, BOSClient *bos.Client, bucket string) *api.GetBucketLoggingResult {
+	logging, err := BOSClient.GetBucketLogging(bucket)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("GetBucketLogging error", zap.Error(err))
+		return nil
+	}
+	return logging
+}
+
+// 获取存储桶加密配置
+func getBucketEncryption(ctx context.Context, BOSClient *bos.Client, bucket string) *string {
+	encryption, err := BOSClient.GetBucketEncryption(bucket)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("GetBucketEncryption error", zap.Error(err))
+		return nil
+	}
+	return &encryption
 }

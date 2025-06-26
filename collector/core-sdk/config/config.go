@@ -16,8 +16,8 @@
 package config
 
 import (
-	"fmt"
 	"github.com/core-sdk/log"
+	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -80,6 +80,19 @@ func LoadConfig() (error, Options) {
 	rootCmd.Flags().StringVar(&serverUrl, "serverUrl", "", "serverUrl from console")
 	if err := rootCmd.Execute(); err != nil {
 		log.GetWLogger().Error(fmt.Sprintf("read arguments from the command line err %s", err.Error()))
+	}
+
+	// ==================  AttentionErrorTexts deduplication ==================
+	if len(opt.AttentionErrorTexts) > 0 {
+		seen := make(map[string]struct{})
+		result := make([]string, 0, len(opt.AttentionErrorTexts))
+		for _, text := range opt.AttentionErrorTexts {
+			if _, exists := seen[text]; !exists {
+				seen[text] = struct{}{}
+				result = append(result, text)
+			}
+		}
+		opt.AttentionErrorTexts = result
 	}
 
 	return nil, opt

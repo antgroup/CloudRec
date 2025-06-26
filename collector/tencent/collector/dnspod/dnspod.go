@@ -64,7 +64,7 @@ func ListDNSPodResource(ctx context.Context, service schema.ServiceInterface, re
 		response, err := cli.DescribeDomainFilterList(request)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeDomainFilterList:ERR", zap.Error(err))
-			break
+			return err
 		}
 		if response == nil || response.Response == nil || response.Response.DomainList == nil {
 			break

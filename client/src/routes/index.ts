@@ -11,9 +11,30 @@ const routes = [
   },
   {
     title: 'layout.routes.title.cloudAccount',
-    path: '/cloudAccount/accountList',
+    path: '/cloudAccount',
     icon: 'CloudServerOutlined',
-    component: '@/pages/CloudAccount',
+    routes: [
+      {
+        path: '/cloudAccount',
+        redirect: '/cloudAccount/accountList',
+      },
+      {
+        path: '/cloudAccount/accountList',
+        component: '@/pages/CloudAccount',
+      },
+      {
+        title: 'cloudAccount.title.collection.record',
+        path: '/cloudAccount/collectionRecord',
+        component: '@/pages/CloudAccount/CollectionRecord',
+        hideInMenu: true,
+      },
+      {
+        title: 'cloudAccount.title.collection.record.detail',
+        path: '/cloudAccount/collectionRecord/:id',
+        component: '@/pages/CloudAccount/CollectionRecord/Detail',
+        hideInMenu: true,
+      },
+    ],
   },
   {
     title: 'layout.routes.title.assetManagement',

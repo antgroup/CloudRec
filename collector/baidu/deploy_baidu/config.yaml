@@ -15,7 +15,7 @@
 
 AgentName: "Baidu Cloud"
 ServerUrl: "http://localhost:8080"
-Cron: "@every 5m"
+Cron: "@every 60m"
 RunOnlyOnce: false
-Sites: [ ]
 AccessToken: "change your AccessToken"
+AttentionErrorTexts: [ "InternalError","AccessDenied","IamSignatureInvalid","UnknownError","SDKError"]

@@ -27,6 +27,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.alipay.application.service.common.utils.CacheUtil;
 import com.alipay.application.service.common.utils.DbCacheUtil;
 import com.alipay.application.service.rule.domain.repo.RuleGroupRepository;
+import com.alipay.application.service.rule.enums.RuleType;
 import com.alipay.application.service.rule.exposed.GroupJoinService;
 import com.alipay.application.share.request.base.IdRequest;
 import com.alipay.application.share.request.rule.ChangeStatusRequest;
@@ -48,15 +49,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -289,6 +288,14 @@ public class RuleServiceImpl implements RuleService {
             ruleTypeVO.setChildList(childVOList);
             list.add(ruleTypeVO);
         }
+
+        Locale locale = LocaleContextHolder.getLocale();
+        if (!locale.getLanguage().equals(Locale.CHINA.getLanguage())) {
+            for (RuleTypeVO ruleTypeVO : list){
+                ruleTypeVO.setTypeName(RuleType.getByRuleTypeEn(ruleTypeVO.getTypeName()));
+            }
+        }
+
         return new ApiResponse<>(list);
     }
 
@@ -298,7 +305,8 @@ public class RuleServiceImpl implements RuleService {
         if (ruleTypePOList == null) {
             return List.of();
         }
-        return ruleTypePOList.stream().map(e -> {
+
+        List<String> list = ruleTypePOList.stream().map(e -> {
             String result;
             if (e.getParentId() != null) {
                 RuleTypePO ruleTypePO = ruleTypeMapper.selectByPrimaryKey(e.getParentId());
@@ -309,6 +317,13 @@ public class RuleServiceImpl implements RuleService {
 
             return result;
         }).toList();
+
+        Locale locale = LocaleContextHolder.getLocale();
+        if (!locale.getLanguage().equals(Locale.CHINA.getLanguage())) {
+            list = list.stream().map(RuleType::getByRuleTypeEn).toList();
+        }
+
+        return list;
     }
 
     @Override

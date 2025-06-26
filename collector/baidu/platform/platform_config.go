@@ -16,16 +16,22 @@
 package platform
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/cloudrec/baidu/collector"
 	"github.com/cloudrec/baidu/collector/bcc"
 	"github.com/cloudrec/baidu/collector/blb"
+	"github.com/cloudrec/baidu/collector/bls"
 	"github.com/cloudrec/baidu/collector/bos"
+	"github.com/cloudrec/baidu/collector/cce"
+	"github.com/cloudrec/baidu/collector/ccr"
+	"github.com/cloudrec/baidu/collector/cfw"
 	"github.com/cloudrec/baidu/collector/eip"
+	"github.com/cloudrec/baidu/collector/iam"
 	"github.com/cloudrec/baidu/collector/rds"
+	"github.com/cloudrec/baidu/collector/redis"
 	"github.com/cloudrec/baidu/collector/vpc"
 	"github.com/cloudrec/baidu/collector/vpc/security_group"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {
@@ -35,10 +41,17 @@ func GetPlatformConfig() *schema.Platform {
 			security_group.GetResource(),
 			vpc.GetResource(),
 			blb.GetResource(),
+			blb.GetAppBLBResource(),
 			bcc.GetResource(),
 			bos.GetResource(),
 			rds.GetResource(),
 			eip.GetResource(),
+			iam.GetResource(),
+			cce.GetResource(),
+			redis.GetResource(),
+			ccr.GetResource(),
+			bls.GetResource(),
+			cfw.GetResource(),
 		},
 
 		Service:        &collector.Services{},

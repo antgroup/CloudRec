@@ -19,6 +19,8 @@ package com.alipay.dao.mapper;
 import com.alipay.dao.po.RuleScanRiskCountStatisticsPO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
+
 public interface RuleScanRiskCountStatisticsMapper {
     int deleteByPrimaryKey(Long id);
 
@@ -41,4 +43,6 @@ public interface RuleScanRiskCountStatisticsMapper {
      * @return 风险统计总数
      */
     long findSumCount(Long tenantId);
+
+    int deleteByDate(Date yesterdayEndTime);
 }

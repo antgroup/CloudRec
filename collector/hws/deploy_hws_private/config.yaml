@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-AgentName: "Huawei Private Cloud"
+AgentName: "Huawei Private Cloud Collector"
 ServerUrl: "http://localhost:8080"
 Cron: "@every 60m"
 RunOnlyOnce: false
 AccessToken: "change your AccessToken"
-AttentionErrorTexts: [ "Forbidden" ]
+AttentionErrorTexts: [ "UnknownError","SDKError","CollectorError"]

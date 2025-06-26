@@ -16,13 +16,13 @@
 package oss
 
 import (
-	"context"
-	"encoding/json"
 	"github.com/alicloud-sqa/collector"
-	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"encoding/json"
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"go.uber.org/zap"
 	"strings"
 )

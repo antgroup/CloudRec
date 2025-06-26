@@ -16,6 +16,8 @@
 package platform
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/cloudrec/aws/collector"
 	"github.com/cloudrec/aws/collector/cloudfront"
 	"github.com/cloudrec/aws/collector/ec2"
@@ -29,8 +31,6 @@ import (
 	"github.com/cloudrec/aws/collector/route53"
 	"github.com/cloudrec/aws/collector/s3"
 	"github.com/cloudrec/aws/collector/wafv2"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {

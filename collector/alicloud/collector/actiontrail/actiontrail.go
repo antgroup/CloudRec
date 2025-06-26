@@ -16,12 +16,12 @@
 package actiontrail
 
 import (
-	"context"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/actiontrail"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/actiontrail"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 )
 
@@ -32,14 +32,44 @@ func GetActionTrailResource() schema.Resource {
 		ResourceGroupType:  constant.CONFIG,
 		Desc:               `https://api.aliyun.com/product/Actiontrail`,
 		ResourceDetailFunc: GetInstanceDetail,
-		RowField:           schema.RowField{},
-		Dimension:          schema.Global,
+		RowField: schema.RowField{
+			ResourceId:   "$.Trail.TrailArn",
+			ResourceName: "$.Trail.Name",
+		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-nanjing",
+			"cn-shenzhen",
+			"cn-heyuan",
+			"cn-guangzhou",
+			"ap-northeast-2",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-7",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"na-south-1",
+			"eu-west-1",
+			"me-east-1",
+			"cn-shanghai-finance-1",
+		},
+		Dimension: schema.Regional,
 	}
 }
 
 type Detail struct {
-	OpenActionTrail bool
-	TrailList       []actiontrail.Trail
+	Trail actiontrail.Trail
 }
 
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -55,17 +85,14 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 		log.CtxLogger(ctx).Warn("DescribeTrails error", zap.Error(err))
 		return err
 	}
-	if response.TrailList == nil {
-		res <- Detail{
-			OpenActionTrail: false,
-			TrailList:       []actiontrail.Trail{},
+	if response.TrailList != nil {
+		for _, trail := range response.TrailList {
+			res <- Detail{
+				Trail: trail,
+			}
 		}
 	} else {
-		// Getting trails means ActionTrail Service is enabled
-		res <- Detail{
-			OpenActionTrail: true,
-			TrailList:       response.TrailList,
-		}
+		res <- Detail{}
 	}
 
 	return nil

@@ -33,4 +33,6 @@ public class RunningFinishSignalRequest {
 
     @NotEmpty(message = "account account id cannot be empty")
     private String cloudAccountId;
+
+    private Long taskId;
 }

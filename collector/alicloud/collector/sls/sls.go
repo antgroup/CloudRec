@@ -40,6 +40,39 @@ func GetSLSResource() schema.Resource {
 			ResourceId:   "$.LogProject.projectName",
 			ResourceName: "$.LogProject.projectName",
 		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-nanjing",
+			"cn-fuzhou",
+			"cn-shenzhen",
+			"cn-heyuan",
+			"cn-guangzhou",
+			"ap-southeast-6",
+			"ap-northeast-2",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-7",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
+		},
 		Dimension: schema.Regional,
 	}
 }
@@ -51,8 +84,11 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 	listProjectRequest.Offset = tea.Int32(0)
 	count := 0
 
+	runtime := &util.RuntimeOptions{
+		ConnectTimeout: tea.Int(10000),
+		ReadTimeout:    tea.Int(10000),
+	}
 	for {
-		runtime := &util.RuntimeOptions{}
 		headers := make(map[string]*string)
 		projects, err := cli.ListProjectWithOptions(listProjectRequest, headers, runtime)
 		if err != nil {

@@ -55,6 +55,12 @@ type Services struct {
 	DNSPod     *dnspod.Client
 }
 
+// Clone creates a new instance of Services
+func (s *Services) Clone() schema.ServiceInterface {
+	// Create a new instance with copied basic information
+	return &Services{}
+}
+
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {
 	param := cloudAccountParam.CommonCloudAccountParam
 	s.Region = param.Region

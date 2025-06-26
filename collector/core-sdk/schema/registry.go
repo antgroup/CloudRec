@@ -16,11 +16,11 @@
 package schema
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
 	"io"
 	"io/ioutil"
 	"time"

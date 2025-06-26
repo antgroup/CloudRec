@@ -5,6 +5,7 @@ go 1.23.0
 replace github.com/core-sdk => ../core-sdk
 
 require (
+	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	github.com/alibabacloud-go/adb-20190315/v4 v4.1.4
 	github.com/alibabacloud-go/alb-20200616/v2 v2.2.0
 	github.com/alibabacloud-go/alidns-20150109/v4 v4.5.7
@@ -48,7 +49,6 @@ require (
 	github.com/alibabacloud-go/yundun-bastionhost-20191209/v2 v2.3.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.48
 	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1
-	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.23.0
 )

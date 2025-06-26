@@ -41,6 +41,8 @@ public class CollectorLogPO {
 
     private String time;
 
+    private Long collectorRecordId;
+
     private String message;
 
     public Long getId() {
@@ -137,5 +139,13 @@ public class CollectorLogPO {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Long getCollectorRecordId() {
+        return collectorRecordId;
+    }
+
+    public void setCollectorRecordId(Long collectorRecordId) {
+        this.collectorRecordId = collectorRecordId;
     }
 }

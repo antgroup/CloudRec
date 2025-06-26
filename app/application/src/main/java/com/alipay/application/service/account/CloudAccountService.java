@@ -17,6 +17,7 @@
 package com.alipay.application.service.account;
 
 import com.alipay.application.share.request.account.AcceptAccountRequest;
+import com.alipay.application.share.request.account.CreateCollectTaskRequest;
 import com.alipay.application.share.request.account.QueryCloudAccountListRequest;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
@@ -58,4 +59,7 @@ public interface CloudAccountService {
 
 
     ApiResponse<List<Map<String, Object>>> queryCloudAccountBaseInfoListV2(QueryCloudAccountListRequest request);
+
+
+    void createCollectTask(CreateCollectTaskRequest request);
 }

@@ -16,13 +16,13 @@
 package acr
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	cr20181201 "github.com/alibabacloud-go/cr-20181201/v2/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -36,6 +36,41 @@ func GetCRResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.Instance.InstanceId",
 			ResourceName: "$.Instance.InstanceName",
+		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-nanjing",
+			"cn-fuzhou",
+			"cn-shenzhen",
+			"cn-heyuan",
+			"cn-guangzhou",
+			"cn-wuhan-lr",
+			"ap-southeast-6",
+			"ap-northeast-2",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-7",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-zhengzhou-jva",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
 		},
 		Dimension: schema.Regional,
 	}
@@ -61,7 +96,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 			res <- Detail{
 				Instance:                 resp.Body.Instances[i],
 				InstanceInternetEndpoint: getInstanceEndpoint(ctx, cli, resp.Body.Instances[i].InstanceId),
-				Repository:               getRepository(ctx, cli, resp.Body.Instances[i].InstanceId),
+				Repositories:             listRepository(ctx, cli, resp.Body.Instances[i].InstanceId),
 			}
 		}
 
@@ -78,7 +113,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 type Detail struct {
 	Instance                 *cr20181201.ListInstanceResponseBodyInstances
 	InstanceInternetEndpoint *cr20181201.GetInstanceEndpointResponseBody
-	Repository               *cr20181201.GetRepositoryResponseBody
+	Repositories             []*cr20181201.ListRepositoryResponseBodyRepositories
 }
 
 func getInstanceEndpoint(ctx context.Context, cli *cr20181201.Client, instanceId *string) (res *cr20181201.GetInstanceEndpointResponseBody) {
@@ -96,16 +131,16 @@ func getInstanceEndpoint(ctx context.Context, cli *cr20181201.Client, instanceId
 	return resp.Body
 }
 
-// https://api.aliyun.com/api/cr/2018-12-01/GetRepository?tab=DEMO&lang=GO
-func getRepository(ctx context.Context, cli *cr20181201.Client, instanceId *string) (res *cr20181201.GetRepositoryResponseBody) {
-	request := &cr20181201.GetRepositoryRequest{
+// https://api.aliyun.com/api/cr/2018-12-01/ListRepository?tab=DEMO&params={%22InstanceId%22:%22cri-axb8uswbffa07uma%22}&lang=GO
+func listRepository(ctx context.Context, cli *cr20181201.Client, instanceId *string) (res []*cr20181201.ListRepositoryResponseBodyRepositories) {
+	request := &cr20181201.ListRepositoryRequest{
 		InstanceId: instanceId,
 	}
-	resp, err := cli.GetRepository(request)
+	resp, err := cli.ListRepository(request)
 
 	if err != nil {
-		log.CtxLogger(ctx).Error("getRepository error", zap.Error(err))
+		log.CtxLogger(ctx).Error("listRepository error", zap.Error(err))
 		return nil
 	}
-	return resp.Body
+	return resp.Body.Repositories
 }

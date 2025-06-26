@@ -27,12 +27,18 @@ package com.alipay.application.service.resource.job;
 public interface ClearJob {
 
     /**
-     * 清理废弃数据
+     * 系统清理废弃数据
      */
     void clearObsoleteData();
 
-    void clearExpiredDataByCloudAccount(String cloudAccountId, String platform, String resourceType);
+    /**
+     * 云账号采集完成后，正式提交删除资源
+     * @param cloudAccountId 云账号ID
+     */
+    void commitDeleteResourceByCloudAccount(String cloudAccountId);
 
+    /**
+     * 缓存清理
+     */
     void cacheClearHandler();
-
 }

@@ -16,11 +16,11 @@
 package schema
 
 import (
-	"errors"
-	"fmt"
 	"github.com/core-sdk/config"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/utils"
+	"errors"
+	"fmt"
 )
 
 type Executor struct {

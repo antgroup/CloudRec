@@ -21,9 +21,11 @@ import com.alipay.api.utils.ZipUtil;
 import com.alipay.application.service.rule.RuleService;
 import com.alipay.application.service.rule.exposed.InitRuleService;
 import com.alipay.application.service.rule.job.ScanService;
+import com.alipay.application.share.request.base.IdListRequest;
 import com.alipay.application.share.request.base.IdRequest;
 import com.alipay.application.share.request.rule.ChangeStatusRequest;
 import com.alipay.application.share.request.rule.ListRuleRequest;
+import com.alipay.application.share.request.rule.LoadRuleFromGithubRequest;
 import com.alipay.application.share.request.rule.SaveRuleRequest;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
@@ -36,15 +38,20 @@ import com.alipay.common.utils.PreventingSQLJoint;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import org.apache.commons.io.FileUtils;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /*
@@ -177,13 +184,34 @@ public class RuleController {
      *
      * @param response
      */
-    @GetMapping("/download")
-    public void downloadFiles(HttpServletResponse response) {
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    @PostMapping("/download")
+    public void downloadFiles(HttpServletResponse response, @RequestBody IdListRequest Request) {
+        String tempPath = "";
         if (lock.tryLock()) {
             try {
                 log.info("Start to download files");
-                initRuleService.writeRule();
+                tempPath = initRuleService.writeRule(Request.getIdList());
+                log.info("Rules directory: {}", tempPath);
+                ZipUtil.downloadFiles(response, tempPath, "rules");
                 log.info("Write rule completed");
+                
+                // Schedule directory deletion after 2 seconds
+                final String finalTempPath = tempPath;
+                scheduler.schedule(() -> {
+                    try {
+                        if (Strings.isNotBlank(finalTempPath)) {
+                            File tempDir = new File(finalTempPath);
+                            if (tempDir.exists()) {
+                                FileUtils.deleteDirectory(tempDir);
+                                log.info("Delayed delete temp directory: {}", finalTempPath);
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("Delayed delete temp directory error", e);
+                    }
+                }, 2, TimeUnit.SECONDS);
             } finally {
                 lock.unlock();
             }
@@ -191,10 +219,6 @@ public class RuleController {
             log.info("Resource is locked, operation aborted");
             throw new BizException("Resource is locked, operation aborted");
         }
-
-        String rulesDirectory = getRulesDirectory();
-        log.info("Rules directory: {}", rulesDirectory);
-        ZipUtil.downloadFiles(response, rulesDirectory, "rules");
     }
 
 
@@ -216,5 +240,12 @@ public class RuleController {
             String projectRoot = System.getProperty("user.dir");
             return projectRoot + File.separator + "rules";
         }
+    }
+
+    // initRuleService
+    @PostMapping("/loadRuleFromGithub")
+    public ApiResponse<String> loadRuleFromGithub(@RequestBody LoadRuleFromGithubRequest request) {
+        initRuleService.loadRuleFromGithub(request.getCoverage());
+        return ApiResponse.SUCCESS;
     }
 }

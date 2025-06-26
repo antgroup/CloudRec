@@ -16,8 +16,11 @@
 package platfrom
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/cloudrec/gcp/collector"
 	"github.com/cloudrec/gcp/collector/accesscontextmanager"
+	"github.com/cloudrec/gcp/collector/admin"
 	"github.com/cloudrec/gcp/collector/cloudresourcemanager"
 	"github.com/cloudrec/gcp/collector/cloudsql"
 	"github.com/cloudrec/gcp/collector/cloudstorage"
@@ -26,8 +29,6 @@ import (
 	"github.com/cloudrec/gcp/collector/iam"
 	"github.com/cloudrec/gcp/collector/k8sengine"
 	"github.com/cloudrec/gcp/collector/vpc"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {
@@ -59,6 +60,7 @@ func GetPlatformConfig() *schema.Platform {
 			accesscontextmanager.GetGcpUserAccessBindingResource(),
 			cloudresourcemanager.GetOrganizationResource(),
 			cloudresourcemanager.GetProjectResource(),
+			admin.GetGroupResource(),
 			cloudsql.GetInstanceResource(),
 		},
 

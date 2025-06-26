@@ -16,9 +16,9 @@
 package main
 
 import (
-	"github.com/cloudrec/tencent/platform"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"github.com/cloudrec/tencent/platform"
 )
 
 func main() {

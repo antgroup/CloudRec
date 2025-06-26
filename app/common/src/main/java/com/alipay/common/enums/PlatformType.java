@@ -25,6 +25,7 @@ package com.alipay.common.enums;
  */
 public enum PlatformType {
 
+
     UNKNOWN(Enum.UNKNOWN, "未知", "UNKNOWN"),
     HUAWEI_CLOUD(Enum.HUAWEI_CLOUD, "华为云", "Huawei Cloud"),
 

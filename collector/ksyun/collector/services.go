@@ -17,9 +17,10 @@ package collector
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"strings"
 
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
@@ -88,6 +89,12 @@ type Services struct {
 	WAF        *waf.Client
 	KNAD       *knad.Client
 	KEAD       *kead.Client
+}
+
+// Clone creates a new instance of Services
+func (s *Services) Clone() schema.ServiceInterface {
+	// Create a new instance with copied basic information
+	return &Services{}
 }
 
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {

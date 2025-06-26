@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alipay.application.share.request.resource.DataPushRequest;
 import com.alipay.application.share.request.resource.ResourceInstance;
+import com.alipay.application.share.vo.resource.ResourceDetailConfigVO;
 import com.alipay.common.enums.Status;
 import com.alipay.dao.mapper.CloudAccountMapper;
 import com.alipay.dao.mapper.CloudResourceInstanceMapper;
@@ -89,6 +90,9 @@ public class SaveResourceServiceImpl implements SaveResourceService {
                     cloudResourceInstancePO.setTenantId(cloudAccountPO.getTenantId());
                     cloudResourceInstancePO.setGmtModified(new Date());
                     cloudResourceInstancePO.setCustomFieldValue(parseCustomField(cloudResourceInstancePO));
+                    // Clean up pre-delete tags
+                    cloudResourceInstancePO.setDeletedAt(null);
+                    cloudResourceInstancePO.setDelNum(0);
                     cloudResourceInstanceMapper.updateByPrimaryKeySelective(cloudResourceInstancePO);
                 }
             }
@@ -132,12 +136,28 @@ public class SaveResourceServiceImpl implements SaveResourceService {
         List<String> result = new ArrayList<>();
         for (ResourceDetailConfigPO po : list) {
             try {
-                result.add(JsonPath.read(document, po.getPath()));
+                result.add(JSON.toJSONString(JsonPath.read(document, po.getPath())));
             } catch (Exception e) {
-                log.info("jsonpath error:{}", po.getPath());
+                log.error("jsonpath error:{}", po.getPath(), e);
             }
         }
 
         return result;
+    }
+
+    private void getPath(Object document, List<ResourceDetailConfigVO> networkList,
+                         List<ResourceDetailConfigPO> networkConfigList) {
+        for (ResourceDetailConfigPO po : networkConfigList) {
+            ResourceDetailConfigVO vo = ResourceDetailConfigVO.build(po);
+            try {
+                Object read = JsonPath.read(document, po.getPath());
+                String value = JSON.toJSONString(read);
+                vo.setValue(value);
+            } catch (Exception e) {
+                LOGGER.info("jsonpath error:{}", po.getPath());
+                vo.setValue(e.getMessage());
+            }
+            networkList.add(vo);
+        }
     }
 }

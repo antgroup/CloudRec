@@ -16,6 +16,8 @@
         <result column="version" jdbcType="VARCHAR" property="version"/>
         <result column="region" jdbcType="VARCHAR" property="region"/>
         <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="del_num" jdbcType="INTEGER" property="delNum"/>
+
     </resultMap>
     <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.alipay.dao.po.CloudResourceInstancePO">
         <result column="instance" jdbcType="LONGVARCHAR" property="instance"/>
@@ -24,7 +26,7 @@
     <sql id="Base_Column_List">
         id
         , gmt_create, gmt_modified,deleted_at, platform, cloud_account_id,alias, resource_type,
-    address, resource_id, resource_name, version,region,tenant_id
+    address, resource_id, resource_name, version,region,tenant_id,del_num
     </sql>
     <sql id="Blob_Column_List">
         instance
@@ -88,6 +90,9 @@
             <if test="tenantId != null">
                 tenant_id,
             </if>
+            <if test="delNum != null">
+                del_num,
+            </if>
             <if test="instance != null">
                 instance,
             </if>
@@ -138,6 +143,9 @@
             <if test="tenantId != null">
                 #{tenantId,jdbcType=BIGINT},
             </if>
+            <if test="delNum != null">
+                #{delNum,jdbcType=INTEGER},
+            </if>
             <if test="instance != null">
                 #{instance,jdbcType=LONGVARCHAR},
             </if>
@@ -185,6 +193,9 @@
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="delNum != null">
+                del_num = #{delNum,jdbcType=INTEGER},
             </if>
             <if test="instance != null">
                 instance = #{instance,jdbcType=LONGVARCHAR},
@@ -353,27 +364,11 @@
           AND resource_type = #{resourceType}
     </select>
 
-    <select id="findExpiredVersionDataList" resultType="java.lang.Long">
-        SELECT id FROM cloud_resource_instance_v1
-        WHERE platform = #{platform}
-        AND cloud_account_id = #{cloudAccountId}
-        AND resource_type = #{resourceType}
-        AND version IN
-        <foreach collection="expiredVersionList" item="version" open="(" separator="," close=")">
-            #{version}
-        </foreach>
-    </select>
-    <select id="findVersionList" resultType="java.lang.String">
-        SELECT DISTINCT version
-        FROM cloud_resource_instance_v1
-        WHERE platform = #{platform}
-          AND cloud_account_id = #{cloudAccountId}
-          AND resource_type = #{resourceType}
-    </select>
     <select id="getResourceIdList" resultType="java.lang.String">
         SELECT DISTINCT resource_id
         FROM cloud_resource_instance_v1
     </select>
+
 
     <sql id="findListWhere">
         <where>
@@ -442,12 +437,30 @@
             #{id}
         </foreach>
     </update>
-
+    <update id="preDeleteByCloudAccountId">
+        UPDATE cloud_resource_instance_v1
+        SET deleted_at = NOW(),
+            del_num    = del_num + 1
+        WHERE cloud_account_id = #{cloudAccountId}
+    </update>
+    <delete id="commitDeleteByCloudAccountId">
+        DELETE
+        FROM cloud_resource_instance_v1
+        WHERE cloud_account_id = #{cloudAccountId}
+          AND deleted_at is not null
+          and del_num >= #{delNum}
+    </delete>
+    <select id="findPreDeletedDataIdList" resultType="java.lang.Long">
+        SELECT id
+        FROM cloud_resource_instance_v1
+        WHERE cloud_account_id = #{cloudAccountId}
+          AND deleted_at is not null
+          AND del_num >= #{delNum}
+    </select>
     <delete id="deleteByModified">
         DELETE
         FROM cloud_resource_instance_v1
         WHERE cloud_account_id = #{cloudAccountId}
-          AND resource_type = #{resourceType}
           AND gmt_modified &lt; DATE_SUB(NOW(), INTERVAL #{day} DAY) LIMIT 1000
     </delete>
     <delete id="deleteDiscardedData">
@@ -463,5 +476,6 @@
         WHERE platform = #{platform}
           AND resource_type = #{resourceType}
     </delete>
+
 
 </mapper>

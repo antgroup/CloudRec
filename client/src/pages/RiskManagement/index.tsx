@@ -247,15 +247,32 @@ const RiskManagement: React.FC = () => {
     setExportLoading(true);
     exportRiskList({ ...postBody }, { responseType: 'blob' })
       .then((r) => {
-        BlobExportXLSXFn(
-          r,
-          `CloudRec ${intl.formatMessage({
-            id: 'risk.module.text.risk.data',
-          })}`,
-        );
-        messageApi.success(
-          intl.formatMessage({ id: 'common.message.text.export.success' }),
-        );
+        if (r.type === 'application/json') {
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const errorData = JSON.parse(reader.result as string);
+              messageApi.error(errorData.msg || intl.formatMessage({ id: 'common.message.text.export.failed' }));
+            } catch (e) {
+              messageApi.error(intl.formatMessage({ id: 'common.message.text.export.failed' }));
+            }
+          };
+          reader.readAsText(r);
+        } else {
+          BlobExportXLSXFn(
+            r,
+            `CloudRec ${intl.formatMessage({
+              id: 'risk.module.text.risk.data',
+            })}`,
+          );
+          messageApi.success(
+            intl.formatMessage({ id: 'common.message.text.export.success' }),
+          );
+        }
+      })
+      .catch((error) => {
+        messageApi.error(intl.formatMessage({ id: 'common.message.text.export.failed' }));
+        console.error('Export failed:', error);
       })
       .finally(() => setExportLoading(false));
   };

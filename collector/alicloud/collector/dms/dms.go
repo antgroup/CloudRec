@@ -16,13 +16,13 @@
 package dms
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	dms "github.com/alibabacloud-go/dms-enterprise-20181101/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -33,7 +33,27 @@ func GetDMSResource() schema.Resource {
 		ResourceGroupType:  constant.DATABASE,
 		Desc:               "https://api.aliyun.com/product/dms-enterprise",
 		ResourceDetailFunc: GetInstanceDetail,
-		Dimension:          schema.Global,
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+		},
+		Dimension: schema.Regional,
 	}
 }
 

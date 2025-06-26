@@ -16,6 +16,8 @@
 package platform
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/cloudrec/hws/collector"
 	"github.com/cloudrec/hws/collector/cbr"
 	"github.com/cloudrec/hws/collector/cce"
@@ -32,8 +34,6 @@ import (
 	"github.com/cloudrec/hws/collector/rds"
 	"github.com/cloudrec/hws/collector/sfs"
 	"github.com/cloudrec/hws/collector/vpc"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {

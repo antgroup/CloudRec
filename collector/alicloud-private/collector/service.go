@@ -16,6 +16,8 @@
 package collector
 
 import (
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"encoding/json"
 	"fmt"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
@@ -27,8 +29,6 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/slb"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"time"
 )
 
@@ -106,6 +106,11 @@ type Services struct {
 	BaseClient     *sdk.Client
 	OssClient      *oss.Client
 	ResourceGroups []ResourceGroup
+}
+
+func (s *Services) Clone() schema.ServiceInterface {
+	// Create a new instance with copied basic information
+	return &Services{}
 }
 
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {

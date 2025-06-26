@@ -16,13 +16,13 @@
 package ens
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -38,6 +38,7 @@ func GetEipAddressesResource() schema.Resource {
 			ResourceName: "$.EipAddress.Name",
 			Address:      "$.EipAddress.IpAddress",
 		},
+		Regions:   []string{"cn-hangzhou"},
 		Dimension: schema.Global,
 	}
 }

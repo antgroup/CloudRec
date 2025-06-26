@@ -16,11 +16,11 @@
 package cam
 
 import (
-	"context"
-	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/cloudrec/tencent/collector"
 	cam "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cam/v20190116"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"go.uber.org/zap"

@@ -445,12 +445,12 @@ export async function queryExportRuleList(
   options?: { [key: string]: any },
 ) {
   return request<API.Result>(`${BASE_URL}/api/rule/download`, {
-    method: 'GET',
+    method: 'POST',
     timeout: 1000 * 60 * 3, // Set timeout time separately
     headers: {
       'Content-Type': 'application/json',
     },
-    params: {
+    data: {
       ...params,
     },
     ...(options || {}),
@@ -473,4 +473,19 @@ export async function queryWhitedContentByRiskId(
       ...(options || {}),
     },
   );
+}
+
+/** 从Github同步规则: POST /api/rule/loadRuleFromGithub */
+export async function loadRuleFromGithub(
+  body?: { coverage?: boolean },
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/rule/loadRuleFromGithub`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
 }

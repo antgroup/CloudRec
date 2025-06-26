@@ -16,12 +16,12 @@
 package eip
 
 import (
-	"context"
-	"github.com/baidubce/bce-sdk-go/services/eip"
-	"github.com/cloudrec/baidu/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/baidubce/bce-sdk-go/services/eip"
+	"github.com/cloudrec/baidu/collector"
 	"go.uber.org/zap"
 )
 
@@ -32,7 +32,7 @@ type Detail struct {
 func GetResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:      collector.EIP,
-		ResourceTypeName:  "EIP",
+		ResourceTypeName:  collector.EIP,
 		ResourceGroupType: constant.NET,
 		Desc:              `https://cloud.baidu.com/product/eip.html`,
 		Regions: []string{
@@ -68,9 +68,9 @@ func GetResource() schema.Resource {
 			return nil
 		},
 		RowField: schema.RowField{
-			ResourceId:   "$.Instance.instanceId",
-			ResourceName: "$.Instance.instanceName",
-			Address:      "$.Instance.Eip",
+			ResourceId:   "$.Eip.eipId",
+			ResourceName: "$.Eip.name",
+			Address:      "$.Eip.eip",
 		},
 		Dimension: schema.Regional,
 	}

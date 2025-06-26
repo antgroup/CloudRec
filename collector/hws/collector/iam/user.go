@@ -18,10 +18,10 @@ package iam
 import (
 	"context"
 
-	"github.com/cloudrec/hws/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"github.com/cloudrec/hws/collector"
 	iam "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/model"
 	"go.uber.org/zap"

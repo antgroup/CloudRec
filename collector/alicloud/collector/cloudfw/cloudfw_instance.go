@@ -16,13 +16,13 @@
 package cloudfw
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	cloudfw20171207 "github.com/alibabacloud-go/cloudfw-20171207/v7/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 	"strconv"
 	"time"
@@ -32,7 +32,7 @@ func GetCloudFWResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:                 collector.Cloudfw,
 		ResourceTypeName:             "Cloud Firewall Instance",
-		ResourceGroupType:            constant.NET,
+		ResourceGroupType:            constant.SECURITY,
 		Desc:                         `https://api.aliyun.com/product/Cloudfw`,
 		ResourceDetailFuncWithCancel: GetInstanceDetail,
 		Dimension:                    schema.Global,

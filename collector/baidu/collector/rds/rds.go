@@ -16,17 +16,18 @@
 package rds
 
 import (
-	"context"
-	"github.com/baidubce/bce-sdk-go/services/rds"
-	"github.com/cloudrec/baidu/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/baidubce/bce-sdk-go/services/rds"
+	"github.com/cloudrec/baidu/collector"
 	"go.uber.org/zap"
 )
 
 type Detail struct {
-	Instance rds.Instance
+	Instance    rds.Instance
+	SecurityIps []string
 }
 
 func GetResource() schema.Resource {
@@ -34,7 +35,7 @@ func GetResource() schema.Resource {
 		ResourceType:      collector.RDS,
 		ResourceTypeName:  "RDS",
 		ResourceGroupType: constant.DATABASE,
-		Desc:              `https://github.com/baidubce/bce-sdk-go/blob/master/doc/RDS.md`,
+		Desc:              `https://cloud.baidu.com/doc/RDS/index.html`,
 		Regions: []string{
 			"rds.bj.baidubce.com",
 			"rds.bd.baidubce.com",
@@ -57,8 +58,10 @@ func GetResource() schema.Resource {
 				}
 				for _, i := range response.Instances {
 					d := Detail{
-						Instance: i,
+						Instance:    i,
+						SecurityIps: getSecurityIps(ctx, client, i.InstanceId),
 					}
+
 					res <- d
 				}
 				if response.NextMarker == "" {
@@ -75,4 +78,13 @@ func GetResource() schema.Resource {
 		},
 		Dimension: schema.Regional,
 	}
+}
+
+func getSecurityIps(ctx context.Context, client *rds.Client, instanceId string) []string {
+	resp, err := client.GetSecurityIps(instanceId)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("getSecurityIps error", zap.Error(err))
+		return nil
+	}
+	return resp.SecurityIps
 }

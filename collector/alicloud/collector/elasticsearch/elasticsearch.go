@@ -16,13 +16,13 @@
 package elasticsearch
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	elasticsearch20170613 "github.com/alibabacloud-go/elasticsearch-20170613/v3/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -34,10 +34,32 @@ func GetResource() schema.Resource {
 		Desc:               `https://api.aliyun.com/product/elasticsearch`,
 		ResourceDetailFunc: GetInstanceDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.Instance.InstanceId",
-			ResourceName: "$.Instance.Description",
+			ResourceId:   "$.Instance.instanceId",
+			ResourceName: "$.Instance.description",
 		},
-		Dimension: schema.Global,
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"cn-guangzhou",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+		},
+		Dimension: schema.Regional,
 	}
 }
 

@@ -16,11 +16,19 @@
 package admin
 
 import (
-	"context"
-	"github.com/cloudrec/gcp/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"cloud.google.com/go/resourcemanager/apiv3/resourcemanagerpb"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/cloudrec/gcp/collector/cloudresourcemanager"
+	"github.com/yalp/jsonpath"
+	"google.golang.org/api/iterator"
+
+	"github.com/cloudrec/gcp/collector"
 	"go.uber.org/zap"
 	admin "google.golang.org/api/admin/directory/v1"
 )
@@ -33,18 +41,32 @@ func GetGroupResource() schema.Resource {
 		Desc:              ``,
 		ResourceDetailFunc: func(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 			svc := service.(*collector.Services).Admin
-
-			if err := svc.Groups.List().Pages(ctx, func(resp *admin.Groups) error {
-				for _, group := range resp.Groups {
-					res <- GroupDetail{
-						Group: group,
-					}
+			for organization, err := range cloudresourcemanager.SearchOrganizations(ctx, service.(*collector.Services).OrganizationsClient) {
+				if errors.Is(err, iterator.Done) {
+					log.CtxLogger(ctx).Warn("SearchOrganizations error", zap.Error(fmt.Errorf("get 0 organization")))
+					return err
 				}
-				return nil
-			},
-			); err != nil {
-				log.CtxLogger(ctx).Warn("ListGroups error", zap.Error(err))
-				return err
+				if err != nil {
+					log.CtxLogger(ctx).Warn("SearchOrganizations error", zap.Error(err))
+					return err
+				}
+
+				customerId, ok := getCustomerId(ctx, organization).(string)
+				if ok {
+					if err = svc.Groups.List().Customer(customerId).Pages(ctx, func(resp *admin.Groups) error {
+						for _, group := range resp.Groups {
+							res <- GroupDetail{
+								Group: group,
+							}
+						}
+						return nil
+					},
+					); err != nil {
+						log.CtxLogger(ctx).Warn(fmt.Sprintf("ListGroups error in", organization.DisplayName), zap.Error(err))
+					}
+				} else {
+					log.CtxLogger(ctx).Warn("`DirectoryCustomerId` is not string", zap.Error(err))
+				}
 			}
 
 			return nil
@@ -55,6 +77,22 @@ func GetGroupResource() schema.Resource {
 		},
 		Dimension: schema.Global,
 	}
+}
+
+func getCustomerId(ctx context.Context, organization *resourcemanagerpb.Organization) interface{} {
+	jsonBytes, err := json.Marshal(organization)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("json Marshal Organization error", zap.Error(err))
+	}
+
+	var o interface{}
+	_ = json.Unmarshal(jsonBytes, &o)
+	directoryCustomerId, err := jsonpath.Read(o, "$.Owner.DirectoryCustomerId")
+	if err != nil {
+		log.CtxLogger(ctx).Warn("Read `DirectoryCustomerId` error", zap.Error(err))
+	}
+
+	return directoryCustomerId
 }
 
 type GroupDetail struct {

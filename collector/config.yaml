@@ -20,7 +20,7 @@ ServerUrl: "http://localhost:8080"
 
 # eg：@every 30s、@every 5m、@every 1h
 # @every 5m means obtaining an account every five minutes. If the current task is finished, skip this task.
-Cron: "@every 5m"
+Cron: "@every 60m"
 
 # If RunOnlyOnce is set to false, the program will be executed once immediately, but the program will not exit. It will be run regularly according to the Cron cycle.
 # If RunOnlyOnce is set to true, the program will be executed once immediately and then exit.
@@ -32,9 +32,8 @@ AccessToken: "change your access token"
 #  Deployment site. If the deployment site is configured as 'H1', only cloudAccount of this site can be obtained. If the deployment site is not configured, all cloudAccount can be obtained.
 #  eg:["H1"]
 #  eg:["H1","H2"]
-Sites: [  ]
+Sites: [ ]
 
 # Pay attention to the risk error information. If the error message contains text, the risk will be submitted to the server
 AttentionErrorTexts: [ "NoPermission", "NotAuthorized", "NotApplicable",
-                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable", "Forbidden" ]
-
+                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable" ,"InternalError", "AccessDenied","IamSignatureInvalid", "UnknownError","SDKError", "CollectorError" ]

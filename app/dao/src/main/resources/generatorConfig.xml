@@ -30,7 +30,7 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
-        <table tableName="security_product_posture" domainObjectName="SecurityProductPosturePO" mapperName="SecurityProductPostureMapper"
+        <table tableName="collector_task" domainObjectName="CollectorTaskPO" mapperName="CollectorTaskMapper"
                enableCountByExample="false"
                enableUpdateByExample="false"
                enableDeleteByExample="false"

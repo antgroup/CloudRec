@@ -16,10 +16,11 @@
 package collector
 
 import (
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"bytes"
 	"context"
 	"fmt"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -37,9 +38,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/wafv2"
 	"github.com/aws/smithy-go/logging"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
-	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 )
@@ -62,15 +60,21 @@ type Services struct {
 	ECR            *ecr.Client
 }
 
+// Clone creates a new instance of Services
+func (s *Services) Clone() schema.ServiceInterface {
+	// Return a new empty instance
+	// All clients will be initialized when InitServices is called
+	return &Services{}
+}
+
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {
-	ctx := context.Background()
 	param := cloudAccountParam.CommonCloudAccountParam
 	region := param.Region
 	ak := param.AK
 	sk := param.SK
 	cfg, err := buildConfigWithRegion(region, ak, sk)
 	if err != nil {
-		log.CtxLogger(ctx).Warn("AWS BuildConfigWithRegion error", zap.Error(err))
+		// todo
 		return err
 	}
 

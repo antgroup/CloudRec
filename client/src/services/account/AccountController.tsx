@@ -142,3 +142,21 @@ export async function cloudAccountBaseInfoListV2(
     },
   );
 }
+
+
+export async function createCollectTask(
+  body?: { cloudAccountId?: string },
+  options?: { [p: string]: any },
+) {
+  return request<API.Result_T_>(
+    `${BASE_URL}/api/cloudAccount/createCollectTask`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}

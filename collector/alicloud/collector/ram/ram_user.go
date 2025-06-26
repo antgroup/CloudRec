@@ -16,12 +16,12 @@
 package ram
 
 import (
-	"context"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 )
 
@@ -41,14 +41,14 @@ func GetRAMUserResource() schema.Resource {
 }
 
 type UserDetail struct {
-	User             ram.User
-	UserDetail       ram.User
-	LoginProfile     ram.LoginProfile
-	Groups           []ram.Group
-	ConsoleLogin     bool
-	Policies         []PolicyDetail
-	ActiveAccessKeys []ActiveAccessKeyDetail
-	ExistAccessKey   bool
+	User                 ram.User
+	UserDetail           ram.User
+	LoginProfile         ram.LoginProfile
+	Groups               []ram.Group
+	ConsoleLogin         bool
+	Policies             []PolicyDetail
+	AccessKeys           []AccessKeyDetail
+	ExistActiveAccessKey bool
 }
 
 type PolicyDetail struct {
@@ -57,9 +57,9 @@ type PolicyDetail struct {
 	Source               string
 }
 
-type ActiveAccessKeyDetail struct {
-	ActiveAccessKey ram.AccessKey
-	LastUsedDate    string
+type AccessKeyDetail struct {
+	AccessKey    ram.AccessKey
+	LastUsedDate string
 }
 
 func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -75,14 +75,15 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 		}
 		for _, i := range response.Users.User {
 			//groups := listGroupsForUser(ctx, cli, i.UserName)
+			accessKeys := listAccessKeys(ctx, cli, i.UserName)
 			d := UserDetail{
 				User:       i,
 				UserDetail: getUser(ctx, cli, i.UserName),
 				//Groups:           groups,
-				LoginProfile:     getLoginProfile(ctx, cli, i.UserName),
-				Policies:         listAttachedPolicies(ctx, cli, i.UserName, []ram.Group{}),
-				ActiveAccessKeys: listAccessKeys(ctx, cli, i.UserName),
-				ExistAccessKey:   len(listAccessKeys(ctx, cli, i.UserName)) > 0,
+				LoginProfile:         getLoginProfile(ctx, cli, i.UserName),
+				Policies:             listAttachedPolicies(ctx, cli, i.UserName, []ram.Group{}),
+				AccessKeys:           accessKeys,
+				ExistActiveAccessKey: existActiveAccessKey(accessKeys),
 			}
 
 			d.ConsoleLogin = d.LoginProfile.CreateDate != ""
@@ -94,6 +95,15 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 		request.Marker = response.Marker
 	}
 	return nil
+}
+
+func existActiveAccessKey(keys []AccessKeyDetail) bool {
+	for _, k := range keys {
+		if k.AccessKey.Status == "Active" {
+			return true
+		}
+	}
+	return false
 }
 
 func listAttachedPolicies(ctx context.Context, cli *ram.Client, name string, groups []ram.Group) (policies []PolicyDetail) {
@@ -159,7 +169,7 @@ func listPoliciesForUser(ctx context.Context, cli *ram.Client, username string) 
 }
 
 // query AK
-func listAccessKeys(ctx context.Context, cli *ram.Client, username string) (activeAccessKeys []ActiveAccessKeyDetail) {
+func listAccessKeys(ctx context.Context, cli *ram.Client, username string) (accessKeys []AccessKeyDetail) {
 	request := ram.CreateListAccessKeysRequest()
 	request.Scheme = "https"
 	request.UserName = username
@@ -168,25 +178,26 @@ func listAccessKeys(ctx context.Context, cli *ram.Client, username string) (acti
 		log.CtxLogger(ctx).Warn("ListAccessKeys error", zap.Error(err))
 		return
 	}
-
 	for i := 0; i < len(response.AccessKeys.AccessKey); i++ {
 		accessKey := response.AccessKeys.AccessKey[i]
-		if accessKey.Status == "Active" {
-			// query AK last used time
-			r := ram.CreateGetAccessKeyLastUsedRequest()
-			r.Scheme = "https"
-			r.UserAccessKeyId = accessKey.AccessKeyId
-			r.UserName = username
-			resp, _ := cli.GetAccessKeyLastUsed(r)
-
-			d := ActiveAccessKeyDetail{
-				ActiveAccessKey: accessKey,
-				LastUsedDate:    resp.AccessKeyLastUsed.LastUsedDate,
-			}
-			activeAccessKeys = append(activeAccessKeys, d)
+		// query AK last used time
+		r := ram.CreateGetAccessKeyLastUsedRequest()
+		r.Scheme = "https"
+		r.UserAccessKeyId = accessKey.AccessKeyId
+		r.UserName = username
+		resp, err := cli.GetAccessKeyLastUsed(r)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("GetAccessKeyLastUsed error", zap.Error(err))
+			continue
 		}
+
+		d := AccessKeyDetail{
+			AccessKey:    accessKey,
+			LastUsedDate: resp.AccessKeyLastUsed.LastUsedDate,
+		}
+		accessKeys = append(accessKeys, d)
 
 	}
 
-	return activeAccessKeys
+	return accessKeys
 }

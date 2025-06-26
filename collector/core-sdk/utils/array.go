@@ -143,7 +143,17 @@ func UniqueList(input []string) []string {
 	return result
 }
 
-// Exclude Excludes all elements present in the exclude slice from the original slice and returns the new slice
+// Filter 返回切片中满足断言函数的所有元素
+func Filter[T any](slice []T, predicate func(T) bool) []T {
+	result := make([]T, 0, len(slice))
+	for _, item := range slice {
+		if predicate(item) {
+			result = append(result, item)
+		}
+	}
+	return result
+}
+
 func Exclude[T comparable](slice, exclude []T) []T {
 	excludeMap := make(map[T]struct{})
 	for _, item := range exclude {

@@ -17,7 +17,6 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1113
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.59
 	go.uber.org/zap v1.27.0
-
 )
 
 require (

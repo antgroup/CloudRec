@@ -32,6 +32,7 @@ import com.alipay.application.service.rule.domain.RuleGroup;
 import com.alipay.application.service.rule.domain.repo.OpaRepository;
 import com.alipay.application.service.rule.domain.repo.RuleGroupRepository;
 import com.alipay.application.service.rule.domain.repo.RuleRepository;
+import com.alipay.application.service.rule.enums.Field;
 import com.alipay.application.service.statistics.job.StatisticsJob;
 import com.alipay.application.share.request.rule.LinkDataParam;
 import com.alipay.application.share.request.rule.WhitedRuleConfigDTO;
@@ -42,13 +43,11 @@ import com.alipay.common.enums.*;
 import com.alipay.common.exception.BizException;
 import com.alipay.common.utils.DateUtil;
 import com.alipay.dao.dto.CloudAccountDTO;
-import com.alipay.dao.dto.QueryWhitedRuleDTO;
 import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.mapper.*;
 import com.alipay.dao.po.*;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,13 +69,8 @@ public class ScanServiceImpl implements ScanService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScanServiceImpl.class);
 
-    private static ThreadLocal<List<WhitedRuleConfigPO>> whitedConfigThreadLocalCache = new ThreadLocal<>();
-
     @Resource
     private RuleGroupMapper ruleGroupMapper;
-
-    @Resource
-    private RuleRegoMapper ruleRegoMapper;
 
     @Resource
     private OpaRepository opaRepository;
@@ -112,9 +106,6 @@ public class ScanServiceImpl implements ScanService {
     private DbCacheUtil dbCacheUtil;
 
     @Resource
-    private WhitedRuleConfigMapper whitedRuleConfigMapper;
-
-    @Resource
     private WhitedRuleEngineMatcher whitedRuleEngineMatcher;
 
     @Resource
@@ -136,23 +127,6 @@ public class ScanServiceImpl implements ScanService {
      * localLockPrefix
      */
     private static final String localLockPrefix = "rule::scan::running::";
-
-
-    @Getter
-    private enum Field {
-        ResourceId("ResourceId"),
-        ResourceName("ResourceName"),
-        PublicIp("PublicIp"),
-        Region("Region"),
-        ;
-
-        private final String fieldName;
-
-        Field(String fieldName) {
-            this.fieldName = fieldName;
-        }
-    }
-
 
     @Override
     public void scanByGroup(Long groupId) {
@@ -195,7 +169,6 @@ public class ScanServiceImpl implements ScanService {
 
     }
 
-
     private static final int MAX_BATCH_SIZE = 1000;
 
     private static final ExecutorService executorService = new ThreadPoolExecutor(
@@ -205,8 +178,7 @@ public class ScanServiceImpl implements ScanService {
             TimeUnit.MINUTES,
             new LinkedBlockingQueue<>(1000),
             Executors.defaultThreadFactory(),
-            new ThreadPoolExecutor.CallerRunsPolicy()
-    );
+            new ThreadPoolExecutor.CallerRunsPolicy());
 
     private long getNextVersion(Long ruleId, String cloudAccountId) {
         Long version = ruleScanResultMapper.findMaxVersion(ruleId, cloudAccountId);
@@ -218,21 +190,26 @@ public class ScanServiceImpl implements ScanService {
         LOGGER.info("Scan by rule name:{} cloudAccountId:{}", ruleAgg.getRuleName(), cloudAccountId);
         long nextVersion = getNextVersion(ruleAgg.getId(), cloudAccountId);
 
-        List<CloudResourceInstancePO> resourceInstances = iQueryResource.queryByCond(ruleAgg.getPlatform(), ruleAgg.getResourceType(), cloudAccountId, 0L, 1);
+        List<CloudResourceInstancePO> resourceInstances = iQueryResource.queryByCond(ruleAgg.getPlatform(),
+                ruleAgg.getResourceType(), cloudAccountId, 0L, 1);
         if (CollectionUtils.isEmpty(resourceInstances)) {
             handleAccountScanResultFinish(ruleAgg, cloudAccountId, nextVersion);
             return;
         }
 
-        // Determine whether there is a risk mark on the account and reduce unnecessary SQL queries
+        // Determine whether there is a risk mark on the account and reduce unnecessary
+        // SQL queries
         boolean accountExistRiskFlag = false;
 
         long scrollId = 0L;
         while (true) {
-            resourceInstances = iQueryResource.queryByCond(ruleAgg.getPlatform(), ruleAgg.getResourceType(), cloudAccountId, scrollId, MAX_BATCH_SIZE);
-            resourceInstances = ResourceMergerTask.mergeJson(LinkDataParam.deserializeList(ruleAgg.getLinkedDataList()), resourceInstances, cloudAccountId);
+            resourceInstances = iQueryResource.queryByCond(ruleAgg.getPlatform(), ruleAgg.getResourceType(),
+                    cloudAccountId, scrollId, MAX_BATCH_SIZE);
+            resourceInstances = ResourceMergerTask.mergeJson(LinkDataParam.deserializeList(ruleAgg.getLinkedDataList()),
+                    resourceInstances, cloudAccountId);
             for (CloudResourceInstancePO resourceInstance : resourceInstances) {
-                Map<String, Object> result = opaRepository.callOpa(ruleAgg.getRegoPath(), ruleAgg.getRegoPolicy(), resourceInstance.getInstance());
+                Map<String, Object> result = opaRepository.callOpa(ruleAgg.getRegoPath(), ruleAgg.getRegoPolicy(),
+                        resourceInstance.getInstance());
                 if (result == null) {
                     LOGGER.warn("Execute rule failed");
                     continue;
@@ -246,13 +223,13 @@ public class ScanServiceImpl implements ScanService {
 
                 if (o instanceof Boolean && (Boolean) o) {
                     accountExistRiskFlag = true;
-                    result.put(Field.ResourceId.fieldName, resourceInstance.getResourceId());
-                    result.put(Field.ResourceName.fieldName, resourceInstance.getResourceName());
+                    result.put(Field.ResourceId.getFieldName(), resourceInstance.getResourceId());
+                    result.put(Field.ResourceName.getFieldName(), resourceInstance.getResourceName());
                     if (StringUtils.isNotBlank(resourceInstance.getAddress())) {
-                        result.put(Field.PublicIp.fieldName, resourceInstance.getAddress());
+                        result.put(Field.PublicIp.getFieldName(), resourceInstance.getAddress());
                     }
                     if (StringUtils.isNotBlank(resourceInstance.getRegion())) {
-                        result.put(Field.Region.fieldName, resourceInstance.getRegion());
+                        result.put(Field.Region.getFieldName(), resourceInstance.getRegion());
                     }
 
                     saveOrUpdate(resourceInstance, result, nextVersion, ruleAgg, cloudAccountPO);
@@ -275,7 +252,8 @@ public class ScanServiceImpl implements ScanService {
                 // Execute subscription alarm: risk real-time alarm
                 realTimeNotify.execute(ruleAgg.getId(), cloudAccountId, nextVersion);
             }
-            // Update risk status: Modify the risk status of the previous version to resolved
+            // Update risk status: Modify the risk status of the previous version to
+            // resolved
             handleAccountScanResultFinish(ruleAgg, cloudAccountId, nextVersion);
         });
 
@@ -287,50 +265,24 @@ public class ScanServiceImpl implements ScanService {
         }
     }
 
-    private void initWhitedConfigCache() {
-        List<WhitedRuleConfigPO> whitedRuleConfigPOList = new ArrayList<>();
-        QueryWhitedRuleDTO queryWhitedRuleDTO = new QueryWhitedRuleDTO();
-        queryWhitedRuleDTO.setEnable(1);
-
-        int count = whitedRuleConfigMapper.count(queryWhitedRuleDTO);
-        if (count == 0) {
-            whitedConfigThreadLocalCache.set(new ArrayList<>());
-            return;
-        }
-        List<WhitedRuleConfigPO> whitedRuleConfigPOS = whitedConfigThreadLocalCache.get();
-        if (CollectionUtils.isEmpty(whitedRuleConfigPOS) || whitedRuleConfigPOS.size() != count) {
-            whitedConfigThreadLocalCache.remove();
-        }
-
-        queryWhitedRuleDTO.setSize(100);
-        int page = 1;
-        while (true) {
-            queryWhitedRuleDTO.setPage(page);
-            queryWhitedRuleDTO.setOffset();
-            List<WhitedRuleConfigPO> dataList = whitedRuleConfigMapper.list(queryWhitedRuleDTO);
-            if (CollectionUtils.isEmpty(dataList)) {
-                break;
-            }
-            whitedRuleConfigPOList.addAll(dataList);
-            page++;
-        }
-        whitedConfigThreadLocalCache.set(whitedRuleConfigPOList);
-    }
-
     /**
      * 云账号指定资产类型的全部未处理的风险修改为已处理
+     *
      * @param ruleAgg
      * @param cloudAccountId
      * @param nextVersion
      */
-    private void handleAccountScanResultFinish(RuleAgg ruleAgg, String cloudAccountId, Long nextVersion) {
-        // The first version shows that there is no data before and no state change is required
+    protected void handleAccountScanResultFinish(RuleAgg ruleAgg, String cloudAccountId, Long nextVersion) {
+        // The first version shows that there is no data before and no state change is
+        // required
         if (nextVersion == 1) {
             return;
         }
 
-        List<RuleScanResultPO> ruleScanResultPOList = ruleScanResultMapper.find(ruleAgg.getId(), cloudAccountId, List.of(RiskStatusManager.RiskStatus.UNREPAIRED.name()), nextVersion);
-        LOGGER.info("cloudAccountId:{},ruleName:{},handleAccountScanResultFinish: ruleScanResultPOList size: {}", cloudAccountId, ruleAgg.getRuleName(), ruleScanResultPOList.size());
+        List<RuleScanResultPO> ruleScanResultPOList = ruleScanResultMapper.find(ruleAgg.getId(), cloudAccountId,
+                List.of(RiskStatusManager.RiskStatus.UNREPAIRED.name()), nextVersion);
+        LOGGER.info("cloudAccountId:{},ruleName:{},handleAccountScanResultFinish: ruleScanResultPOList size: {}",
+                cloudAccountId, ruleAgg.getRuleName(), ruleScanResultPOList.size());
         for (RuleScanResultPO ruleScanResultPO : ruleScanResultPOList) {
             riskStatusManager.unrepairedToRepaired(ruleScanResultPO.getId());
         }
@@ -338,24 +290,27 @@ public class ScanServiceImpl implements ScanService {
 
     /**
      * 云账号指定资产类型的全部未处理的风险修改为已处理
+     *
      * @param ruleAgg
      * @param cloudAccountId
      */
-    private void handleAccountScanResultFinish(RuleAgg ruleAgg, String cloudAccountId) {
-        RuleScanResultDTO resultDTO = RuleScanResultDTO.builder().cloudAccountIdList(Collections.singletonList(cloudAccountId)).ruleId(ruleAgg.getId()).statusList(List.of(RiskStatusManager.RiskStatus.UNREPAIRED.name())).build();
+    protected void handleAccountScanResultFinish(RuleAgg ruleAgg, String cloudAccountId) {
+        RuleScanResultDTO resultDTO = RuleScanResultDTO.builder()
+                .cloudAccountIdList(Collections.singletonList(cloudAccountId)).ruleId(ruleAgg.getId())
+                .statusList(List.of(RiskStatusManager.RiskStatus.UNREPAIRED.name())).build();
         List<RuleScanResultPO> ruleScanResultPOList = ruleScanResultMapper.findList(resultDTO);
-        LOGGER.info("cloudAccountId:{},ruleName:{},handleAccountScanResultFinish: ruleScanResultPOList size: {}", cloudAccountId, ruleAgg.getRuleName(), ruleScanResultPOList.size());
+        LOGGER.info("cloudAccountId:{},ruleName:{},handleAccountScanResultFinish: ruleScanResultPOList size: {}",
+                cloudAccountId, ruleAgg.getRuleName(), ruleScanResultPOList.size());
         for (RuleScanResultPO ruleScanResultPO : ruleScanResultPOList) {
             riskStatusManager.unrepairedToRepaired(ruleScanResultPO.getId());
         }
     }
 
     private void handleScanResultFinish(RuleAgg ruleAgg) {
-        ruleAgg.setLastScanTime(new Date());
+        ruleAgg.setRunningEndStatus();
         ruleRepository.save(ruleAgg);
         statisticsJob.ruleScanResultCountStatistics(ruleAgg.getId());
     }
-
 
     /**
      * Detect all rules
@@ -369,69 +324,96 @@ public class ScanServiceImpl implements ScanService {
             return new ApiResponse<>(ApiResponse.FAIL_CODE, "The current rule does not exist");
         }
 
-        // Loading rules to opa
-        ruleScanContext.loadByRuleId(ruleId);
-        // Loading whitedConfigs to opa
-        whitedConfigContext.loadEnableWhitedConfigs();
-
-        // Query the account account with this asset to optimize the speed
-        List<String> cloudAccountIdList = cloudResourceInstanceMapper.findAccountList(ruleAgg.getPlatform(), ruleAgg.getResourceType());
-
-        CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder()
-                .platformList(List.of(ruleAgg.getPlatform()))
-                .accountStatus(Status.valid.name())
-                .build();
-
-        List<CloudAccountPO> cloudAccountPOS = cloudAccountMapper.findList(cloudAccountDTO);
-        //获取所有的白名单规则
-        initWhitedConfigCache();
-        for (CloudAccountPO cloudAccountPO : cloudAccountPOS) {
-            if (!cloudAccountIdList.contains(cloudAccountPO.getCloudAccountId())) {
-                // 20250416 bugfix：云账号对应的资产已经不存在，将风险状态更新为已解决
-                handleAccountScanResultFinish(ruleAgg, cloudAccountPO.getCloudAccountId());
-                continue;
-            }
-
-            try {
-                scanByRule(ruleAgg, cloudAccountPO);
-            } catch (Exception e) {
-                LOGGER.error("cloudAccountId:{} run rule:{} fail:{}", cloudAccountPO.getCloudAccountId(), ruleAgg.getRuleCode(), e.getMessage());
-            }
+        // 1 h 分布式锁，防止段时间多次点击
+        if (!dbDistributedLockUtil.tryLock(localLockPrefix + ruleId, 1000 * 60 * 60)) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The current rule is running");
         }
 
-        handleScanResultFinish(ruleAgg);
+        // 业务逻辑判断，防止1小时未运行完成的规则，再次运行
+        if (ruleAgg.getIsRunning() == 1) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The current rule is running");
+        }
+
+        // 修改状态
+        ruleAgg.setRunningStartStatus();
+        ruleRepository.save(ruleAgg);
+
+        try {
+            // Loading rules to opa
+            ruleScanContext.loadByRuleId(ruleId);
+            // Loading whitedConfigs to opa
+            whitedConfigContext.loadEnableWhitedConfigs();
+
+            // Query the account account with this asset to optimize the speed
+            List<String> cloudAccountIdList = cloudResourceInstanceMapper.findAccountList(ruleAgg.getPlatform(),
+                    ruleAgg.getResourceType());
+
+            CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder()
+                    .platformList(List.of(ruleAgg.getPlatform()))
+                    .accountStatus(Status.valid.name())
+                    .build();
+
+            List<CloudAccountPO> cloudAccountPOS = cloudAccountMapper.findList(cloudAccountDTO);
+
+            // 获取所有的白名单规则
+            whitedConfigContext.initWhitedConfigCache();
+            for (CloudAccountPO cloudAccountPO : cloudAccountPOS) {
+                if (!cloudAccountIdList.contains(cloudAccountPO.getCloudAccountId())) {
+                    // 20250416 bugfix：云账号对应的资产已经不存在，将风险状态更新为已解决
+                    handleAccountScanResultFinish(ruleAgg, cloudAccountPO.getCloudAccountId());
+                    continue;
+                }
+
+                try {
+                    scanByRule(ruleAgg, cloudAccountPO);
+                } catch (Exception e) {
+                    LOGGER.error("cloudAccountId:{} run rule:{} fail:{}", cloudAccountPO.getCloudAccountId(),
+                            ruleAgg.getRuleCode(), e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("run rule:{} fail:{}", ruleAgg.getRuleCode(), e.getMessage());
+        } finally {
+            // 改状态、释放锁
+            handleScanResultFinish(ruleAgg);
+            // 确保线程池复用线程时清理旧数据
+            if (Thread.currentThread().isAlive()) {
+                whitedConfigContext.clear();
+            }
+            dbDistributedLockUtil.releaseLock(localLockPrefix + ruleId);
+        }
 
         dbCacheUtil.clear(RuleServiceImpl.cacheKey);
 
         return ApiResponse.SUCCESS;
     }
 
-
-    private void saveOrUpdate(CloudResourceInstancePO resourceInstance, Map<String, Object> result,
-                              Long version, RuleAgg ruleAgg, CloudAccountPO cloudAccountPO) {
+    protected void saveOrUpdate(CloudResourceInstancePO resourceInstance, Map<String, Object> result,
+            Long version, RuleAgg ruleAgg, CloudAccountPO cloudAccountPO) {
         RuleScanResultPO ruleScanResultPO = ruleScanResultMapper.fineOne(resourceInstance.getResourceId(),
                 resourceInstance.getCloudAccountId(), ruleAgg.getId());
 
         if (ruleScanResultPO == null) {
             ruleScanResultPO = new RuleScanResultPO();
-            finishData(ruleScanResultPO, resourceInstance, ruleAgg.getId(), ruleAgg.getRegoPolicy(), cloudAccountPO.getTenantId(), result, version);
+            finishData(ruleScanResultPO, resourceInstance, ruleAgg.getId(), ruleAgg.getRegoPolicy(),
+                    cloudAccountPO.getTenantId(), result, version);
             ruleScanResultPO.setIsNew(1);
             ruleScanResultMapper.insertSelective(ruleScanResultPO);
-            //获取风险id && 更新加白状态
+            // 获取风险id && 更新加白状态
             scanWhitedRuleConfig(ruleScanResultPO, ruleAgg.getRuleCode(), cloudAccountPO, resourceInstance);
             ruleScanResultMapper.updateByPrimaryKeySelective(ruleScanResultPO);
         } else {
-            finishData(ruleScanResultPO, resourceInstance, ruleAgg.getId(), ruleAgg.getRegoPolicy(), cloudAccountPO.getTenantId(), result, version);
+            finishData(ruleScanResultPO, resourceInstance, ruleAgg.getId(), ruleAgg.getRegoPolicy(),
+                    cloudAccountPO.getTenantId(), result, version);
             ruleScanResultPO.setIsNew(0);
             scanWhitedRuleConfig(ruleScanResultPO, ruleAgg.getRuleCode(), cloudAccountPO, resourceInstance);
             ruleScanResultMapper.updateByPrimaryKeySelective(ruleScanResultPO);
         }
     }
 
-    private void scanWhitedRuleConfig(RuleScanResultPO ruleScanResultPO, String ruleCode, CloudAccountPO cloudAccountPO, CloudResourceInstancePO resourceInstance) {
-        //获取所有的白名单列表
-        List<WhitedRuleConfigPO> whitedRuleConfigPOList = whitedConfigThreadLocalCache.get();
-
+    private void scanWhitedRuleConfig(RuleScanResultPO ruleScanResultPO, String ruleCode, CloudAccountPO cloudAccountPO,
+            CloudResourceInstancePO resourceInstance) {
+        List<WhitedRuleConfigPO> whitedRuleConfigPOList = whitedConfigContext.get();
         String hitWhitedRuleName = null;
         Long hitWhitedRuleConfigId = null;
         boolean isWhited = false;
@@ -443,10 +425,13 @@ public class ScanServiceImpl implements ScanService {
             }
 
             if (whitedRuleConfigPO.getRuleType().equals(WhitedRuleTypeEnum.RULE_ENGINE.name())) {
-                List<WhitedRuleConfigDTO> whitedRuleConfigDTOS = JSON.parseArray(whitedRuleConfigPO.getRuleConfig(), WhitedRuleConfigDTO.class);
-                isWhited = whitedRuleEngineMatcher.matchWhitelistRule(whitedRuleConfigDTOS, whitedRuleConfigPO.getCondition(), ruleScanResultPO);
+                List<WhitedRuleConfigDTO> whitedRuleConfigDTOS = JSON.parseArray(whitedRuleConfigPO.getRuleConfig(),
+                        WhitedRuleConfigDTO.class);
+                isWhited = whitedRuleEngineMatcher.matchWhitelistRule(whitedRuleConfigDTOS,
+                        whitedRuleConfigPO.getCondition(), ruleScanResultPO);
             } else if (whitedRuleConfigPO.getRuleType().equals(WhitedRuleTypeEnum.REGO.name())) {
-                isWhited = whitedRegoMatcher.executeRegoMatch(whitedRuleConfigPO.getRegoContent(), whitedRuleConfigPO.getId().toString(), ruleScanResultPO, cloudAccountPO, resourceInstance);
+                isWhited = whitedRegoMatcher.executeRegoMatch(whitedRuleConfigPO.getRegoContent(),
+                        whitedRuleConfigPO.getId().toString(), ruleScanResultPO, cloudAccountPO, resourceInstance);
             }
             if (isWhited) {
                 hitWhitedRuleName = whitedRuleConfigPO.getRuleName();
@@ -454,22 +439,24 @@ public class ScanServiceImpl implements ScanService {
                 break;
             }
         }
-        LOGGER.info("Update ruleScanResult status:{},hitWhitedRuleName:{},ruleScanResult_id:{}", isWhited, hitWhitedRuleName, ruleScanResultPO.getId());
-        if(isWhited){
+        LOGGER.info("Update ruleScanResult status:{},hitWhitedRuleName:{},ruleScanResult_id:{}", isWhited,
+                hitWhitedRuleName, ruleScanResultPO.getId());
+        if (isWhited) {
             ruleScanResultPO.setWhitedId(hitWhitedRuleConfigId);
         }
         if (isWhited && ruleScanResultPO.getStatus().equals(RiskStatusManager.RiskStatus.UNREPAIRED.name())) {
             ruleScanResultPO.setGmtModified(new Date());
             ruleScanResultPO.setStatus(RiskStatusManager.RiskStatus.WHITED.name());
-            saveOperationLog(ruleScanResultPO.getId(), Action.RiskAction.WHITED, "system", String.format("命中白名单规则:%s, 风险从未修复状态变更为已加白状态", hitWhitedRuleName));
+            saveOperationLog(ruleScanResultPO.getId(), Action.RiskAction.WHITED, "system",
+                    String.format("命中白名单规则:%s, 风险从未修复状态变更为已加白状态", hitWhitedRuleName));
         } else if (!isWhited && ruleScanResultPO.getStatus().equals(RiskStatusManager.RiskStatus.WHITED.name())) {
             ruleScanResultPO.setStatus(RiskStatusManager.RiskStatus.UNREPAIRED.name());
             ruleScanResultPO.setGmtModified(new Date());
             ruleScanResultPO.setWhitedId(null);
-            saveOperationLog(ruleScanResultPO.getId(), Action.RiskAction.CANCEL_WHITED, "system", String.format("未命中白名单规则, 风险从已加白状态变更为未修复状态"));
+            saveOperationLog(ruleScanResultPO.getId(), Action.RiskAction.CANCEL_WHITED, "system",
+                    "未命中白名单规则, 风险从已加白状态变更为未修复状态");
         }
     }
-
 
     private void saveOperationLog(Long id, Action.RiskAction action, String userId, String notes) {
         OperationLogPO operationLogPO = new OperationLogPO();
@@ -479,11 +466,10 @@ public class ScanServiceImpl implements ScanService {
         operationLogPO.setType(LogType.RISK.name());
         operationLogPO.setCorrelationId(id);
         operationLogMapper.insertSelective(operationLogPO);
-        if (Objects.isNull(id)){
+        if (Objects.isNull(id)) {
             LOGGER.info("saveOperationLog not CorrelationId， OperationLogPO id:{}", operationLogPO.getId());
         }
     }
-
 
     /**
      * @param ruleScanResultPO 风险扫描对象
@@ -495,12 +481,12 @@ public class ScanServiceImpl implements ScanService {
      * @param version          数据版本
      */
     private void finishData(RuleScanResultPO ruleScanResultPO,
-                            CloudResourceInstancePO resourceInstance,
-                            Long ruleId,
-                            String regoPolicy,
-                            Long tenantId,
-                            Map<String, Object> result,
-                            Long version) {
+            CloudResourceInstancePO resourceInstance,
+            Long ruleId,
+            String regoPolicy,
+            Long tenantId,
+            Map<String, Object> result,
+            Long version) {
 
         ruleScanResultPO.setRuleSnapshoot(regoPolicy);
         ruleScanResultPO.setResourceStatus(ResourceStatus.exist.name());
@@ -526,7 +512,8 @@ public class ScanServiceImpl implements ScanService {
 
         // Change the risk state
         // The state has been ignored and does not change the state
-        if (!RiskStatusManager.RiskStatus.IGNORED.name().equals(ruleScanResultPO.getStatus()) && !RiskStatusManager.RiskStatus.WHITED.name().equals(ruleScanResultPO.getStatus())) {
+        if (!RiskStatusManager.RiskStatus.IGNORED.name().equals(ruleScanResultPO.getStatus())
+                && !RiskStatusManager.RiskStatus.WHITED.name().equals(ruleScanResultPO.getStatus())) {
             ruleScanResultPO.setStatus(RiskStatusManager.RiskStatus.UNREPAIRED.name());
         }
 

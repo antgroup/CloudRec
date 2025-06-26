@@ -20,10 +20,7 @@ import com.alibaba.fastjson.JSON;
 import com.alipay.api.config.filter.annotation.aop.AuthenticateToken;
 import com.alipay.application.service.account.CloudAccountService;
 import com.alipay.application.service.account.utils.PlatformUtils;
-import com.alipay.application.share.request.account.AcceptAccountRequest;
-import com.alipay.application.share.request.account.QueryCloudAccountListRequest;
-import com.alipay.application.share.request.account.SaveCloudAccountRequest;
-import com.alipay.application.share.request.account.UpdateCloudAccountStatusRequest;
+import com.alipay.application.share.request.account.*;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.account.CloudAccountVO;
@@ -56,8 +53,7 @@ import java.util.Map;
 public class CloudAccountApi {
 
     @Resource
-    @Qualifier("cloudAccountServiceImpl")
-    private CloudAccountService cloudAccountServiceImpl;
+    private CloudAccountService cloudAccountService;
 
     @AuthenticateToken
     @PostMapping("/cloudAccountList")
@@ -73,25 +69,25 @@ public class CloudAccountApi {
             }
         }
 
-        return cloudAccountServiceImpl.queryCloudAccountList(cloudAccountDTO);
+        return cloudAccountService.queryCloudAccountList(cloudAccountDTO);
     }
 
     @AuthenticateToken
     @PostMapping("/cloudAccountBaseInfoList")
     public ApiResponse<Map<String, Object>> queryCloudAccountBaseInfoList(@RequestBody QueryCloudAccountListRequest request) {
-        return cloudAccountServiceImpl.queryCloudAccountBaseInfoList(request);
+        return cloudAccountService.queryCloudAccountBaseInfoList(request);
     }
 
     @AuthenticateToken
     @PostMapping("/cloudAccountBaseInfoListV2")
     public ApiResponse<List<Map<String, Object>>> queryCloudAccountBaseInfoListV2(@RequestBody QueryCloudAccountListRequest request) {
-        return cloudAccountServiceImpl.queryCloudAccountBaseInfoListV2(request);
+        return cloudAccountService.queryCloudAccountBaseInfoListV2(request);
     }
 
     @AuthenticateToken
     @GetMapping("/cloudAccountDetail")
     public ApiResponse<CloudAccountVO> queryCloudAccountDetail(@RequestParam Long id) {
-        return cloudAccountServiceImpl.queryCloudAccountDetail(id);
+        return cloudAccountService.queryCloudAccountDetail(id);
     }
 
     @AuthenticateToken
@@ -107,12 +103,12 @@ public class CloudAccountApi {
         cloudAccountDTO.setCredentialsJson(JSON.toJSONString(request.getCredentialsObj()));
         PlatformUtils.checkCredentialsJson(cloudAccountDTO.getCredentialsJson());
 
-        return cloudAccountServiceImpl.saveCloudAccount(cloudAccountDTO);
+        return cloudAccountService.saveCloudAccount(cloudAccountDTO);
     }
 
     @DeleteMapping("/removeCloudAccount")
     public ApiResponse<String> removeCloudAccount(@RequestParam Long id) throws IOException {
-        return cloudAccountServiceImpl.removeCloudAccount(id);
+        return cloudAccountService.removeCloudAccount(id);
     }
 
     @PostMapping("/updateCloudAccountStatus")
@@ -120,7 +116,7 @@ public class CloudAccountApi {
         if (result.hasErrors()) {
             return new ApiResponse<>(result);
         }
-        cloudAccountServiceImpl.updateCloudAccountStatus(request.getCloudAccountId(), request.getAccountStatus());
+        cloudAccountService.updateCloudAccountStatus(request.getCloudAccountId(), request.getAccountStatus());
         return ApiResponse.SUCCESS;
     }
 
@@ -129,7 +125,14 @@ public class CloudAccountApi {
         if (result.hasErrors()) {
             return new ApiResponse<>(result);
         }
-        cloudAccountServiceImpl.acceptCloudAccount(request);
+        cloudAccountService.acceptCloudAccount(request);
+        return ApiResponse.SUCCESS;
+    }
+
+    @AuthenticateToken
+    @PostMapping("/createCollectTask")
+    public ApiResponse<String> createCollectTask(@RequestBody CreateCollectTaskRequest request) {
+        cloudAccountService.createCollectTask(request);
         return ApiResponse.SUCCESS;
     }
 }

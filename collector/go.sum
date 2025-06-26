@@ -230,8 +230,8 @@ github.com/aws/aws-sdk-go-v2/service/wafv2 v1.55.5 h1:Fqt5dudTu1FxJXxrcLxKmnSPVu
 github.com/aws/aws-sdk-go-v2/service/wafv2 v1.55.5/go.mod h1:SGymgXOuZBAnbdEO2NAPUHOXU2swMyT0+nHD1VlNxhk=
 github.com/aws/smithy-go v1.22.1 h1:/HPHZQ0g7f4eUeK6HKglFz8uwVfZKgoI25rb/J+dnro=
 github.com/aws/smithy-go v1.22.1/go.mod h1:irrKGvNn1InZwb2d7fkIRNucdfwR8R+Ts3wxYa/cJHg=
-github.com/baidubce/bce-sdk-go v0.9.207 h1:CCWZPQGpjmeR5vm4qliHDknq4l9W61Wq0HeLeNOgKoQ=
-github.com/baidubce/bce-sdk-go v0.9.207/go.mod h1:zbYJMQwE4IZuyrJiFO8tO8NbtYiKTFTbwh4eIsqjVdg=
+github.com/baidubce/bce-sdk-go v0.9.229 h1:oL+YlYDqeMrE6NHgPhkI+4T2geeIHz4PFVivvQ0ysug=
+github.com/baidubce/bce-sdk-go v0.9.229/go.mod h1:zbYJMQwE4IZuyrJiFO8tO8NbtYiKTFTbwh4eIsqjVdg=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/clbanning/mxj v1.8.4 h1:HuhwZtbyvyOw+3Z1AowPkU87JkJUSv751ELWaiTpj8I=
 github.com/clbanning/mxj v1.8.4/go.mod h1:BVjHeAH+rl9rs6f+QIpeRl0tfu10SXn1pUSa5PVGJng=
@@ -289,8 +289,8 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORR
 github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
-github.com/huaweicloud/huaweicloud-sdk-go-obs v3.24.6+incompatible h1:/2MdLc7zHJqzV7J2uVGaoGymVobB/OHC8wmEyWRaK68=
-github.com/huaweicloud/huaweicloud-sdk-go-obs v3.24.6+incompatible/go.mod h1:l7VUhRbTKCzdOacdT4oWCwATKyvZqUOlOqr0Ous3k4s=
+github.com/huaweicloud/huaweicloud-sdk-go-obs v3.25.4+incompatible h1:yNjwdvn9fwuN6Ouxr0xHM0cVu03YMUWUyFmu2van/Yc=
+github.com/huaweicloud/huaweicloud-sdk-go-obs v3.25.4+incompatible/go.mod h1:l7VUhRbTKCzdOacdT4oWCwATKyvZqUOlOqr0Ous3k4s=
 github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.105 h1:5/ps/bby3CK4Abjq4aV3AlddRHTdFg1uPSb/gcZ4kgU=
 github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.105/go.mod h1:lhdEO9Bbb3hZ0wG+JeK9/GqMOp/sgc92mFmVk5tNSCk=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=

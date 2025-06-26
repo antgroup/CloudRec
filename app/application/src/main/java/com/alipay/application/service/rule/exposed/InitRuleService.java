@@ -17,6 +17,8 @@
 package com.alipay.application.service.rule.exposed;
 
 
+import java.util.List;
+
 /*
  *@title InitRuleService
  *@description
@@ -34,7 +36,7 @@ public interface InitRuleService {
     /**
      * 从远程仓库加载规则
      */
-    void loadRuleFromGithub();
+    void loadRuleFromGithub(Boolean coverage);
 
     /**
      * 从本地文件系统加载规则
@@ -44,5 +46,5 @@ public interface InitRuleService {
     /**
      * 将规则从数据库中写如代码文件中
      */
-    void writeRule();
+    String writeRule(List<Long> idList);
 }

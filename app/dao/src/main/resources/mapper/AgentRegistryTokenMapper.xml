@@ -130,7 +130,7 @@
         SELECT
         <include refid="Base_Column_List"/>
         FROM agent_registry_token
-        WHERE once_token = #{token,jdbcType=VARCHAR}
+        WHERE once_token = #{token,jdbcType=VARCHAR} LIMIT 1
     </select>
 
 </mapper>

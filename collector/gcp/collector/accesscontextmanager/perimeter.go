@@ -16,14 +16,14 @@
 package accesscontextmanager
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	accesscontextmanager "cloud.google.com/go/accesscontextmanager/apiv1"
 	"cloud.google.com/go/accesscontextmanager/apiv1/accesscontextmanagerpb"
 	"context"
 	"github.com/cloudrec/gcp/collector"
 	"github.com/cloudrec/gcp/collector/cloudresourcemanager"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 	"iter"
 )
@@ -57,7 +57,7 @@ func GetPerimeterResource() schema.Resource {
 						res <- PerimeterDetail{
 							ServicePerimeter: perimeter,
 							AccessPolicy:     accessPolicy,
-							AccessLevels:     getAccessLevels(ctx, ACMSvc, accessPolicy.Name),
+							AccessLevels:     getPolicyAccessLevels(ctx, ACMSvc, accessPolicy.Name),
 						}
 
 					}
@@ -87,7 +87,7 @@ func ListServicePerimeters(ctx context.Context, svc *accesscontextmanager.Client
 	}).All()
 }
 
-func getAccessLevels(ctx context.Context, svc *accesscontextmanager.Client, policyName string) (AccessLevels []*accesscontextmanagerpb.AccessLevel) {
+func getPolicyAccessLevels(ctx context.Context, svc *accesscontextmanager.Client, policyName string) (AccessLevels []*accesscontextmanagerpb.AccessLevel) {
 	for accessLevel, err := range ListAccessLevels(ctx, svc, policyName) {
 		if err != nil {
 			return AccessLevels

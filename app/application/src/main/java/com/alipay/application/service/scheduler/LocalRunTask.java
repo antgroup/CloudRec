@@ -210,13 +210,14 @@ public class LocalRunTask {
      * 定时扫描规则
      */
     @Synchronized
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0/4 * * ?")
     public void syncScanAll_local() {
         boolean runStatus = Boolean.TRUE;
         String msg = null;
         try {
             LOGGER.info("syncScanAll_local start");
             localTaskLocksService.lockTask("scanAllHandler");
+            clearJob.clearObsoleteData();
             scanService.scanAll();
         } catch (Exception e) {
             LOGGER.error("syncScanAll_local error", e);

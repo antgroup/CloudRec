@@ -35,9 +35,9 @@ func main() {
 		aws.GetPlatformConfig(),
 		tencentcloud.GetPlatformConfig(),
 		baidu.GetPlatformConfig(),
+		ksyun.GetPlatformConfig(),
 		// [7] ADD_NEW_CLOUD : Add new cloud provider config
 		// template.GetPlatformConfig(),
-		ksyun.GetPlatformConfig(),
-	)
 
+	)
 }

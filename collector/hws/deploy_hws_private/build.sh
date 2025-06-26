@@ -41,7 +41,7 @@ build_and_deploy() {
 # macos build and run in arm
 #    GOOS=linux GOARCH=arm64 go build -o "$project_name" main.go
 # macos build and run in x86
-    GOARCH=amd64 GOOS=linux go build -o ./deploy_hws_private/"$project_name" main.go
+    GOARCH=amd64 GOOS=linux go build -o ./deploy_hws_private/"$project_name" main_private.go
 }
 cd ..
 print_banner

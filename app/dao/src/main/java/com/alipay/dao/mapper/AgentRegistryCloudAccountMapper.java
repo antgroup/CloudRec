@@ -30,8 +30,6 @@ public interface AgentRegistryCloudAccountMapper {
 
     int updateByPrimaryKeySelective(AgentRegistryCloudAccountPO record);
 
-    int updateByPrimaryKey(AgentRegistryCloudAccountPO record);
-
     List<AgentRegistryCloudAccountPO> findList(Long agentId);
 
     AgentRegistryCloudAccountPO findOne(@Param("agentId") Long agentId,

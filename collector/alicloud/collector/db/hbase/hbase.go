@@ -16,12 +16,12 @@
 package hbase
 
 import (
-	"context"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +35,32 @@ func GetHbaseResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.Instance.InstanceId",
 			ResourceName: "$.Instance.InstanceName",
+		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"cn-guangzhou",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
 		},
 		Dimension: schema.Regional,
 	}

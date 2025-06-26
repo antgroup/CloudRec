@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-AgentName: "Huawei Cloud"
+AgentName: "华为云测试"
 ServerUrl: "http://localhost:8080"
 Cron: "@every 5m"
 RunOnlyOnce: false
 AccessToken: "change your AccessToken"
-Sites: [ ]
-AttentionErrorTexts: [ "Forbidden" ]
+#Sites: ["H2"]
+AttentionErrorTexts: [ "UnknownError","SDKError","CollectorError"]

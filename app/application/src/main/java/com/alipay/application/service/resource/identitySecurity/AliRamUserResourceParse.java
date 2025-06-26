@@ -121,13 +121,14 @@ public class AliRamUserResourceParse implements CloudResourceInfoParser {
     public List<ResourceAccessInfoDTO> parseAccessInfo(String resourceInstance) {
         JSONObject jsonObject = coverResourceInstanceStr(resourceInstance);
         List<ResourceAccessInfoDTO> resourceAccessInfoDTOS = new ArrayList<>();
-        Object activeAccessKeys = jsonObject.get("ActiveAccessKeys");
-        if (activeAccessKeys != null) {
+        Object accessKeys = jsonObject.get("AccessKeys");
+        if (accessKeys != null) {
             List<String> visitTypes = getVisitTypes(resourceInstance);
-            List<JSONObject> activeAccessKeyList = JSON.parseArray(JSON.toJSONString(activeAccessKeys), JSONObject.class);
-            for (JSONObject activeAccessKey : activeAccessKeyList) {
+            List<JSONObject> accessKeyList = JSON.parseArray(JSON.toJSONString(accessKeys), JSONObject.class);
+            for (JSONObject accessKey : accessKeyList) {
                 ResourceAccessInfoDTO resourceAccessInfoDTO = new ResourceAccessInfoDTO();
-                resourceAccessInfoDTO.setAccessKeyId(activeAccessKey.getJSONObject("ActiveAccessKey").getString("AccessKeyId"));
+                resourceAccessInfoDTO.setAccessKeyId(accessKey.getJSONObject("AccessKey").getString("AccessKeyId"));
+//                resourceAccessInfoDTO.setStatus(accessKey.getJSONObject("AccessKey").getString("Status"));
                 resourceAccessInfoDTO.setVisitTypes(visitTypes);
                 resourceAccessInfoDTOS.add(resourceAccessInfoDTO);
             }

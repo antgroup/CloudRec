@@ -1,10 +1,10 @@
 package apig
 
 import (
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"github.com/cloudrec/alicloud/collector"
 	"os"
 	"testing"
 )

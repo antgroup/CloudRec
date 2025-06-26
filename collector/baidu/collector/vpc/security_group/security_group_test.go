@@ -16,10 +16,10 @@
 package security_group
 
 import (
-	"github.com/cloudrec/baidu/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"github.com/cloudrec/baidu/collector"
 	"os"
 	"testing"
 )

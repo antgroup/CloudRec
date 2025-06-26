@@ -16,13 +16,13 @@
 package cas
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	cas20200407 "github.com/alibabacloud-go/cas-20200407/v3/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -36,6 +36,16 @@ func GetCERTResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.CertificateOrder.InstanceId",
 			ResourceName: "$.CertificateOrder.Name",
+		},
+		Regions: []string{
+			"cn-hangzhou",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"me-east-1",
 		},
 		Dimension: schema.Regional,
 	}

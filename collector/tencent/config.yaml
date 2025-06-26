@@ -18,5 +18,4 @@ ServerUrl: "http://localhost:8080"
 Cron: "@every 5m"
 RunOnlyOnce: false
 AccessToken: "change your AccessToken"
-Sites: []
-AttentionErrorTexts: [ "has no permission" ]
+AttentionErrorTexts: [ "UnknownError","SDKError","CollectorError"]

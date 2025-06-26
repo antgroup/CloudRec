@@ -16,23 +16,25 @@
 package bcc
 
 import (
-	"context"
-	"github.com/baidubce/bce-sdk-go/services/bcc/api"
-	"github.com/cloudrec/baidu/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/baidubce/bce-sdk-go/services/bcc"
+	"github.com/baidubce/bce-sdk-go/services/bcc/api"
+	"github.com/cloudrec/baidu/collector"
 	"go.uber.org/zap"
 )
 
 type Detail struct {
-	Instance api.InstanceModel
+	Instance       api.InstanceModel
+	SecurityGroups []api.SecurityGroupModel
 }
 
 func GetResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:      collector.BCC,
-		ResourceTypeName:  "BCC",
+		ResourceTypeName:  collector.BCC,
 		ResourceGroupType: constant.COMPUTE,
 		Desc:              `https://cloud.baidu.com/product/bcc.html`,
 		Regions: []string{
@@ -55,7 +57,8 @@ func GetResource() schema.Resource {
 				}
 				for _, i := range response.Instances {
 					d := Detail{
-						Instance: i,
+						Instance:       i,
+						SecurityGroups: listSecurityGroup(ctx, client, i.InstanceId),
 					}
 					res <- d
 				}
@@ -70,8 +73,32 @@ func GetResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.Instance.id",
 			ResourceName: "$.Instance.name",
-			Address:      "$.Instance.PublicIP",
+			Address:      "$.Instance.publicIP",
 		},
-		Dimension: schema.Global,
+		Dimension: schema.Regional,
 	}
+}
+
+func listSecurityGroup(ctx context.Context, client *bcc.Client, instanceId string) (securityGroups []api.SecurityGroupModel) {
+	args := &api.ListSecurityGroupArgs{
+		InstanceId: instanceId,
+		Marker:     "",
+		MaxKeys:    20,
+	}
+	for {
+		response, err := client.ListSecurityGroup(args)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("ListSecurityGroup error", zap.Error(err))
+			return
+		}
+
+		securityGroups = append(securityGroups, response.SecurityGroups...)
+
+		if response.NextMarker == "" {
+			break
+		}
+		args.Marker = response.NextMarker
+	}
+
+	return securityGroups
 }

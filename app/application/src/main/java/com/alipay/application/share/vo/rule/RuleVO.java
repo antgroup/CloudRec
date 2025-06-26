@@ -135,6 +135,11 @@ public class RuleVO {
     private String ruleRego;
 
     /**
+     * 是否处于运行状态
+     */
+    private Integer isRunning;
+
+    /**
      * 规则组id
      */
     private List<String> ruleGroupNameList;
@@ -202,7 +207,7 @@ public class RuleVO {
         List<String> resourceList = queryResource(rulePO.getPlatform(), rulePO.getResourceType());
         if (!resourceList.isEmpty()) {
             ruleVO.setResourceTypeStr(resourceList.get(1));
-        }else {
+        } else {
             ruleVO.setResourceTypeStr(rulePO.getResourceType());
         }
 

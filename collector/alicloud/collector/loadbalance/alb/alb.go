@@ -16,14 +16,14 @@
 package alb
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	alb20200616 "github.com/alibabacloud-go/alb-20200616/v2/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 	"time"
 )
@@ -39,6 +39,41 @@ func GetALBResource() schema.Resource {
 			ResourceId:   "$.LoadBalancer.LoadBalancerId",
 			ResourceName: "$.LoadBalancer.LoadBalancerName",
 			Address:      "$.LoadBalancer.DNSName",
+		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-nanjing",
+			"cn-fuzhou",
+			"cn-shenzhen",
+			"cn-heyuan",
+			"cn-guangzhou",
+			"cn-wuhan-lr",
+			"ap-southeast-6",
+			"ap-northeast-2",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-7",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-zhengzhou-jva",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"na-south-1",
+			"eu-west-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
+			"cn-heyuan-acdr-1",
 		},
 		Dimension: schema.Regional,
 	}

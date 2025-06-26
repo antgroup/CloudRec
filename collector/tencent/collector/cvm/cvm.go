@@ -16,11 +16,11 @@
 package cvm
 
 import (
-	"context"
-	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/cloudrec/tencent/collector"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	cvm "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm/v20170312"
 	"go.uber.org/zap"
@@ -38,6 +38,24 @@ func GetInstanceResource() schema.Resource {
 			ResourceName: "$.Instance.InstanceName",
 			Address:      "$.Instance.PublicIpAddresses[0]",
 		},
+		Regions: []string{
+			"ap-shanghai",
+			"ap-nanjing",
+			"ap-guangzhou",
+			"ap-beijing",
+			"ap-chengdu",
+			"ap-chongqing",
+			"ap-hongkong",
+			"ap-seoul",
+			"ap-tokyo",
+			"ap-singapore",
+			"ap-bangkok",
+			"ap-jakarta",
+			"na-siliconvalley",
+			"eu-frankfurt",
+			"na-ashburn",
+			"sa-saopaulo",
+		},
 		Dimension: schema.Regional,
 	}
 }
@@ -48,7 +66,6 @@ type Detail struct {
 
 func ListInstanceResource(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).CVM
-
 	request := cvm.NewDescribeInstancesRequest()
 	request.Limit = common.Int64Ptr(100)
 	request.Offset = common.Int64Ptr(0)

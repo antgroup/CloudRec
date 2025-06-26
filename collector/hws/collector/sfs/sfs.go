@@ -16,11 +16,11 @@
 package sfs
 
 import (
-	"context"
-	"github.com/cloudrec/hws/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/cloudrec/hws/collector"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/sfsturbo/v1/model"
 	"go.uber.org/zap"
 )

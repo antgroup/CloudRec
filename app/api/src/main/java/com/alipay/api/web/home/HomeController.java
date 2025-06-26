@@ -104,7 +104,6 @@ public class HomeController {
     @AuthenticateToken
     @PostMapping("/getTopRiskList")
     public ApiResponse<List<HomeTopRiskDTO>> getTopRiskList() {
-
         List<HomeTopRiskDTO> topRiskList = statistics.getTopRiskList(UserInfoContext.getCurrentUser().getTenantId());
         return new ApiResponse<>(topRiskList);
     }

@@ -55,4 +55,6 @@ public class CloudResourceInstancePO {
     private String customFieldValue;
 
     private Long tenantId;
+
+    private Integer delNum;
 }

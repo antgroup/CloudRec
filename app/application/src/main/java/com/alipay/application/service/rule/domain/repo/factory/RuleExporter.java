@@ -43,19 +43,19 @@ public class RuleExporter {
      *
      * @param rules 规则列表
      */
-    public void generateRulesFile(List<RuleAgg> rules) {
+    public String generateRulesFile(List<RuleAgg> rules) {
         RuleFactory ruleFactory = new RuleFactoryImpl();
+        String tempRootDir = System.getProperty("java.io.tmpdir") + "/cloudrec_" + System.currentTimeMillis();
+        String tempGlobalVarDir = tempRootDir + "/" + MetadataParser.GLOBAL_VARIABLE;
         try {
-            Files.createDirectories(new File(MetadataParser.GLOBAL_VARIABLE).toPath());
+            Files.createDirectories(new File(tempGlobalVarDir).toPath());
         } catch (IOException e) {
-            log.warn("Unable to create a data directory:{} ", MetadataParser.GLOBAL_VARIABLE);
-            return;
+            log.warn("Unable to create temp directory:{} ", tempGlobalVarDir);
+            return null;
         }
 
         for (RuleAgg rule : rules) {
-            String rulePath = MetadataParser.RULE_FILE_NAME
-                    + rule.getPlatform() + "/"
-                    + rule.getRuleCode() + "/";
+            String rulePath = tempRootDir + "/" + MetadataParser.RULE_FILE_NAME + rule.getPlatform() + "/" + rule.getRuleCode() + "/";
             try {
                 Files.createDirectories(new File(rulePath).toPath());
                 writeTextFile(rulePath + "metadata.json", JSON.toJSONString(ruleFactory.convertToMetadata(rule), SerializerFeature.WriteMapNullValue));
@@ -70,7 +70,7 @@ public class RuleExporter {
             if (rule.getGlobalVariables() != null && !rule.getGlobalVariables().isEmpty()) {
                 for (GlobalVariable variable : rule.getGlobalVariables()) {
                     try {
-                        String dataFilePath = MetadataParser.GLOBAL_VARIABLE + variable.getPath() + ".json";
+                        String dataFilePath = tempGlobalVarDir + "/" + variable.getPath() + ".json";
                         Map<String, Object> map = new HashMap<>();
                         map.put(variable.getPath(), JSON.parse(variable.getData()));
                         writeTextFile(dataFilePath, JSON.toJSONString(map, SerializerFeature.WriteMapNullValue));
@@ -81,6 +81,7 @@ public class RuleExporter {
                 }
             }
         }
+        return tempRootDir;
     }
 
 

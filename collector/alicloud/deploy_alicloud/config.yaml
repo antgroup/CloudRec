@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-AgentName: "Alibaba Cloud"
+AgentName: "Alibaba Collector"
 ServerUrl: "http://localhost:8080"
 Cron: "@every 5m"
 RunOnlyOnce: false
 AccessToken: "change your access token"
-Sites: [ ]
 AttentionErrorTexts: [ "NoPermission", "NotAuthorized", "NotApplicable",
-                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable", "Forbidden" ]
+                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable", "Forbidden","UnknownError","SDKError","CollectorError"]

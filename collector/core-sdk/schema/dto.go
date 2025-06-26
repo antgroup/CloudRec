@@ -16,8 +16,8 @@
 package schema
 
 import (
-	"encoding/json"
 	"github.com/core-sdk/constant"
+	"encoding/json"
 )
 
 type res struct {
@@ -44,6 +44,7 @@ type AccountParam struct {
 	Platform      string   `json:"platform"`
 	Sites         []string `json:"sites"`
 	RegistryValue string   `json:"registryValue"`
+	TaskIds       []int64  `json:"taskIds"`
 }
 
 type SupportResourceTypeListRequest struct {

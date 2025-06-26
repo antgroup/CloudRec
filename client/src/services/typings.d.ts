@@ -89,6 +89,8 @@ declare namespace API {
     ruleDesc?: string;
     /** Number of risks */
     riskCount?: number;
+    /** running status  */
+    isRunning?: number;
     /** Disabled state */
     status?: string;
     /** Repair suggestions */
@@ -855,4 +857,29 @@ declare namespace API {
     msg: string;
     content: Array<string>;
   }
+
+  type CollectorRecord = {
+    id: number;
+    gmtCreate: string;
+    gmtModified: string;
+    platform: string;
+    cloudAccountId: string;
+    alias: string;
+    startTime: string;
+    endTime: string;
+    percent: string;
+    errorResourceTypeList: string[];
+    collectorName: string;
+  };
+
+  type CollectorRecordListRequest = {
+    cloudAccountId: string;
+    platform: string;
+    startTimeArray?: string[];
+  };
+
+  type CollectorRecordListResponse = {
+    data: CollectorRecord[];
+    total: number;
+  };
 }

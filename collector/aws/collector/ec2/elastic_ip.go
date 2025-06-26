@@ -16,13 +16,12 @@
 package ec2
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"context"
-
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/cloudrec/aws/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 // GetElasticIPResource returns a Elastic IP Resource

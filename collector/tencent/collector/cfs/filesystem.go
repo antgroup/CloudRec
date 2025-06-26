@@ -16,11 +16,11 @@
 package cfs
 
 import (
-	"context"
-	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/cloudrec/tencent/collector"
 	cfs "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cfs/v20190719"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"go.uber.org/zap"

@@ -20,15 +20,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/utils"
 	"github.com/yalp/jsonpath"
 	"go.uber.org/zap"
-	"runtime"
-	"strings"
-	"sync"
-	"time"
 )
 
 // PlatformConfig
@@ -51,7 +52,7 @@ type PlatformConfig struct {
 
 type Platform struct {
 	PlatformConfig
-	CloudAccounts []CloudAccount
+	// CloudAccounts []CloudAccount
 
 	// Client with persistent token
 	client *Client
@@ -61,6 +62,15 @@ type Platform struct {
 
 	// key: platform+resource+cloudAccountId, value: UUID version
 	uuidVersionMap sync.Map
+
+	// key: region, value: ServiceInterface
+	regionServices sync.Map
+
+	// Rate limiter for each region
+	regionLimiters sync.Map // key: region, value: chan struct{}
+
+	// Maximum concurrent requests per region
+	maxConcurrentRequests int
 }
 
 var instance *Platform
@@ -69,16 +79,12 @@ var instance *Platform
 func GetInstance(config PlatformConfig) *Platform {
 	verifyPlatformConfig(config)
 	config.DefaultRegions = utils.UniqueList(config.DefaultRegions)
-	//once.Do(func() {
-
 	instance = &Platform{
-		PlatformConfig: config,
-		servicesMap:    make(map[string]ServiceInterface, 2*len(config.DefaultCloudAccounts)),
+		PlatformConfig:        config,
+		servicesMap:           make(map[string]ServiceInterface, 2*len(config.DefaultCloudAccounts)),
+		maxConcurrentRequests: 10, // 默认每个区域最多10个并发请求
 	}
-
-	//})
-
-	runtime.GOMAXPROCS(10)
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	return instance
 }
 
@@ -127,63 +133,101 @@ func verifyPlatformConfig(config PlatformConfig) {
 }
 
 type CollectorParam struct {
-	registered bool
-
+	registered     bool
+	task           interface{}
+	accounts       []CloudAccount
 	CloudRecLogger *CloudRecLogger
 }
 
 // CollectorV3 collect resource v3
+// clearRegionServices cleans up region-specific service instances
+// Get or create rate limiter for the region
+func (p *Platform) getRegionLimiter(region string) chan struct{} {
+	limiter, ok := p.regionLimiters.Load(region)
+	if !ok {
+		limiter = make(chan struct{}, p.maxConcurrentRequests)
+		p.regionLimiters.Store(region, limiter)
+	}
+	return limiter.(chan struct{})
+}
+
+func (p *Platform) clearRegionServices() {
+	p.regionServices.Range(func(key, value interface{}) bool {
+		p.regionServices.Delete(key)
+		return true
+	})
+}
+
 func (p *Platform) CollectorV3(param CollectorParam) (err error) {
 	startTime := time.Now()
 	defer func() {
 		p.clearVersionMap()
+		p.clearRegionServices()
 		endTime := time.Now()
 		duration := endTime.Sub(startTime)
 		log.GetWLogger().Info(fmt.Sprintf("Platform => [%s] Program run time: %v\n", p.Name, duration))
 	}()
 
-	var wg sync.WaitGroup
-	for _, cloudAccount := range p.CloudAccounts {
-		wg.Add(1)
+	// wait all account finish
+	var accountWait sync.WaitGroup
+	for _, cloudAccount := range param.accounts {
+		accountWait.Add(1)
 		s := time.Now()
-		p.handleAccount(cloudAccount, param, &wg)
+		p.handleAccount(cloudAccount, param, &accountWait)
 		endTime := time.Now()
 		duration := endTime.Sub(s)
 
 		log.GetWLogger().Info(fmt.Sprintf("Platform => [%s] CloudAccountId => [%s] Program run time: %v\n", p.Name, cloudAccount.CloudAccountId, duration))
 	}
-	wg.Wait()
+	accountWait.Wait()
 	return
 }
 
 func (p *Platform) handleAccount(account CloudAccount, param CollectorParam, parentWg *sync.WaitGroup) {
 	defer func() {
-		if param.registered {
-			log.GetWLogger().Info(fmt.Sprintf("Platform => [%s] account [%s] send running finish signal success", p.Name, account.CloudAccountId))
-			e := p.client.SendRunningFinishSignal(account.CloudAccountId)
-			if e != nil {
-				log.GetWLogger().Warn(fmt.Sprintf("Platform => [%s] account [%s] send running finish signal err %s", p.Name, account.CloudAccountId, e))
+		// Clean up region services for this account
+		p.regionServices.Range(func(key, value interface{}) bool {
+			keyStr := key.(string)
+			if strings.Contains(keyStr, account.CloudAccountId) {
+				p.regionServices.Delete(key)
 			}
-		}
+			return true
+		})
 		parentWg.Done()
 	}()
 
-	var wg sync.WaitGroup
+	// wait all resource finish
+	var pullResourceWait sync.WaitGroup
+	// wait all submit finish
+	var submitWait sync.WaitGroup
+
 	for _, resource := range p.Resources {
 		time.Sleep(3 * time.Second)
-		wg.Add(1)
+		pullResourceWait.Add(1)
 		go func(resource Resource) {
-			p.handleResource(account, resource, param, &wg)
+			p.handleResource(account, resource, param, &pullResourceWait, &submitWait)
 		}(resource)
 	}
-	log.GetWLogger().Info(fmt.Sprintf(" CloudAccountId => [%s] waiting......", account.CloudAccountId))
-	wg.Wait()
+	// wait all resource finish
+	pullResourceWait.Wait()
+	// wait all submit finish
+	submitWait.Wait()
+	// send account running finish signal
+	if param.registered {
+		log.GetWLogger().Info(fmt.Sprintf("Platform => [%s] account [%s] send running finish signal success", p.Name, account.CloudAccountId))
+		e := p.client.SendRunningFinishSignal(account.CloudAccountId, account.TaskId)
+		if e != nil {
+			log.GetWLogger().Warn(fmt.Sprintf("Platform => [%s] account [%s] send running finish signal err %s", p.Name, account.CloudAccountId, e))
+		}
+	}
 }
 
-func (p *Platform) handleResource(account CloudAccount, resource Resource, collectorParam CollectorParam, parentWg *sync.WaitGroup) {
-	defer parentWg.Done()
+func (p *Platform) handleResource(account CloudAccount, resource Resource, collectorParam CollectorParam, pullResourceWait *sync.WaitGroup, submitWait *sync.WaitGroup) {
+	defer pullResourceWait.Done()
 	if collectorParam.registered && len(account.ResourceTypeList) != 0 && !utils.Contains(account.ResourceTypeList, resource.ResourceType) {
-		log.GetWLogger().Warn(fmt.Sprintf("Platform => [%s] ResourceType => [%s] will not be collected because the account [%s] is not configured", p.Name, resource.ResourceType, account.CloudAccountId))
+		errorMsg := fmt.Sprintf("Code:[%s] Platform => [%s] ResourceType => [%s] will not be collected because the account [%s] is not configured", CollectorError, p.Name, resource.ResourceType, account.CloudAccountId)
+		log.GetWLogger().Warn(errorMsg)
+		collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, account.CollectRecordId, errors.New(errorMsg))
 		return
 	}
 
@@ -196,18 +240,23 @@ func (p *Platform) handleResource(account CloudAccount, resource Resource, colle
 	log.GetWLogger().Info("version been created ==>", zap.String("resourceKey", resourceKey), zap.String("version", version))
 
 	// loop regions
-	wg := &sync.WaitGroup{}
+	loopRegionWait := &sync.WaitGroup{}
 	for _, region := range loopRegions {
 		param, _ := getCloudAccountParam(account, region, resource.ResourceType)
-		err := p.Service.InitServices(param)
+		// Get or create a region-specific service instance
+		regionService := p.getRegionService(region, resource.ResourceType, account.CloudAccountId)
+		err := regionService.InitServices(param)
 		if err != nil {
-			log.GetWLogger().Info(fmt.Sprintf("Running CloudAccountId => [%s] Region => [%s] Platform => [%s] ResourceType => [%s] Init Client error", account.CloudAccountId, region, p.Name, resource.ResourceType))
+			errorMsg := fmt.Sprintf("Code:[%s] Running CloudAccountId => [%s] Region => [%s] Platform => [%s] ResourceType => [%s] Init Client error", CollectorError, account.CloudAccountId, region, p.Name, resource.ResourceType)
+			log.GetWLogger().Warn(errorMsg)
+			collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, account.CollectRecordId, errors.New(errorMsg))
 			continue
 		}
 
 		// Open the chan that receives resource data
 		resourceChan := make(chan *ResourceInstance, constant.DefaultPageSize)
-		go Submit(p.client, account, resource, resourceChan, collectorParam.registered, version)
+		submitWait.Add(1)
+		go Submit(p.client, account, resource, resourceChan, collectorParam.registered, version, submitWait)
 
 		// for region chan
 		regionCh := make(chan interface{}, constant.DefaultPageSize)
@@ -224,9 +273,8 @@ func (p *Platform) handleResource(account CloudAccount, resource Resource, colle
 					var d interface{}
 					err := json.Unmarshal(marshal, &d)
 					if err != nil {
-						panic(err)
+						log.GetWLogger().Error("json Unmarshal err", zap.Error(err))
 					}
-
 					// If the registration is not successful, it will be printed on the console.
 					if !collectorParam.registered {
 						if err := utils.PrettyPrintJSON(string(marshal)); err != nil {
@@ -236,7 +284,9 @@ func (p *Platform) handleResource(account CloudAccount, resource Resource, colle
 
 					result, err := getJsonPathValue(d, resource.Dimension, resource.RowField, account.CloudAccountId)
 					if err != nil {
-						log.GetWLogger().Warn(fmt.Sprintf("%s The data will not be submitted to the server Platform => [%s] ResourceType => [%s]", err.Error(), p.Name, resource.ResourceType))
+						errorMsg := fmt.Sprintf("Code:[%s] %s The data will not be submitted to the server Platform => [%s] ResourceType => [%s]", CollectorError, err.Error(), p.Name, resource.ResourceType)
+						log.GetWLogger().Warn(errorMsg)
+						collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, account.CollectRecordId, errors.New(errorMsg))
 						continue
 					}
 
@@ -251,47 +301,54 @@ func (p *Platform) handleResource(account CloudAccount, resource Resource, colle
 		}()
 
 		// Producer
-		wg.Add(1)
-		ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+		loopRegionWait.Add(1)
+		ctx, cancel := context.WithTimeout(context.Background(), 240*time.Second)
+		// Get rate limiter for this region
+		limiter := p.getRegionLimiter(region)
+		// Acquire semaphore
+		limiter <- struct{}{}
 		ctx = context.WithValue(ctx, constant.CloudAccountId, account.CloudAccountId)
 		ctx = context.WithValue(ctx, constant.RegionId, region)
 		ctx = context.WithValue(ctx, constant.ResourceType, resource.ResourceType)
 		ctx = context.WithValue(ctx, constant.TraceId, version)
-		go func(ctx context.Context, service ServiceInterface) {
+		go func(ctx context.Context, regionService ServiceInterface) {
 			defer func() {
 				cancel()
-				wg.Done()
+				loopRegionWait.Done()
+				// Release the semaphore
+				<-limiter
 				// Handle panic caused by timeout shutdown of chan
 				if r := recover(); r != nil {
 					errMsg := fmt.Sprintf("%v", r)
 					if strings.Contains(errMsg, "send on closed channel") {
 						log.GetWLogger().Warn(fmt.Sprintf("Timeout, more than %d seconds !!! CloudAccountId => [%s] Platform => [%s] Region => [%s]  ResourceType => [%s]", constant.TimeOut, account.CloudAccountId, p.Name, region, resource.ResourceType))
 					} else {
-						errmsg := fmt.Sprintf("CloudAccountId => [%s] Platform => [%s] Region => [%s] ResourceType => [%s] Recovered from panic of unknown type: %s", account.CloudAccountId, p.Name, region, resource.ResourceType, r)
+						errmsg := fmt.Sprintf("Code:[%s], CloudAccountId => [%s] Platform => [%s] Region => [%s] ResourceType => [%s] Recovered from panic of unknown type: %s", UnknownError, account.CloudAccountId, p.Name, region, resource.ResourceType, r)
 						log.GetWLogger().Error(errmsg)
+						collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, account.CollectRecordId, errors.New(errMsg))
 					}
 				}
 			}()
 
 			if resource.ResourceDetailFunc != nil {
-				if err = resource.ResourceDetailFunc(ctx, service, regionCh); err != nil {
-					errmsg := fmt.Sprintf("CloudAccountId => [%s] Platform => [%s] Region => [%s] ResourceType => [%s] ERROR \n %s", account.CloudAccountId, p.Name, region, resource.ResourceType, err.Error())
+				if err = resource.ResourceDetailFunc(ctx, regionService, regionCh); err != nil {
+					errmsg := fmt.Sprintf("Code:[%s], CloudAccountId => [%s] Platform => [%s] Region => [%s] ResourceType => [%s] ERROR \n %s", CollectorError, account.CloudAccountId, p.Name, region, resource.ResourceType, err.Error())
 					log.GetWLogger().Info(errmsg)
-					collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, err)
+					collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, account.CollectRecordId, errors.New(errmsg))
 				}
 			}
 
 			if resource.ResourceDetailFuncWithCancel != nil {
-				if err = resource.ResourceDetailFuncWithCancel(ctx, cancel, service, regionCh); err != nil {
-					errmsg := fmt.Sprintf("CloudAccountId => [%s] Platform => [%s] Region => [%s] ResourceType => [%s] ERROR \n %s", account.CloudAccountId, p.Name, region, resource.ResourceType, err.Error())
+				if err = resource.ResourceDetailFuncWithCancel(ctx, cancel, regionService, regionCh); err != nil {
+					errmsg := fmt.Sprintf("Code:[%s], CloudAccountId => [%s] Platform => [%s] Region => [%s] ResourceType => [%s] ERROR \n %s", SDKError, account.CloudAccountId, p.Name, region, resource.ResourceType, err.Error())
 					log.GetWLogger().Info(errmsg)
-					collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, err)
+					collectorParam.CloudRecLogger.logAccountError(account.Platform, resource.ResourceType, account.CloudAccountId, account.CollectRecordId, errors.New(errmsg))
 				}
 				// Waiting timeout or Cancel
 				<-ctx.Done()
 			}
 
-		}(ctx, p.Service)
+		}(ctx, regionService)
 
 		if resource.Dimension == Global {
 			break
@@ -299,7 +356,7 @@ func (p *Platform) handleResource(account CloudAccount, resource Resource, colle
 
 		time.Sleep(1 * time.Second)
 	}
-	wg.Wait()
+	loopRegionWait.Wait()
 }
 
 // Get the list of regions that need to be loop
@@ -394,4 +451,17 @@ func (p *Platform) clearVersionMap() {
 		p.uuidVersionMap.Delete(key)
 		return true
 	})
+}
+
+// getRegionService returns a region-specific service instance
+func (p *Platform) getRegionService(region string, resourceType string, accountId string) ServiceInterface {
+	key := fmt.Sprintf("%s-%s-%s", region, resourceType, accountId)
+	if service, ok := p.regionServices.Load(key); ok {
+		return service.(ServiceInterface)
+	}
+
+	// Create a new service instance for this region and resource type
+	newService := p.Service.Clone()
+	p.regionServices.Store(key, newService)
+	return newService
 }

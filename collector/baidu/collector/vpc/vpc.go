@@ -16,12 +16,12 @@
 package vpc
 
 import (
-	"context"
-	"github.com/baidubce/bce-sdk-go/services/vpc"
-	"github.com/cloudrec/baidu/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/baidubce/bce-sdk-go/services/vpc"
+	"github.com/cloudrec/baidu/collector"
 	"go.uber.org/zap"
 )
 
@@ -42,6 +42,8 @@ func GetResource() schema.Resource {
 			"bcc.hkg.baidubce.com",
 			"bcc.fwh.baidubce.com",
 			"bcc.bd.baidubce.com",
+			"bcc.cd.baidubce.com",
+			"bcc.fsh.baidubce.com",
 		},
 		ResourceDetailFunc: func(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 			client := service.(*collector.Services).VPCClient

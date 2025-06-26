@@ -18,10 +18,10 @@ package clb
 import (
 	"context"
 
-	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"github.com/cloudrec/tencent/collector"
 	clb "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/clb/v20180317"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"go.uber.org/zap"
@@ -61,7 +61,7 @@ func ListCLBResource(ctx context.Context, service schema.ServiceInterface, res c
 		response, err := cli.DescribeLoadBalancers(request)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeLoadBalancers error", zap.Error(err))
-			break
+			return err
 		}
 		for _, lb := range response.Response.LoadBalancerSet {
 			d := &LBDetail{

@@ -16,12 +16,12 @@
 package ram
 
 import (
-	"context"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 )
 

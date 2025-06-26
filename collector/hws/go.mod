@@ -2,8 +2,10 @@ module github.com/cloudrec/hws
 
 go 1.23.0
 
+toolchain go1.24.3
+
 require (
-	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.24.6+incompatible
+	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.25.4+incompatible
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.105
 )
 

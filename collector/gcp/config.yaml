@@ -15,8 +15,10 @@
 
 AgentName: "GCP Collector"
 ServerUrl: "http://localhost:8080"
-Cron: "@every 5m"
+Cron: "@every 60m"
 RunOnlyOnce: false
 AccessToken: "change your access token"
-Sites: [""]
-AttentionErrorTexts: [ "Forbidden" ]
+#AttentionErrorTexts: [ "Forbidden" ]
+AttentionErrorTexts: [ "UnknownError","SDKError","CollectorError"]
+
+#Sites: [""]

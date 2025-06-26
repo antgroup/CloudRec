@@ -75,11 +75,11 @@ public class InitRuleServiceImpl implements InitRuleService {
     }
 
     @Override
-    public void loadRuleFromGithub() {
+    public void loadRuleFromGithub(Boolean coverage) {
         List<RuleAgg> ruleAggs = ruleRepository.findRuleListFromGitHub();
         log.info("init rule form github, ruleAggs size: {}", ruleAggs.size());
 
-        save(ruleAggs);
+        save(ruleAggs, coverage);
     }
 
     @Override
@@ -87,13 +87,14 @@ public class InitRuleServiceImpl implements InitRuleService {
         List<RuleAgg> ruleAggs = ruleRepository.findRuleListFromLocalFile();
         log.info("init rule from local file, ruleAggs size: {}", ruleAggs.size());
 
-        save(ruleAggs);
+        save(ruleAggs, false);
     }
 
-    private void save(List<RuleAgg> ruleAggs) {
+    private void save(List<RuleAgg> ruleAggs, Boolean coverage) {
         for (RuleAgg ruleAgg : ruleAggs) {
             RulePO rulePO = ruleMapper.findOne(ruleAgg.getRuleCode());
-            if (rulePO != null) {
+
+            if (!coverage && rulePO != null) {
                 // Already existing policies will not be updated yet
                 log.info("rule code {} already exists, skip", ruleAgg.getRuleCode());
                 continue;
@@ -115,9 +116,9 @@ public class InitRuleServiceImpl implements InitRuleService {
     }
 
     @Override
-    public void writeRule() {
+    public String writeRule(List<Long> idList) {
         RuleExporter ruleExporter = new RuleExporter();
-        List<RuleAgg> rules = ruleRepository.findAll();
+        List<RuleAgg> rules = ruleRepository.findByIdList(idList);
         for (RuleAgg rule : rules) {
             String resource = queryResourceService.queryExampleData(rule.getPlatform(), rule.getResourceType());
             try {
@@ -127,6 +128,6 @@ public class InitRuleServiceImpl implements InitRuleService {
             }
         }
 
-        ruleExporter.generateRulesFile(rules);
+         return ruleExporter.generateRulesFile(rules);
     }
 }

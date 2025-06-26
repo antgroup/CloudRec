@@ -16,17 +16,16 @@
 package ec2
 
 import (
-	"context"
-
 	"github.com/core-sdk/log"
+	"context"
 	"go.uber.org/zap"
 
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/cloudrec/aws/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 // GetInstanceResource returns a schema.Resource type struct which defines a type of resource.

@@ -43,4 +43,9 @@ public class ResourceAccessInfoDTO {
      */
     private String tags;
 
+    /**
+     * Status: Active / Inactive
+     */
+    private String status;
+
 }

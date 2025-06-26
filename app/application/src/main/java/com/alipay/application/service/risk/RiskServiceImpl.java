@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.alipay.application.service.common.CloudAccount;
 import com.alipay.application.service.common.utils.CacheUtil;
+import com.alipay.application.service.common.utils.DBDistributedLockUtil;
 import com.alipay.application.service.common.utils.DbCacheUtil;
 import com.alipay.application.service.common.utils.SpringUtils;
 import com.alipay.application.share.vo.ApiResponse;
@@ -34,12 +35,12 @@ import com.alipay.common.utils.ListUtils;
 import com.alipay.dao.context.UserInfoContext;
 import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.dto.RuleStatisticsDTO;
-import com.alipay.dao.mapper.RuleMapper;
 import com.alipay.dao.mapper.RuleScanResultMapper;
 import com.alipay.dao.po.DbCachePO;
 import com.alipay.dao.po.RuleScanResultPO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -56,6 +58,7 @@ import java.util.List;
  *@version 1.0
  *@create 2024/7/16 16:43
  */
+@Slf4j
 @Service
 public class RiskServiceImpl implements RiskService {
 
@@ -63,7 +66,7 @@ public class RiskServiceImpl implements RiskService {
     private RuleScanResultMapper ruleScanResultMapper;
 
     @Resource
-    private RuleMapper ruleMapper;
+    private DBDistributedLockUtil dbDistributedLockUtil;
 
     @Resource
     private RiskStatusManager riskStatusManager;
@@ -77,6 +80,8 @@ public class RiskServiceImpl implements RiskService {
     private static final String dbCacheKey = "risk::query_risk_list";
 
     private static final String dbCacheKey_agg = "risk::query_risk_list_agg";
+
+    private static final String localLockPrefix = "risk::export_risk_list";
 
     @Override
     public ApiResponse<ListVO<RuleScanResultVO>> queryRiskList(RuleScanResultDTO ruleScanResultDTO) {
@@ -117,36 +122,45 @@ public class RiskServiceImpl implements RiskService {
 
     @Override
     public void exportRiskList(HttpServletResponse response, RuleScanResultDTO dto) throws IOException {
-        List<String> cloudAccountIdList = cloudAccount.queryCloudAccountIdList(dto.getCloudAccountId());
-        dto.setCloudAccountIdList(cloudAccountIdList);
-        dto.setTenantId(UserInfoContext.getCurrentUser().getTenantId());
-        int count = ruleScanResultMapper.findCount(dto);
-        if (count >= 100000) {
-            throw new BizException("导出数据量过大，请缩小查询范围");
+        if (!dbDistributedLockUtil.tryLock(localLockPrefix + UserInfoContext.getCurrentUser().getUserId(), 1000 * 60 * 60)) {
+            throw new BizException("Exporting, please try again later");
         }
-
-        final int maxSize = 1000;
-        dto.setPage(1);
-        dto.setSize(maxSize);
-        List<RuleScanResultExportVO> result = new ArrayList<>(10000);
-        while (true) {
-            dto.setOffset();
-            List<RuleScanResultPO> list = ruleScanResultMapper.findList(dto);
-            List<RuleScanResultExportVO> collect = list.parallelStream().map(RuleScanResultExportVO::po2vo).toList();
-            result.addAll(collect);
-            if (list.size() < maxSize) {
-                break;
+        try {
+            List<String> cloudAccountIdList = cloudAccount.queryCloudAccountIdList(dto.getCloudAccountId());
+            dto.setCloudAccountIdList(cloudAccountIdList);
+            dto.setTenantId(UserInfoContext.getCurrentUser().getTenantId());
+            int count = ruleScanResultMapper.findCount(dto);
+            if (count >= 100000) {
+                throw new BizException("The exported data volume exceeds 100,000, please go offline to export");
             }
 
-            dto.setPage(dto.getPage() + 1);
+            final int maxSize = 1000;
+            dto.setPage(1);
+            dto.setSize(maxSize);
+            List<RuleScanResultExportVO> result = new ArrayList<>(10000);
+            while (true) {
+                dto.setOffset();
+                List<RuleScanResultPO> list = ruleScanResultMapper.findList(dto);
+                List<RuleScanResultExportVO> collect = list.parallelStream().map(RuleScanResultExportVO::po2vo).toList();
+                result.addAll(collect);
+                if (list.size() < maxSize) {
+                    break;
+                }
+
+                dto.setPage(dto.getPage() + 1);
+            }
+
+            ExcelUtils.resetCellMaxTextLength();
+            response.setCharacterEncoding("utf-8");
+            String fileName = URLEncoder.encode("CloudRec-Risk-Data.xlsx", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+            response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+
+            EasyExcel.write(response.getOutputStream(), RuleScanResultExportVO.class).sheet("sheet1").doWrite(result);
+        } catch (Exception e) {
+            log.error("exportRiskList error", e);
+        } finally {
+            dbDistributedLockUtil.releaseLock(localLockPrefix + UserInfoContext.getCurrentUser().getUserId());
         }
-
-        ExcelUtils.resetCellMaxTextLength();
-        response.setCharacterEncoding("utf-8");
-        String fileName = URLEncoder.encode("CloudRec风险数据.xlsx", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-
-        EasyExcel.write(response.getOutputStream(), RuleScanResultExportVO.class).sheet("sheet1").doWrite(result);
     }
 
 

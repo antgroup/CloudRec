@@ -26,11 +26,11 @@ package com.alipay.application.service.rule.enums;
  */
 public enum RuleType {
 
-    safety_protection("安全防护", "safety protection"),
-    network_access("网络访问", "network access"),
-    log_audit("日志审计", "log audit"),
-    identity_security("身份安全", "identity security"),
-    data_protection("数据保护", "data protection");
+    safety_protection("安全防护", "Security Protection"),
+    network_access("网络访问", "Network Access"),
+    log_audit("日志审计", "Audit Logging"),
+    identity_security("身份安全", "Identity Security"),
+    data_protection("数据保护", "Data Protection");
 
 
     private String ruleType;
@@ -58,4 +58,14 @@ public enum RuleType {
     public void setRuleTypeEn(String ruleTypeEn) {
         this.ruleTypeEn = ruleTypeEn;
     }
+
+    public static String getByRuleTypeEn(String ruleType) {
+        for (RuleType value : values()) {
+            if (value.getRuleType().equals(ruleType)) {
+                return value.getRuleTypeEn();
+            }
+        }
+        return "Undefined";
+    }
 }
+

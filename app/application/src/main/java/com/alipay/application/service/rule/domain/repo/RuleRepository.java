@@ -33,6 +33,10 @@ public interface RuleRepository {
 
     List<RuleAgg> findAll();
 
+    List<RuleAgg> findByIdList(List<Long> idList);
+
+    List<RuleAgg> findAll(String platform);
+
     RuleAgg findByRuleId(Long ruleId);
 
     List<RuleAgg> findByGroupId(Long groupId, String status);

@@ -36,7 +36,7 @@ class GitHubSyncUtilTest {
     void cloneRepository() throws IOException, GitAPIException {
 
         Path temp = Files.createTempDirectory("temp");
-        GitHubSyncUtil.cloneRepository("https://github.com/suitianshuang/test.git", temp);
+        GitHubSyncUtil.cloneRepository("https://github.com/antgroup/CloudRec.git", temp);
 
     }
 }

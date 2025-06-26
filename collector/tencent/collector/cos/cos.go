@@ -16,12 +16,12 @@
 package cos
 
 import (
-	"context"
-	"fmt"
-	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"fmt"
+	"github.com/cloudrec/tencent/collector"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"go.uber.org/zap"
 	"net/url"

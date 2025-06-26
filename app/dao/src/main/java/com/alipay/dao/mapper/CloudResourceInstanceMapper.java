@@ -49,7 +49,13 @@ public interface CloudResourceInstanceMapper {
 
     void deleteByCloudAccountId(String cloudAccountId);
 
-    int deleteByModified(@Param("cloudAccountId") String cloudAccountId, @Param("resourceType") String resourceType, @Param("day") int day);
+    // 预删除
+    int preDeleteByCloudAccountId(String cloudAccountId);
+
+    // 正式删除
+    int commitDeleteByCloudAccountId(@Param("cloudAccountId") String cloudAccountId, @Param("delNum") int delNum);
+
+    int deleteByModified(@Param("cloudAccountId") String cloudAccountId, @Param("day") int day);
 
     long findCountByCond(IQueryResourceDTO dto);
 
@@ -92,14 +98,12 @@ public interface CloudResourceInstanceMapper {
      */
     List<String> findAccountList(@Param("platform") String platform, @Param("resourceType") String resourceType);
 
-    List<String> findVersionList(@Param("platform") String platform, @Param("cloudAccountId") String cloudAccountId, @Param("resourceType") String resourceType);
-
-    List<Long> findExpiredVersionDataList(@Param("platform") String platform, @Param("cloudAccountId") String cloudAccountId,
-                                          @Param("resourceType") String resourceType, @Param("expiredVersionList") List<String> expiredVersionList);
 
     List<String> getResourceIdList();
 
     int deleteDiscardedData(@Param("cloudAccountId") String cloudAccountId, @Param("resourceType") String resourceType);
 
-    int deleteByResourceType(@Param("platform")String platform,@Param("resourceType") String resourceType);
+    int deleteByResourceType(@Param("platform") String platform, @Param("resourceType") String resourceType);
+
+    List<Long> findPreDeletedDataIdList(@Param("cloudAccountId") String cloudAccountId, @Param("delNum") int delNum);
 }

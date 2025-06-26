@@ -16,13 +16,13 @@
 package adbpostgresql
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	gpdb20160503 "github.com/alibabacloud-go/gpdb-20160503/v3/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -36,6 +36,32 @@ func GetAnalyticDBPostgreSQLResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.DBInstance.DBInstanceId",
 			ResourceName: "$.DBInstance.DBInstanceDescription",
+		},
+		Regions: []string{
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"ap-northeast-2",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-7",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
 		},
 		Dimension: schema.Regional,
 	}

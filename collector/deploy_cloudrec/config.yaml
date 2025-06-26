@@ -36,4 +36,4 @@ Sites: [ ]
 
 # Pay attention to the risk error information. If the error message contains text, the risk will be submitted to the server
 AttentionErrorTexts: [ "NoPermission", "NotAuthorized", "NotApplicable",
-                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable", "Forbidden" ]
+                       "Forbidden.RAM", "Forbidden", "Throttling.User", "Throttling", "InvalidAccessKeyId.NotFound", "ServiceUnavailable" ,"InternalError", "AccessDenied","IamSignatureInvalid", "UnknownError","SDKError", "CollectorError" ]

@@ -142,6 +142,9 @@ public class StatisticsJobImpl implements StatisticsJob {
         // init some data
         Date yesterdayEndTime = DateUtil.getYesterdayEndTime();
 
+        // clear history data
+        ruleScanRiskCountStatisticsMapper.deleteByDate(yesterdayEndTime);
+
         List<TenantPO> tenantPOS = tenantMapper.findList(new TenantDTO());
         for (TenantPO tenantPO : tenantPOS) {
             queryData(tenantPO.getTenantName(), tenantPO.getId(), yesterdayEndTime);

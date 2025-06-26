@@ -48,4 +48,6 @@ public class LogRequest {
     private String description;
 
     private String message;
+
+    private Long collectRecordId;
 }

@@ -17,18 +17,20 @@
 package com.alipay.api.collector;
 
 import com.alipay.application.service.collector.AgentService;
+import com.alipay.application.service.collector.domain.TaskResp;
 import com.alipay.application.service.resource.SaveResourceService;
-import com.alipay.application.share.request.collector.*;
+import com.alipay.application.share.request.collector.AcceptSupportResourceTypeRequest;
+import com.alipay.application.share.request.collector.LogRequest;
+import com.alipay.application.share.request.collector.QueryCloudAccountRequest;
+import com.alipay.application.share.request.collector.RunningFinishSignalRequest;
 import com.alipay.application.share.request.resource.DataPushRequest;
-import com.alipay.application.share.vo.collector.AgentCloudAccountVO;
 import com.alipay.application.share.vo.ApiResponse;
+import com.alipay.application.share.vo.collector.AgentCloudAccountVO;
 import com.alipay.application.share.vo.collector.Registry;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,13 +52,14 @@ import java.util.List;
 @Slf4j
 public class CollectorApi {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CollectorApi.class);
-
     @Resource
     private SaveResourceService saveResourceService;
 
     @Resource
     private AgentService agentService;
+
+    private static final String PERSISTENT_TOKEN = "PERSISTENTTOKEN";
+    private static final String ONCE_TOKEN = "ONCETOKEN";
 
     @PostMapping("/resource")
     public ApiResponse<String> acceptResourceData(@Validated @RequestBody DataPushRequest dataPushRequest,
@@ -76,7 +79,7 @@ public class CollectorApi {
             throw new IllegalArgumentException(err.toString());
         }
 
-        agentService.runningFinishSignal(req.getCloudAccountId());
+        agentService.runningFinishSignal(req.getCloudAccountId(), req.getTaskId());
     }
 
 
@@ -89,9 +92,24 @@ public class CollectorApi {
      */
     @PostMapping("/listCloudAccount")
     public ApiResponse<List<AgentCloudAccountVO>> listCloudAccount(HttpServletRequest request,
-                                                                        @RequestBody QueryCloudAccountRequest req) {
-        return agentService.queryCloudAccountList(request.getHeader("PERSISTENTTOKEN"),
-                req.getRegistryValue(), req.getPlatform(), req.getSites());
+                                                                   @RequestBody QueryCloudAccountRequest req) {
+        return agentService.queryCloudAccountList(request.getHeader(PERSISTENT_TOKEN),
+                req.getRegistryValue(), req.getPlatform(), req.getSites(), req.getTaskIds());
+    }
+
+    /**
+     * The collector obtains tasks from the server
+     *
+     * @param request HTTP request object
+     * @param req     Query account account request object
+     * @return Return to account list
+     */
+    @PostMapping("/listCollectorTask")
+    public ApiResponse<List<TaskResp>> listCollectorTask(HttpServletRequest request,
+                                                         @RequestBody QueryCloudAccountRequest req) throws Exception {
+        List<TaskResp> list = agentService.listCollectorTask(request.getHeader(PERSISTENT_TOKEN),
+                req.getRegistryValue(), req.getPlatform());
+        return new ApiResponse<>(list);
     }
 
     /**
@@ -103,9 +121,9 @@ public class CollectorApi {
      */
     @PostMapping("/registry")
     public ApiResponse<Registry.RegistryResponse> registry(HttpServletRequest request, @RequestBody Registry registry) {
-        String onceToken = request.getHeader("ONCETOKEN");
+        String onceToken = request.getHeader(ONCE_TOKEN);
         if (StringUtils.isEmpty(onceToken)) {
-            throw new RuntimeException("ONCE_TOKEN is empty");
+            throw new RuntimeException(String.format("%s is empty", ONCE_TOKEN));
         }
         agentService.checkOnceToken(registry, onceToken);
         return agentService.registry(registry, onceToken);
@@ -120,9 +138,9 @@ public class CollectorApi {
     @PostMapping("/acceptSupportResourceType")
     public ApiResponse<String> acceptSupportResourceType(HttpServletRequest request,
                                                          @RequestBody AcceptSupportResourceTypeRequest acceptSupportResourceTypeRequest) {
-        String persistentToken = request.getHeader("PERSISTENTTOKEN");
+        String persistentToken = request.getHeader(PERSISTENT_TOKEN);
         if (StringUtils.isEmpty(persistentToken)) {
-            throw new RuntimeException("PERSISTENT_TOKEN is empty");
+            throw new RuntimeException(String.format("%s is empty", PERSISTENT_TOKEN));
         }
         agentService.checkPersistentToken(acceptSupportResourceTypeRequest.getPlatform(),
                 acceptSupportResourceTypeRequest.getRegistryValue(), persistentToken);

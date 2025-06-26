@@ -16,14 +16,14 @@
 package accesscontextmanager
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	accesscontextmanager "cloud.google.com/go/accesscontextmanager/apiv1"
 	"cloud.google.com/go/accesscontextmanager/apiv1/accesscontextmanagerpb"
 	"context"
 	"github.com/cloudrec/gcp/collector"
 	"github.com/cloudrec/gcp/collector/cloudresourcemanager"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 	"iter"
 )
@@ -50,6 +50,7 @@ func GetGcpUserAccessBindingResource() schema.Resource {
 					}
 					res <- UserAccessBinding{
 						UserAccessBinding: userAccessBinding,
+						AccessLevels:      getAccessLevels(ctx, ACMSvc, userAccessBinding.AccessLevels),
 					}
 				}
 			}
@@ -66,6 +67,7 @@ func GetGcpUserAccessBindingResource() schema.Resource {
 
 type UserAccessBinding struct {
 	UserAccessBinding *accesscontextmanagerpb.GcpUserAccessBinding
+	AccessLevels      []*accesscontextmanagerpb.AccessLevel
 }
 
 func ListGcpUserAccessBindings(ctx context.Context, svc *accesscontextmanager.Client, orgName string) iter.Seq2[*accesscontextmanagerpb.GcpUserAccessBinding, error] {
@@ -73,4 +75,18 @@ func ListGcpUserAccessBindings(ctx context.Context, svc *accesscontextmanager.Cl
 	return svc.ListGcpUserAccessBindings(ctx, &accesscontextmanagerpb.ListGcpUserAccessBindingsRequest{
 		Parent: orgName,
 	}).All()
+}
+
+func getAccessLevels(ctx context.Context, svc *accesscontextmanager.Client, AccessLevels []string) (accessLevels []*accesscontextmanagerpb.AccessLevel) {
+	for _, accessLevel := range AccessLevels {
+		acl, err := svc.GetAccessLevel(ctx, &accesscontextmanagerpb.GetAccessLevelRequest{
+			Name: accessLevel,
+		})
+		if err != nil {
+			log.CtxLogger(ctx).Warn("GetAccessLevel error", zap.Error(err))
+			return
+		}
+		accessLevels = append(accessLevels, acl)
+	}
+	return
 }

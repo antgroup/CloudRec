@@ -16,12 +16,12 @@
 package hitsdb
 
 import (
-	"context"
-	hitsdb20200615 "github.com/alibabacloud-go/hitsdb-20200615/v5/client"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	hitsdb20200615 "github.com/alibabacloud-go/hitsdb-20200615/v5/client"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +35,29 @@ func GetLindormResource() schema.Resource {
 		RowField: schema.RowField{
 			ResourceId:   "$.Instance.InstanceId",
 			ResourceName: "$.InstanceId.InstanceAlias",
+		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
 		},
 		Dimension: schema.Regional,
 	}

@@ -5,8 +5,8 @@ go 1.23.0
 replace github.com/core-sdk => ../core-sdk
 
 require (
-	github.com/baidubce/bce-sdk-go v0.9.207
 	github.com/core-sdk v0.0.0-00010101000000-000000000000
+	github.com/baidubce/bce-sdk-go v0.9.229
 	go.uber.org/zap v1.27.0
 )
 

@@ -16,8 +16,8 @@
 package collector
 
 import (
-	"context"
 	"github.com/core-sdk/log"
+	"context"
 	"go.uber.org/zap"
 	"net"
 	"time"
@@ -96,6 +96,12 @@ type Services struct {
 	CSS              *css.CssClient
 	EIP              *eip.EipClient
 	RDS              *rds.RdsClient
+}
+
+// Clone creates a new instance of Services
+func (s *Services) Clone() schema.ServiceInterface {
+	// Create a new instance with copied basic information
+	return &Services{}
 }
 
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {

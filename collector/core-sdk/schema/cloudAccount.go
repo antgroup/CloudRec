@@ -16,10 +16,10 @@
 package schema
 
 import (
-	"encoding/json"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/utils"
+	"encoding/json"
 	"go.uber.org/zap"
 )
 
@@ -32,6 +32,10 @@ type CloudAccount struct {
 	ResourceTypeList []string
 
 	CredentialJson string
+
+	CollectRecordId int64
+
+	TaskId int64
 
 	// common cloud account auth info
 	CommonCloudAccountAuthParam CommonCloudAccountAuthParam

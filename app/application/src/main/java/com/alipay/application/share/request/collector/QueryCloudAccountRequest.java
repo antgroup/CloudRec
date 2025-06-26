@@ -47,4 +47,9 @@ public class QueryCloudAccountRequest {
      * agent名称
      */
     private String registryValue;
+
+    /**
+     * 任务id列表
+     */
+    private List<Long> taskIds;
 }

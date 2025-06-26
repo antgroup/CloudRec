@@ -5,6 +5,7 @@ go 1.23
 replace github.com/core-sdk => ../core-sdk
 
 require (
+	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2 v1.32.5
 	github.com/aws/aws-sdk-go-v2/config v1.27.35
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.33
@@ -23,7 +24,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.66.0
 	github.com/aws/aws-sdk-go-v2/service/wafv2 v1.55.5
 	github.com/aws/smithy-go v1.22.1
-	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.27.0
 )
 

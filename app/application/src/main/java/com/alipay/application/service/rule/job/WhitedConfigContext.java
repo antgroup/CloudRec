@@ -25,7 +25,9 @@ import com.alipay.dao.po.WhitedRuleConfigPO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,6 +44,7 @@ public class WhitedConfigContext {
     @Resource
     private OpaRepository opaRepository;
 
+    private static final ThreadLocal<List<WhitedRuleConfigPO>> WHITED_CONFIG_THREAD_LOCAL_CACHE = new ThreadLocal<>();
 
     public void loadEnableWhitedConfigs() {
         QueryWhitedRuleDTO dto = new QueryWhitedRuleDTO();
@@ -55,6 +58,45 @@ public class WhitedConfigContext {
             String newrRgoPolicy = regoContent.replaceFirst("(?<=package )\\S+", regoPath);
             opaRepository.createOrUpdatePolicy(regoPath, newrRgoPolicy);
         }
+    }
+
+    protected void initWhitedConfigCache() {
+        List<WhitedRuleConfigPO> whitedRuleConfigPOList = new ArrayList<>();
+        QueryWhitedRuleDTO queryWhitedRuleDTO = new QueryWhitedRuleDTO();
+        queryWhitedRuleDTO.setEnable(1);
+
+        int count = whitedRuleConfigMapper.count(queryWhitedRuleDTO);
+        if (count == 0) {
+            WHITED_CONFIG_THREAD_LOCAL_CACHE.set(new ArrayList<>());
+            return;
+        }
+        List<WhitedRuleConfigPO> whitedRuleConfigPOS = WHITED_CONFIG_THREAD_LOCAL_CACHE.get();
+        if (CollectionUtils.isEmpty(whitedRuleConfigPOS) || whitedRuleConfigPOS.size() != count) {
+            WHITED_CONFIG_THREAD_LOCAL_CACHE.remove();
+        }
+
+        queryWhitedRuleDTO.setSize(100);
+        int page = 1;
+        while (true) {
+            queryWhitedRuleDTO.setPage(page);
+            queryWhitedRuleDTO.setOffset();
+            List<WhitedRuleConfigPO> dataList = whitedRuleConfigMapper.list(queryWhitedRuleDTO);
+            if (CollectionUtils.isEmpty(dataList)) {
+                break;
+            }
+            whitedRuleConfigPOList.addAll(dataList);
+            page++;
+        }
+        WHITED_CONFIG_THREAD_LOCAL_CACHE.set(whitedRuleConfigPOList);
+    }
+
+    protected void clear() {
+        WHITED_CONFIG_THREAD_LOCAL_CACHE.remove();
+    }
+
+    // get
+    protected List<WhitedRuleConfigPO> get() {
+        return WHITED_CONFIG_THREAD_LOCAL_CACHE.get();
     }
 
 }

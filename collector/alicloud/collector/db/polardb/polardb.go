@@ -16,13 +16,13 @@
 package polardb
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	polardb20170801 "github.com/alibabacloud-go/polardb-20170801/v6/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 	"time"
 )
@@ -38,10 +38,35 @@ func GetPolarDBResource() schema.Resource {
 			ResourceId:   "$.DBCluster.DBClusterId",
 			ResourceName: "$.DBCluster.DBClusterDescription",
 		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"ap-southeast-6",
+			"ap-northeast-2",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-7",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
+		},
 		Dimension: schema.Regional,
-		// product not support
-		ExcludedRegions: []string{"cn-heyuan", "cn-guangzhou",
-			"cn-nanjing", "me-central-1", "cn-fuzhou"},
 	}
 }
 

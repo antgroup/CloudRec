@@ -10,6 +10,7 @@ import {
   queryExportRuleList,
   queryRuleList,
   scanByRule,
+  loadRuleFromGithub,
 } from '@/services/rule/RuleController';
 import { RiskLevelList } from '@/utils/const';
 import {
@@ -51,6 +52,7 @@ import {
   Select,
   Space,
   Switch,
+  Tag,
   Tooltip,
 } from 'antd';
 import { MessageType } from 'antd/es/message/interface';
@@ -96,6 +98,10 @@ const RuleProject: React.FC = () => {
   const [editFormVisible, setEditFormVisible] = useState<boolean>(false);
   // Rule group information
   const projectInfoRef = useRef<any>({});
+  // Sync Rules Popover Visible
+  const [popoverVisible, setPopoverVisible] = useState<boolean>(false);
+  // Sync Rules Loading Status
+  const [syncLoading, setSyncLoading] = useState<boolean>(false);
   // Select status Table Row
   const [activeRow, setActiveRow] = useState<number>();
   // Scanning Loading
@@ -104,6 +110,8 @@ const RuleProject: React.FC = () => {
   const [copyLoading, setCopyLoading] = useState<any>({});
   // Export Loading
   const [exportLoading, setExportLoading] = useState<boolean>(false);
+  // Selected Row Keys
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   // Custom ColumnsStateMap
   const [columnsStateMap] = useState({
     lastScanTime: {
@@ -202,10 +210,13 @@ const RuleProject: React.FC = () => {
     }
   };
 
-  const onClickExportRuleList = () => {
+  const onClickExportRuleList = (selectedRowKeys?: React.Key[]) => {
     setExportLoading(true);
 
-    queryExportRuleList({}, { responseType: 'blob' })
+    queryExportRuleList(
+      selectedRowKeys ? { idList: selectedRowKeys } : {},
+      { responseType: 'blob' }
+    )
       .then((r) => {
         BlobExportZIPFn(
           r,
@@ -357,6 +368,26 @@ const RuleProject: React.FC = () => {
           {record?.riskCount}
         </Button>
       ),
+    },
+    {
+      title: intl.formatMessage({
+        id: 'rule.table.columns.text.isRunning',
+      }),
+      dataIndex: 'isRunning',
+      valueType: 'text',
+      hideInSearch: true,
+      align: 'center',
+      render: (_, record) => {
+        const color = record?.isRunning ? 'green' : 'gray';
+        const status = record?.isRunning ? 'running' : 'stop';
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Tooltip title={status}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: color, cursor: 'pointer' }} />
+            </Tooltip>
+          </div>
+        );
+      }
     },
     {
       title: intl.formatMessage({
@@ -672,11 +703,19 @@ const RuleProject: React.FC = () => {
       </ProCard>
       <ProTable<API.RuleProjectInfo>
         scroll={{ x: 'max-content' }}
+        rowSelection={{
+          type: 'checkbox',
+          selectedRowKeys: selectedRowKeys,
+          onChange: (selectedRowKeys) => setSelectedRowKeys(selectedRowKeys),
+          preserveSelectedRowKeys: true
+        }}
         headerTitle={
           <div className={styleType['customTitle']}>
-            {intl.formatMessage({
-              id: 'rule.module.text.rule.inquiry',
-            })}
+            <Space>
+              {intl.formatMessage({
+                id: 'rule.module.text.rule.inquiry',
+              })}
+            </Space>
           </div>
         }
         actionRef={tableActionRef}
@@ -690,6 +729,89 @@ const RuleProject: React.FC = () => {
           labelWidth: 0,
         }}
         toolBarRender={() => [
+          <Popover
+            key="SYNC"
+            open={popoverVisible}
+            onOpenChange={(visible) => setPopoverVisible(visible)}
+            title={intl.formatMessage({
+              id: 'rule.module.text.sync.confirm',
+            })}
+            content={
+              <Space>
+                <Button
+                  danger
+                  type="primary"
+                  loading={syncLoading}
+                  onClick={async () => {
+                    setSyncLoading(true);
+                    const hide = messageApi.loading(intl.formatMessage({
+                      id: 'rule.module.text.sync.loading',
+                    }));
+                    try {
+                      const res = await loadRuleFromGithub({ coverage: true });
+                      if (res.code === 200 || res.msg === 'success') {
+                        messageApi.success(intl.formatMessage({
+                          id: 'rule.module.text.sync.success',
+                        }));
+                        tableActionRef.current?.reloadAndRest?.();
+                      }
+                    } finally {
+                      hide();
+                      setSyncLoading(false);
+                      setPopoverVisible(false);
+                    }
+                  }}
+                >
+                  {intl.formatMessage({
+                    id: 'rule.module.text.sync.overwrite',
+                  })}
+                </Button>
+                <Button
+                  type="primary"
+                  loading={syncLoading}
+                  onClick={async () => {
+                    setSyncLoading(true);
+                    const hide = messageApi.loading(intl.formatMessage({
+                      id: 'rule.module.text.sync.loading',
+                    }));
+                    try {
+                      const res = await loadRuleFromGithub({ coverage: false });
+                      if (res.code === 200 || res.msg === 'success') {
+                        messageApi.success(intl.formatMessage({
+                          id: 'rule.module.text.sync.success',
+                        }));
+                        tableActionRef.current?.reloadAndRest?.();
+                      }
+                    } finally {
+                      hide();
+                      setSyncLoading(false);
+                      setPopoverVisible(false);
+                    }
+                  }}
+                >
+                  {intl.formatMessage({
+                    id: 'rule.module.text.sync.no.overwrite',
+                  })}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setPopoverVisible(false);
+                  }}
+                >
+                  {intl.formatMessage({
+                    id: 'common.button.text.cancel',
+                  })}
+                </Button>
+                </Space>
+            }
+            trigger="click"
+          >
+            <Button type="primary">
+              {intl.formatMessage({
+                id: 'rule.module.text.sync.button',
+              })}
+            </Button>
+          </Popover>,
           <Button
             key="CREATE"
             type="primary"
@@ -703,7 +825,7 @@ const RuleProject: React.FC = () => {
             loading={exportLoading}
             key="EXPORT"
             type="primary"
-            onClick={onClickExportRuleList}
+            onClick={() => onClickExportRuleList(selectedRowKeys)}
           >
             {intl.formatMessage({
               id: 'common.button.text.export',
@@ -737,6 +859,7 @@ const RuleProject: React.FC = () => {
         }}
         onReset={(): void => {
           form.resetFields();
+          setSelectedRowKeys([]);
           // @ts-ignore
           tableActionRef.current?.reloadAndRest();
         }}

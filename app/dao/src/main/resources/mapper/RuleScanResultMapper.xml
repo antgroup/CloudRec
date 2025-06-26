@@ -303,7 +303,10 @@
         SELECT id
         FROM rule_scan_result
         WHERE platform = #{platform}
-          AND resource_type = #{resourceType}
+        AND resource_type = #{resourceType}
+        <if test="resourceId != null and resourceId != ''">
+            AND resource_id = #{resourceId}
+        </if>
     </select>
 
     <select id="findMaxVersion" resultType="java.lang.Long">

@@ -19,6 +19,9 @@ package com.alipay.dao.mapper;
 import com.alipay.dao.po.CollectorLogPO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+import java.util.Map;
+
 public interface CollectorLogMapper {
     int deleteByPrimaryKey(Long id);
 
@@ -30,5 +33,11 @@ public interface CollectorLogMapper {
 
     CollectorLogPO findByUniqueKey(String uniqueKey);
 
-    CollectorLogPO findLogLimit1(@Param("platform") String platform,@Param("cloudAccountId") String cloudAccountId);
+    CollectorLogPO findLogLimit1(@Param("platform") String platform, @Param("cloudAccountId") String cloudAccountId);
+
+    List<CollectorLogPO> findList(@Param("collectRecordId") Long collectRecordId);
+
+    List<Map<String, Integer>> listErrorCode(@Param("platform") String platform, @Param("cloudAccountId") String cloudAccountId);
+
+    int deleteByRecordId(Long collectRecordId);
 }

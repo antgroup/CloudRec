@@ -16,15 +16,15 @@
 package dns
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"context"
 	"fmt"
 	alidns20150109 "github.com/alibabacloud-go/alidns-20150109/v4/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -39,6 +39,27 @@ func GetDNSResource() schema.Resource {
 			ResourceId:   "$.ResourceId",
 			ResourceName: "$.ResourceName",
 		},
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-huhehaote",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+		},
 		Dimension: schema.Regional,
 	}
 }
@@ -47,7 +68,10 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 	services := service.(*collector.Services)
 	cli := services.DNS
 	describeDnsProductInstancesRequest := &alidns20150109.DescribeDnsProductInstancesRequest{}
-	runtime := &util.RuntimeOptions{}
+	runtime := &util.RuntimeOptions{
+		ConnectTimeout: tea.Int(10000),
+		ReadTimeout:    tea.Int(10000),
+	}
 	dnsInstances, err := cli.DescribeDnsProductInstancesWithOptions(describeDnsProductInstancesRequest, runtime)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("DescribeDnsProductInstancesWithOptions error", zap.Error(err))

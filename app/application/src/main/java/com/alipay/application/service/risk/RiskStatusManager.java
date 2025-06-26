@@ -19,12 +19,17 @@ package com.alipay.application.service.risk;
 import com.alipay.common.enums.Action;
 import com.alipay.common.enums.LogType;
 import com.alipay.common.exception.BizException;
+import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.mapper.OperationLogMapper;
 import com.alipay.dao.mapper.RuleScanResultMapper;
 import com.alipay.dao.po.OperationLogPO;
 import com.alipay.dao.po.RuleScanResultPO;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /*
  *@title RiskStatus
@@ -33,6 +38,7 @@ import org.springframework.stereotype.Component;
  *@version 1.0
  *@create 2024/7/17 09:28
  */
+@Slf4j
 @Component
 public class RiskStatusManager {
 
@@ -67,7 +73,8 @@ public class RiskStatusManager {
     public void repairedToUnrepaired(Long id) {
         RiskStatus riskStatus = getRiskStatus(id);
         if (riskStatus != RiskStatus.REPAIRED) {
-            throw new BizException("当前风险状态不是已修复状态");
+            log.info("The current risk state is not a repaired state, id: {}", id);
+            return;
         }
 
         RuleScanResultPO ruleScanResultPO = new RuleScanResultPO();
@@ -87,7 +94,8 @@ public class RiskStatusManager {
     public void unrepairedToRepaired(Long id) {
         RiskStatus riskStatus = getRiskStatus(id);
         if (riskStatus != RiskStatus.UNREPAIRED) {
-            throw new BizException("当前风险状态不是未修复状态");
+            log.info("The current risk state is not an unrepaired state, id: {}", id);
+            return;
         }
 
         RuleScanResultPO ruleScanResultPO = new RuleScanResultPO();
@@ -99,6 +107,23 @@ public class RiskStatusManager {
         saveOperationLog(id, Action.RiskAction.REPAIRED, "SYSTEM", "风险从未修复状态变更为已修复状态");
     }
 
+
+    /**
+     * 未修复 => 已修复
+     *
+     */
+    public void unrepairedToRepaired(String resourceId, String resourceType, String platform) {
+        RuleScanResultDTO resultDTO = RuleScanResultDTO.builder().resourceId(resourceId).resourceType(resourceType).platform(platform).build();
+        List<RuleScanResultPO> idList = ruleScanResultMapper.findIdList(resultDTO);
+        if (CollectionUtils.isEmpty(idList)) {
+            return;
+        }
+
+        for (RuleScanResultPO ruleScanResultPO : idList) {
+            unrepairedToRepaired(ruleScanResultPO.getId());
+        }
+    }
+
     /**
      * 未修复 => 忽略
      *
@@ -107,7 +132,8 @@ public class RiskStatusManager {
     public void unrepairedToIgnored(Long id, String operator, String ignoreReasonType, String ignoreReason) {
         RiskStatus riskStatus = getRiskStatus(id);
         if (riskStatus != RiskStatus.UNREPAIRED) {
-            throw new BizException("当前风险状态不是未修复状态");
+            log.info("The current risk state is not an unrepaired state, id: {}", id);
+            return;
         }
 
         RuleScanResultPO ruleScanResultPO = new RuleScanResultPO();
@@ -129,7 +155,8 @@ public class RiskStatusManager {
     public void ignoredToUnrepaired(Long id, String operator) {
         RiskStatus riskStatus = getRiskStatus(id);
         if (riskStatus != RiskStatus.IGNORED) {
-            throw new BizException("当前风险状态不是已忽略状态");
+            log.info("The current risk state is not an ignored state, id: {}", id);
+            return;
         }
 
         RuleScanResultPO ruleScanResultPO = new RuleScanResultPO();
@@ -163,7 +190,8 @@ public class RiskStatusManager {
     public RiskStatus getRiskStatus(Long id) {
         RuleScanResultPO ruleScanResultPO = ruleScanResultMapper.selectByPrimaryKey(id);
         if (ruleScanResultPO == null) {
-            throw new BizException("Is not a valid id");
+            log.info("The current risk state is not a valid id, id: {}", id);
+            return null;
         }
 
         return RiskStatus.valueOf(ruleScanResultPO.getStatus());

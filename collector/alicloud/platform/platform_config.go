@@ -16,6 +16,8 @@
 package platform
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/cloudrec/alicloud/collector/ack"
 	"github.com/cloudrec/alicloud/collector/acr"
@@ -67,8 +69,6 @@ import (
 	"github.com/cloudrec/alicloud/collector/vpc/nat"
 	"github.com/cloudrec/alicloud/collector/waf"
 	"github.com/cloudrec/alicloud/collector/yundun"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {

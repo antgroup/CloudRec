@@ -31,6 +31,11 @@
         where rule_id = #{ruleId,jdbcType=BIGINT}
           and tenant_id = #{tenantId,jdbcType=BIGINT}
     </delete>
+    <delete id="deleteByDate">
+        delete
+        from rule_scan_risk_count_statistics
+        where update_time &lt; #{date,jdbcType=TIMESTAMP}
+    </delete>
     <insert id="insert" parameterType="com.alipay.dao.po.RuleScanRiskCountStatisticsPO">
         insert into rule_scan_risk_count_statistics (id, gmt_create, gmt_modified,
                                                      rule_id, count, tenant_id,

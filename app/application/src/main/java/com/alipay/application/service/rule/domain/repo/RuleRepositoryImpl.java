@@ -35,6 +35,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -94,6 +95,20 @@ public class RuleRepositoryImpl implements RuleRepository {
     public List<RuleAgg> findAll() {
         List<RulePO> all = ruleMapper.findAll();
         return all.stream().map(r -> this.findByRuleId(r.getId())).toList();
+    }
+
+    @Override
+    public List<RuleAgg> findByIdList(List<Long> idList) {
+        List<RulePO> all = ruleMapper.findByIdList(idList);
+        return all.stream().map(r -> this.findByRuleId(r.getId())).toList();
+    }
+
+    @Override
+    public List<RuleAgg> findAll(String platform) {
+        RuleDTO dto = RuleDTO.builder().platform(platform).status(Status.valid.name()).build();
+        List<RulePO> all = ruleMapper.findList(dto);
+        List<RuleAgg> list = all.stream().map(r -> this.findByRuleId(r.getId())).toList();
+        return list;
     }
 
     @Override
@@ -184,11 +199,16 @@ public class RuleRepositoryImpl implements RuleRepository {
     public void saveOrgRule(RuleAgg ruleAgg) {
         // Update rule metadata information
         RulePO rulePO = ruleConverter.toPo(ruleAgg);
-        if (ruleAgg.getId() != null) {
-            rulePO.setGmtModified(new Date());
-            ruleMapper.updateByPrimaryKeySelective(rulePO);
-        } else {
+        if (Strings.isEmpty(ruleAgg.getRuleCode())) {
             ruleMapper.insertSelective(rulePO);
+        }
+        if (Strings.isNotEmpty(ruleAgg.getRuleCode())) {
+            RulePO existRule = ruleMapper.findOne(ruleAgg.getRuleCode());
+            if (existRule != null) {
+                rulePO.setId(existRule.getId());
+                rulePO.setGmtModified(new Date());
+                ruleMapper.updateByPrimaryKeySelective(rulePO);
+            }
         }
 
         // Update rule types

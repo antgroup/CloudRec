@@ -16,12 +16,12 @@
 package computeengine
 
 import (
-	"context"
-	"fmt"
-	"github.com/cloudrec/gcp/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"fmt"
+	"github.com/cloudrec/gcp/collector"
 	"go.uber.org/zap"
 	"google.golang.org/api/compute/v1"
 	"strings"

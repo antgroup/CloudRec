@@ -16,6 +16,8 @@
 package platform
 
 import (
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 	"github.com/cloudrec/tencent/collector"
 	"github.com/cloudrec/tencent/collector/cam"
 	"github.com/cloudrec/tencent/collector/cdb"
@@ -28,8 +30,6 @@ import (
 	"github.com/cloudrec/tencent/collector/postgres"
 	"github.com/cloudrec/tencent/collector/sqlserver"
 	"github.com/cloudrec/tencent/collector/vpc"
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {
@@ -71,6 +71,7 @@ func GetPlatformConfig() *schema.Platform {
 			"na-ashburn",
 			"na-siliconvalley",
 			"sa-saopaulo",
+			"ap-beijing-fsi",
 		},
 	})
 

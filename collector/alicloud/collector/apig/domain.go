@@ -1,12 +1,12 @@
 package apig
 
 import (
-	"context"
-	apig20240327 "github.com/alibabacloud-go/apig-20240327/v3/client"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	apig20240327 "github.com/alibabacloud-go/apig-20240327/v3/client"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 )
 
@@ -21,10 +21,35 @@ func GetDomainData() schema.Resource {
 
 		// 使用json path 从detail中取值，其中只有ResourceId是必须的
 		RowField: schema.RowField{
-			ResourceId:   "$.GetDomainResponseBodyData.DomainId",
-			ResourceName: "$.GetDomainResponseBodyData.Name",
+			ResourceId:   "$.Domain.domainId",
+			ResourceName: "$.Domain.name",
 		},
-
+		Regions: []string{
+			"cn-qingdao",
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"cn-heyuan",
+			"cn-guangzhou",
+			"ap-southeast-6",
+			"ap-northeast-2",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"ap-southeast-7",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+			"me-central-1",
+		},
 		Dimension: schema.Regional,
 	}
 }

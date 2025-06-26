@@ -193,9 +193,12 @@ public class QueryResourceImpl implements IQueryResource {
     public ApiResponse<ListVO<ResourceInstanceVO>> queryResourceList(QueryResourceListRequest request) {
         boolean needCache = false;
         String key = CacheUtil.buildKey(cacheKey, UserInfoContext.getCurrentUser().getUserTenantId(), request.getPage(), request.getSize());
-        if (StringUtils.isEmpty(request.getCloudAccountId()) && CollectionUtils.isEmpty(request.getPlatformList())
-                && CollectionUtils.isEmpty(request.getResourceTypeList()) && StringUtils.isEmpty(request.getSearchParam())
-                && StringUtils.isEmpty(request.getAddress())) {
+        if (StringUtils.isEmpty(request.getCloudAccountId())
+                && CollectionUtils.isEmpty(request.getPlatformList())
+                && CollectionUtils.isEmpty(request.getResourceTypeList())
+                && StringUtils.isEmpty(request.getSearchParam())
+                && StringUtils.isEmpty(request.getAddress())
+                && StringUtils.isEmpty(request.getCustomFieldValue())) {
             needCache = true;
             DbCachePO dbCachePO = dbCacheUtil.get(key);
             if (dbCachePO != null) {

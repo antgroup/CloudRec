@@ -16,11 +16,11 @@
 package cdb
 
 import (
-	"context"
-	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	"github.com/cloudrec/tencent/collector"
 	cdb "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cdb/v20170320"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"go.uber.org/zap"
@@ -60,7 +60,7 @@ func ListInstanceResource(ctx context.Context, service schema.ServiceInterface, 
 		response, err := cli.DescribeDBInstances(request)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeDBInstances error", zap.Error(err))
-			break
+			return err
 		}
 
 		for _, item := range response.Response.Items {

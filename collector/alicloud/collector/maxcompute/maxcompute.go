@@ -16,12 +16,12 @@
 package maxcompute
 
 import (
-	"context"
-	maxcompute20220104 "github.com/alibabacloud-go/maxcompute-20220104/client"
-	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"context"
+	maxcompute20220104 "github.com/alibabacloud-go/maxcompute-20220104/client"
+	"github.com/cloudrec/alicloud/collector"
 	"go.uber.org/zap"
 
 	"github.com/alibabacloud-go/maxcompute-20220104/client"
@@ -37,12 +37,36 @@ func GetMaxComputeResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:       collector.MAX_COMPUTE,
 		ResourceTypeName:   "MaxCompute",
-		ResourceGroupType:  constant.STORE,
+		ResourceGroupType:  constant.BIGDATA,
 		Desc:               `https://api.aliyun.com/product/MaxCompute`,
 		ResourceDetailFunc: GetInstanceDetail,
 		RowField: schema.RowField{
 			ResourceId:   "$.Project.name",
 			ResourceName: "$.Project.comment",
+		},
+		Regions: []string{
+			"cn-beijing",
+			"cn-zhangjiakou",
+			"cn-wulanchabu",
+			"cn-hangzhou",
+			"cn-shanghai",
+			"cn-shenzhen",
+			"ap-southeast-3",
+			"ap-northeast-1",
+			"cn-chengdu",
+			"ap-southeast-1",
+			"ap-southeast-5",
+			"cn-hongkong",
+			"eu-central-1",
+			"us-east-1",
+			"us-west-1",
+			"eu-west-1",
+			"me-east-1",
+			"me-central-1",
+			"cn-beijing-finance-1",
+			"cn-hangzhou-finance",
+			"cn-shanghai-finance-1",
+			"cn-shenzhen-finance-1",
 		},
 		Dimension: schema.Regional,
 	}

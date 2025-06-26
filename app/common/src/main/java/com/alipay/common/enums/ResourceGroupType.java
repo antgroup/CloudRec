@@ -17,6 +17,9 @@
 package com.alipay.common.enums;
 
 import lombok.Getter;
+import org.springframework.context.i18n.LocaleContextHolder;
+
+import java.util.Locale;
 
 /*
  *@title ResourceGroupType
@@ -28,29 +31,32 @@ import lombok.Getter;
 @Getter
 public enum ResourceGroupType {
 
-    UNKNOWN("UNKNOWN", "未知", ""),
-    NET("NET", "网络", "icon/net.svg"),
-    CONTAINER("CONTAINER", "容器", "icon/container.svg"),
-    DATABASE("DATABASE", "数据库", "icon/database.svg"),
-    STORE("STORE", "存储", "icon/store.svg"),
-    COMPUTE("COMPUTE", "计算", "icon/compute.svg"),
-    IDENTITY("IDENTITY", "身份", "icon/identity.svg"),
-    CONFIG("CONFIG", "配置", "icon/config.svg"),
-    SECURITY("SECURITY", "安全产品", "icon/security.svg"),
-    AI("AI", "AI", "icon/AI.svg"),
-    MIDDLEWARE("MIDDLEWARE", "中间件", "icon/middleware.svg"),
-    BIGDATA("BIGDATA", "大数据", "icon/bigdata.svg"),
-    LOG("LOG", "日志", "icon/log.svg"),
-    GOVERNANCE("GOVERNANCE", "管理", "icon/governance.svg");
+    // 格式：常量名, 中文名, 图标路径, 国际化术语（新增）
+    UNKNOWN("UNKNOWN", "未知", "", "Undefined"),
+    NET("NET", "网络", "icon/net.svg", "Network"),
+    CONTAINER("CONTAINER", "容器", "icon/container.svg", "Container"),
+    DATABASE("DATABASE", "数据库", "icon/database.svg", "Database"),
+    STORE("STORE", "存储", "icon/store.svg", "Storage"),
+    COMPUTE("COMPUTE", "计算", "icon/compute.svg", "Compute"),
+    IDENTITY("IDENTITY", "身份", "icon/identity.svg", "Identity"),
+    CONFIG("CONFIG", "配置", "icon/config.svg", "Configuration"),
+    SECURITY("SECURITY", "安全产品", "icon/security.svg", "Security Products"),
+    AI("AI", "AI", "icon/AI.svg", "AI"),
+    MIDDLEWARE("MIDDLEWARE", "中间件", "icon/middleware.svg", "Middleware"),
+    BIGDATA("BIGDATA", "大数据", "icon/bigdata.svg", "Big Data"),
+    LOG("LOG", "日志", "icon/log.svg", "Logging"),
+    GOVERNANCE("GOVERNANCE", "管理", "icon/governance.svg", "Governance");
 
     private final String code;
     private final String desc;
     private final String icon;
+    private final String descEn;
 
-    ResourceGroupType(String code, String desc, String icon) {
+    ResourceGroupType(String code, String desc, String icon, String descEn) {
         this.code = code;
         this.desc = desc;
         this.icon = icon;
+        this.descEn = descEn;
     }
 
     public static ResourceGroupType getByCode(String code) {
@@ -60,5 +66,26 @@ public enum ResourceGroupType {
             }
         }
         return UNKNOWN;
+    }
+
+    public static String getDescByCode(String code) {
+        Locale locale = LocaleContextHolder.getLocale();
+
+        String desc = "";
+        for (ResourceGroupType type : values()) {
+            if (type.getCode().equals(code)) {
+                if (locale.getLanguage().equals(Locale.CHINA.getLanguage())) {
+                    desc = type.getDesc();
+                } else {
+                    desc = type.getDescEn();
+                }
+            }
+        }
+
+        if (desc.isEmpty()) {
+            desc = UNKNOWN.getDesc();
+        }
+
+        return desc;
     }
 }

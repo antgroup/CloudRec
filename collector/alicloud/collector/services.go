@@ -16,17 +16,18 @@
 package collector
 
 import (
+	"github.com/core-sdk/constant"
 	"context"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
+	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
+	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
+	"go.uber.org/zap"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
-	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
-	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
-	"github.com/core-sdk/constant"
-	"go.uber.org/zap"
-
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	adb20190315 "github.com/alibabacloud-go/adb-20190315/v4/client"
 	alb20200616 "github.com/alibabacloud-go/alb-20200616/v2/client"
 	alidns20150109 "github.com/alibabacloud-go/alidns-20150109/v4/client"
@@ -77,8 +78,6 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 )
 
 var RuntimeObject = new(util.RuntimeOptions)
@@ -166,10 +165,17 @@ type Services struct {
 	APIG            *apig20240327.Client
 }
 
+// Clone creates a new instance of Services with copied configuration
+func (s *Services) Clone() schema.ServiceInterface {
+	return &Services{}
+}
+
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {
 	param := cloudAccountParam.CommonCloudAccountParam
 	s.CloudAccountId = cloudAccountParam.CloudAccountId
 	s.Config = openapiConfig(param.Region, param.AK, param.SK)
+	s.Config.ConnectTimeout = tea.Int(10000)
+	s.Config.ReadTimeout = tea.Int(20000)
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, constant.CloudAccountId, cloudAccountParam.CloudAccountId)
@@ -182,7 +188,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ecs client failed", zap.Error(err))
 		}
-	case VPC:
+	case VPC, NAT, EIP:
 		s.VPC, err = vpc.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init vpc client failed", zap.Error(err))

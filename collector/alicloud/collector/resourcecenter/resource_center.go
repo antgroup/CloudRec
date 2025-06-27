@@ -17,6 +17,7 @@ package resourcecenter
 
 import (
 	"context"
+
 	resourcecenter20221201 "github.com/alibabacloud-go/resourcecenter-20221201/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
@@ -77,8 +78,9 @@ func GetDetail(ctx context.Context, service schema.ServiceInterface, res chan<- 
 		log.CtxLogger(ctx).Warn("Resource center query result is empty")
 		return nil
 	}
-  
+
 	res <- &Detail{
+		Columns:    columns,
 		Rows:       rows,
 		ResourceId: log.GetCloudAccountId(ctx) + "-" + tea.StringValue(cli.RegionId),
 	}

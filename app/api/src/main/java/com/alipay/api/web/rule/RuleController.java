@@ -38,13 +38,13 @@ import com.alipay.common.utils.PreventingSQLJoint;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import org.apache.commons.io.FileUtils;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -196,7 +196,7 @@ public class RuleController {
                 log.info("Rules directory: {}", tempPath);
                 ZipUtil.downloadFiles(response, tempPath, "rules");
                 log.info("Write rule completed");
-                
+
                 // Schedule directory deletion after 2 seconds
                 final String finalTempPath = tempPath;
                 scheduler.schedule(() -> {
@@ -247,5 +247,14 @@ public class RuleController {
     public ApiResponse<String> loadRuleFromGithub(@RequestBody LoadRuleFromGithubRequest request) {
         initRuleService.loadRuleFromGithub(request.getCoverage());
         return ApiResponse.SUCCESS;
+    }
+
+    /**
+     * Check if there is a new rule
+     * @return the number of new rules
+     */
+    @PostMapping("/checkExistNewRule")
+    public ApiResponse<Integer> checkExistNewRule() {
+        return new ApiResponse<>(initRuleService.checkExistNewRule());
     }
 }

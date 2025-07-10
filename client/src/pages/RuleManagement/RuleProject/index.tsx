@@ -5,6 +5,7 @@ import DispositionPro from '@/components/DispositionPro';
 import { queryGroupTypeList } from '@/services/resource/ResourceController';
 import {
   changeRuleStatus,
+  checkExistNewRule,
   copyRule,
   deleteRule,
   queryExportRuleList,
@@ -102,6 +103,8 @@ const RuleProject: React.FC = () => {
   const [popoverVisible, setPopoverVisible] = useState<boolean>(false);
   // Sync Rules Loading Status
   const [syncLoading, setSyncLoading] = useState<boolean>(false);
+  // New Rules Count
+  const [newRulesCount, setNewRulesCount] = useState<number>(0);
   // Select status Table Row
   const [activeRow, setActiveRow] = useState<number>();
   // Scanning Loading
@@ -130,6 +133,18 @@ const RuleProject: React.FC = () => {
   };
   // List of Resource Types
   const [resourceTypeList, setResourceTypeList] = useState<any[]>([]);
+
+  // Check for new rules
+  const checkNewRules = async (): Promise<void> => {
+    try {
+      const result = await checkExistNewRule();
+      if (result.code === 200 && typeof result.content === 'number') {
+        setNewRulesCount(result.content);
+      }
+    } catch (error) {
+      console.error('Failed to check new rules:', error);
+    }
+  };
   // According to the cloud platform, obtain a list of resource types
   const { run: requestResourceTypeList } = useRequest(
     (list: string[]) => {
@@ -214,7 +229,7 @@ const RuleProject: React.FC = () => {
     setExportLoading(true);
 
     queryExportRuleList(
-      selectedRowKeys ? { idList: selectedRowKeys } : {},
+      selectedRowKeys ? { idList: selectedRowKeys } as any : undefined,
       { responseType: 'blob' }
     )
       .then((r) => {
@@ -245,6 +260,8 @@ const RuleProject: React.FC = () => {
       form.setFieldValue('platformList', [platformQuery]);
       requestResourceTypeList([platformQuery!]);
     }
+    // Check for new rules on component mount
+    checkNewRules();
   }, [groupIdQuery, ruleCodeQuery, platformQuery]);
 
   const columns: ProColumns<API.RuleProjectInfo, 'text'>[] = [
@@ -754,6 +771,7 @@ const RuleProject: React.FC = () => {
                           id: 'rule.module.text.sync.success',
                         }));
                         tableActionRef.current?.reloadAndRest?.();
+                        checkNewRules();
                       }
                     } finally {
                       hide();
@@ -781,6 +799,7 @@ const RuleProject: React.FC = () => {
                           id: 'rule.module.text.sync.success',
                         }));
                         tableActionRef.current?.reloadAndRest?.();
+                        checkNewRules();
                       }
                     } finally {
                       hide();
@@ -802,15 +821,39 @@ const RuleProject: React.FC = () => {
                     id: 'common.button.text.cancel',
                   })}
                 </Button>
-                </Space>
+              </Space>
             }
             trigger="click"
           >
-            <Button type="primary">
-              {intl.formatMessage({
-                id: 'rule.module.text.sync.button',
-              })}
-            </Button>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <Button type="primary">
+                {intl.formatMessage({
+                  id: 'rule.module.text.sync.button',
+                })}
+              </Button>
+              {newRulesCount > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    right: '-8px',
+                    backgroundColor: '#ff4d4f',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    zIndex: 1,
+                  }}
+                >
+                  {newRulesCount > 99 ? '99+' : newRulesCount}
+                </div>
+              )}
+            </div>
           </Popover>,
           <Button
             key="CREATE"

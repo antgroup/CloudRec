@@ -39,8 +39,6 @@ public interface CloudAccountMapper {
 
     CloudAccountPO findByCloudAccountId(String cloudAccountId);
 
-    List<CloudAccountPO> findByCloudAccountIdList(List<String> cloudAccountIdList);
-
     CloudAccountPO findOne(@Param("cloudAccountId") String cloudAccountId, @Param("platform") String platform);
 
     int findCount(CloudAccountDTO cloudAccountDTO);

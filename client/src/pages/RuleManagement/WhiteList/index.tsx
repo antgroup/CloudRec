@@ -16,7 +16,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
-import { Button, Divider, message, Popconfirm, Switch } from 'antd';
+import { Button, Divider, message, Popconfirm, Switch, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import React, { useRef, useState } from 'react';
 
@@ -47,14 +47,26 @@ const WhiteList: React.FC = () => {
     }
   };
 
-  // Edit white list
-  const onClickEditWhiteList = (record: API.BaseWhiteListRuleInfo) => {
+
+
+  // View white list (根据锁状态决定模式)
+  const onClickViewWhiteList = (record: API.BaseWhiteListRuleInfo) => {
     setEditDrawerVisible(true);
-    whiteListInfoRef.current = record;
+    // 如果当前用户持有锁，则进入编辑模式，否则只读模式
+    const isEditMode = (record as any).isLockHolder === true;
+    whiteListInfoRef.current = { ...record, isEditMode } as any;
   };
 
   // Update white rule status
   const onClickChangeStatus = async (record: API.BaseWhiteListRuleInfo) => {
+    // 检查锁状态
+    if (!(record as any).isLockHolder) {
+      messageApi.warning(
+        intl.formatMessage({ id: 'rule.message.not.holding.lock' }) 
+      );
+      return;
+    }
+    
     const postBody = {
       id: record?.id,
       enable: record?.enable === 1 ? 0 : 1,
@@ -72,6 +84,13 @@ const WhiteList: React.FC = () => {
 
   // Delete white list
   const onClickDeleteWhiteList = async (record: API.BaseWhiteListRuleInfo) => {
+    if (!(record as any).isLockHolder) {
+      messageApi.warning(
+        intl.formatMessage({ id: 'rule.message.not.holding.lock' })
+      );
+      return;
+    }
+    
     const postBody = {
       id: record?.id,
     };
@@ -113,6 +132,7 @@ const WhiteList: React.FC = () => {
       dataIndex: 'ruleName',
       valueType: 'text',
       align: 'left',
+      copyable: true,
     },
     {
       title: intl.formatMessage({
@@ -150,6 +170,16 @@ const WhiteList: React.FC = () => {
       dataIndex: 'creatorName',
       valueType: 'text',
       align: 'center',
+      copyable: true,
+    },
+    {
+      title: intl.formatMessage({
+        id: 'rule.table.columns.text.config',
+      }),
+      dataIndex: 'search',
+      valueType: 'text',
+      align: 'center',
+      hideInTable:true
     },
     {
       title: intl.formatMessage({
@@ -172,59 +202,60 @@ const WhiteList: React.FC = () => {
           <Button
             size={'small'}
             type={'link'}
-            onClick={() => onClickObtainLock(record)}
+            onClick={(): void => onClickViewWhiteList(record)}
           >
             {intl.formatMessage({
-              id: 'rule.table.columns.text.grab.lock',
+              id: 'common.button.text.view',
             })}
           </Button>
           <Divider type={'vertical'} style={{ margin: '0 8px 0 0' }} />
-          <Switch
-            disabled={!record?.isLockHolder}
-            checkedChildren={intl.formatMessage({
-              id: 'common.button.text.enable',
-            })}
-            unCheckedChildren={intl.formatMessage({
-              id: 'common.button.text.disable',
-            })}
-            checked={record?.enable === 1}
-            onClick={() => onClickChangeStatus(record)}
-          />
-          <Divider type="vertical" style={{ margin: '0 0 0 8px' }} />
-          <Button
-            size={'small'}
-            type={'link'}
-            disabled={!record?.isLockHolder}
-            onClick={(): void => onClickEditWhiteList(record)}
+          <Tooltip
+            title={!(record as any).isLockHolder ? 'please grab the lock first' : ''}
+            placement="top"
           >
-            {intl.formatMessage({
-              id: 'common.button.text.edit',
-            })}
-          </Button>
-          <Divider type={'vertical'} />
-          <Popconfirm
-            title={intl.formatMessage({
-              id: 'common.button.text.delete.confirm',
-            })}
-            onConfirm={() => onClickDeleteWhiteList(record)}
-            okText={intl.formatMessage({
-              id: 'common.button.text.ok',
-            })}
-            cancelText={intl.formatMessage({
-              id: 'common.button.text.cancel',
-            })}
-          >
-            <Button
-              type="link"
-              danger
-              size={'small'}
+            <Switch
               disabled={!record?.isLockHolder}
-            >
-              {intl.formatMessage({
-                id: 'common.button.text.delete',
+              checkedChildren={intl.formatMessage({
+                id: 'common.button.text.enable',
               })}
-            </Button>
-          </Popconfirm>
+              unCheckedChildren={intl.formatMessage({
+                id: 'common.button.text.disable',
+              })}
+              checked={record?.enable === 1}
+              onClick={() => onClickChangeStatus(record)}
+            />
+          </Tooltip>
+          <Divider type="vertical" style={{ margin: '0 0 0 8px' }} />
+
+          <Divider type={'vertical'} />
+          <Tooltip
+            title={!(record as any).isLockHolder ? 'please grab the lock first' : ''}
+            placement="top"
+          >
+            <Popconfirm
+              title={intl.formatMessage({
+                id: 'common.button.text.delete.confirm',
+              })}
+              onConfirm={() => onClickDeleteWhiteList(record)}
+              okText={intl.formatMessage({
+                id: 'common.button.text.ok',
+              })}
+              cancelText={intl.formatMessage({
+                id: 'common.button.text.cancel',
+              })}
+            >
+              <Button
+                type="link"
+                danger
+                size={'small'}
+                disabled={!record?.isLockHolder}
+              >
+                {intl.formatMessage({
+                  id: 'common.button.text.delete',
+                })}
+              </Button>
+            </Popconfirm>
+          </Tooltip>
         </>
       ),
     },
@@ -265,15 +296,6 @@ const WhiteList: React.FC = () => {
           };
         }}
         toolBarRender={() => [
-          <Button
-            key="create"
-            type="primary"
-            onClick={() => onClickEditWhiteList({})}
-          >
-            {intl.formatMessage({
-              id: 'rule.module.text.createWhiteList',
-            })}
-          </Button>,
         ]}
         columns={columns}
         pagination={{

@@ -78,11 +78,12 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
   // 提交表单
   const onClickFishEditForm = async (): Promise<void> => {
     const formData = form.getFieldsValue() as CloudAccountFormData;
-    const { cloudAccountId, alias, tenantId, platform, resourceTypeList, site, owner, proxyConfig, credentials } = formData;
+    const { cloudAccountId,email, alias, tenantId, platform, resourceTypeList, site, owner, proxyConfig, credentials } = formData;
     
     const postBody: {
       id?: number;
       cloudAccountId: string;
+      email: string;
       alias: string;
       tenantId?: number;
       platform: string;
@@ -93,6 +94,7 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
       proxyConfig?: string;
     } = {
       cloudAccountId,
+      email,
       alias,
       tenantId: typeof tenantId === 'string' ? parseInt(tenantId, 10) : tenantId,
       platform,
@@ -228,7 +230,12 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
             }}
           />
         </Col>
-
+        <Col span={24}>
+          <ProFormText
+            name="email"
+            label={intl.formatMessage({ id: 'cloudAccount.extend.title.account.email' })}
+          />
+        </Col>
         <Col span={24}>
           <ProFormText
             name="alias"

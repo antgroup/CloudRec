@@ -47,7 +47,7 @@ public class WhitedConfigContext {
     private static final ThreadLocal<List<WhitedRuleConfigPO>> WHITED_CONFIG_THREAD_LOCAL_CACHE = new ThreadLocal<>();
 
     public void loadEnableWhitedConfigs() {
-        QueryWhitedRuleDTO dto = new QueryWhitedRuleDTO();
+        QueryWhitedRuleDTO dto = QueryWhitedRuleDTO.builder().build();
         dto.setEnable(1);
         dto.setSize(1000);
         dto.setRuleType(WhitedRuleTypeEnum.REGO.name());
@@ -62,7 +62,7 @@ public class WhitedConfigContext {
 
     protected void initWhitedConfigCache() {
         List<WhitedRuleConfigPO> whitedRuleConfigPOList = new ArrayList<>();
-        QueryWhitedRuleDTO queryWhitedRuleDTO = new QueryWhitedRuleDTO();
+        QueryWhitedRuleDTO queryWhitedRuleDTO = QueryWhitedRuleDTO.builder().build();
         queryWhitedRuleDTO.setEnable(1);
 
         int count = whitedRuleConfigMapper.count(queryWhitedRuleDTO);

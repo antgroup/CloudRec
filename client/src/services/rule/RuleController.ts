@@ -489,3 +489,13 @@ export async function loadRuleFromGithub(
     ...(options || {}),
   });
 }
+
+// checkExistNewRule
+export async function checkExistNewRule() {
+  return request<API.Result_Number_>(`${BASE_URL}/api/rule/checkExistNewRule`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}

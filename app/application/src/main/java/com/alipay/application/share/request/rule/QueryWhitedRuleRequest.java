@@ -17,14 +17,16 @@
 package com.alipay.application.share.request.rule;
 
 import com.alipay.application.share.request.base.BaseRequest;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Date: 2025/3/17
  * Author: lz
  */
-@Data
-public class QueryWhitedRuleRequestDTO extends BaseRequest {
+@Getter
+@Setter
+public class QueryWhitedRuleRequest extends BaseRequest {
     /**
      * 规则名称
      */
@@ -50,7 +52,10 @@ public class QueryWhitedRuleRequestDTO extends BaseRequest {
      */
     private Long tenantId;
 
-
+    /**
+     * 搜索关键字
+     */
+    private String search;
 
 
 }

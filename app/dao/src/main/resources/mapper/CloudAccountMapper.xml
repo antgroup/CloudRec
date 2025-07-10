@@ -19,11 +19,12 @@
         <result column="site" jdbcType="VARCHAR" property="site"/>
         <result column="owner" jdbcType="VARCHAR" property="owner"/>
         <result column="proxy_config" jdbcType="VARCHAR" property="proxyConfig"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
     </resultMap>
     <sql id="Base_Column_List">
         id
         , gmt_create, gmt_modified, cloud_account_id,alias, platform, status,
-    user_id, tenant_id, last_scan_time, resource_type_list,collector_status,account_status,credentials_json,site,owner,proxy_config
+    user_id, tenant_id, last_scan_time, resource_type_list,collector_status,account_status,credentials_json,site,owner,proxy_config,email
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
@@ -91,6 +92,9 @@
             <if test="proxyConfig != null">
                 proxy_config,
             </if>
+            <if test="email != null">
+                email,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -143,6 +147,9 @@
             </if>
             <if test="proxyConfig != null">
                 #{proxyConfig,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null">
+                #{email,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -197,6 +204,9 @@
             <if test="proxyConfig != null">
                 proxy_config = #{proxyConfig,jdbcType=VARCHAR},
             </if>
+            <if test="email != null">
+                email = #{email,jdbcType=VARCHAR},
+            </if>
         </set>
         where id = #{id,jdbcType=BIGINT}
     </update>
@@ -237,7 +247,8 @@
         account_status AS accountStatus,
         credentials_json AS credentialsJson,
         site AS site,
-        proxy_config AS proxyConfig
+        proxy_config AS proxyConfig,
+        email AS email
         FROM cloud_account
         WHERE platform = #{platform}
         <if test="sites != null and sites.size > 0">
@@ -258,15 +269,6 @@
         WHERE cloud_account_id = #{cloudAccountId}
     </select>
 
-    <select id="findByCloudAccountIdList" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"></include>
-        FROM cloud_account
-        WHERE cloud_account_id in
-        <foreach collection="cloudAccountIdList" item="cloudAccountId" open="(" separator="," close=")">
-            #{cloudAccountId}
-        </foreach>
-    </select>
     <select id="findOne" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"></include>
@@ -283,7 +285,9 @@
             </if>
             <if test="cloudAccountSearch != null and cloudAccountSearch != ''">
                 AND (cloud_account_id LIKE CONCAT('%',#{cloudAccountSearch},'%')
-                OR alias LIKE CONCAT('%',#{cloudAccountSearch},'%'))
+                OR email LIKE CONCAT('%',#{cloudAccountSearch},'%')
+                OR alias LIKE CONCAT('%',#{cloudAccountSearch},'%')
+                )
             </if>
             <if test="platformList != null and platformList.size() > 0">
                 AND platform IN

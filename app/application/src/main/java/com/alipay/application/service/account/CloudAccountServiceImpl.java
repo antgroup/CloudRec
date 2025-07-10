@@ -133,6 +133,7 @@ public class CloudAccountServiceImpl implements CloudAccountService {
         // set base info
         CloudAccountPO cloudAccountPO = new CloudAccountPO();
         cloudAccountPO.setCloudAccountId(cloudAccountDTO.getCloudAccountId());
+        cloudAccountPO.setEmail(cloudAccountDTO.getEmail());
         cloudAccountPO.setPlatform(cloudAccountDTO.getPlatform());
         cloudAccountPO.setTenantId(cloudAccountDTO.getTenantId());
         cloudAccountPO.setAlias(cloudAccountDTO.getAlias());
@@ -246,8 +247,12 @@ public class CloudAccountServiceImpl implements CloudAccountService {
 
         // save account account
         CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder().cloudAccountId(request.getYunid())
-                .platform(PlatformType.ALI_CLOUD.getPlatform()).userId(request.getOwner()).credentialsJson(JSON.toJSONString(credentialMap))
-                .alias(request.getAccount()).build();
+                .platform(PlatformType.ALI_CLOUD.getPlatform())
+                .email(request.getEmail())
+                .userId(request.getOwner())
+                .credentialsJson(JSON.toJSONString(credentialMap))
+                .alias(request.getAccount())
+                .build();
         cloudAccountDTO.setTenantId(tenantPO.getId());
         cloudAccountDTO.setOwner(request.getOwner());
 
@@ -292,6 +297,8 @@ public class CloudAccountServiceImpl implements CloudAccountService {
             for (CloudAccountPO cloudAccountPO : cloudAccountPOS) {
                 if (StringUtils.contains(cloudAccountPO.getAlias(), request.getCloudAccountSearch())) {
                     cloudAccountBaseInfoList.add(cloudAccountPO.getAlias());
+                } else if (StringUtils.contains(cloudAccountPO.getEmail(), request.getCloudAccountSearch())) {
+                    cloudAccountBaseInfoList.add(cloudAccountPO.getEmail());
                 } else {
                     cloudAccountBaseInfoList.add(cloudAccountPO.getCloudAccountId());
                 }

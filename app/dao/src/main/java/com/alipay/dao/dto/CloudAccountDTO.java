@@ -48,6 +48,11 @@ public class CloudAccountDTO extends PageDTO {
     private String cloudAccountId;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 账号别名
      */
     private String alias;

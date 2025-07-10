@@ -45,6 +45,11 @@ public class SaveCloudAccountRequest {
     private String cloudAccountId;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 云账号别名
      */
     private String alias;

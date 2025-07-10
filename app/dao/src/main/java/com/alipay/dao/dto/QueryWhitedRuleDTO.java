@@ -16,18 +16,14 @@
  */
 package com.alipay.dao.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Date: 2025/3/17
  * Author: lz
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Setter
 @Builder
 public class QueryWhitedRuleDTO extends PageDTO  {
     /**
@@ -60,7 +56,10 @@ public class QueryWhitedRuleDTO extends PageDTO  {
      */
     private Integer enable;
 
-
+    /**
+     * 搜索关键字
+     */
+    private String search;
 
 
 }

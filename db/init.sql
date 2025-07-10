@@ -913,3 +913,6 @@ ALTER TABLE `agent_registry`
 
 ALTER TABLE `cloud_account`
     ADD COLUMN `proxy_config` text DEFAULT NULL COMMENT '代理信息';
+
+ALTER TABLE cloud_account`
+    ADD COLUMN `email` varchar(255) DEFAULT NULL COMMENT '邮箱';

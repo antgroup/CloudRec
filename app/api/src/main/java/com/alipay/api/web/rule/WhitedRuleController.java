@@ -82,16 +82,16 @@ public class WhitedRuleController {
     /**
      * 查询白名单列表
      *
-     * @param requestDTO
+     * @param request
      * @return
      * @throws IOException
      */
     @AuthenticateToken
     @PostMapping("/list")
-    public ApiResponse<ListVO<WhitedRuleConfigVO>> list(@RequestBody QueryWhitedRuleRequestDTO requestDTO) throws IOException {
-        QueryWhitedRuleDTO queryWhitedRuleDTO = new QueryWhitedRuleDTO();
-        BeanUtils.copyProperties(requestDTO, queryWhitedRuleDTO);
-        ListVO<WhitedRuleConfigVO> listVO = whitedRuleService.getList(queryWhitedRuleDTO);
+    public ApiResponse<ListVO<WhitedRuleConfigVO>> list(@RequestBody QueryWhitedRuleRequest request) throws IOException {
+        QueryWhitedRuleDTO dto = QueryWhitedRuleDTO.builder().build();
+        BeanUtils.copyProperties(request, dto);
+        ListVO<WhitedRuleConfigVO> listVO = whitedRuleService.getList(dto);
         return new ApiResponse<>(listVO);
     }
 
@@ -101,11 +101,10 @@ public class WhitedRuleController {
      *
      * @param id
      * @return
-     * @throws IOException
      */
     @AuthenticateToken
     @GetMapping("/{id}")
-    public ApiResponse<WhitedRuleConfigVO> detail(@PathVariable Long id) throws IOException {
+    public ApiResponse<WhitedRuleConfigVO> detail(@PathVariable Long id) {
         WhitedRuleConfigVO whitedRuleConfigVO = whitedRuleService.getById(id);
         return new ApiResponse<>(whitedRuleConfigVO);
     }

@@ -398,6 +398,9 @@
                     #{cloudAccountId}
                 </foreach>
             </if>
+            <if test="cloudAccountId != null">
+                AND rsr.cloud_account_id = #{cloudAccountId}
+            </if>
             <if test="ruleId != null">
                 AND rsr.rule_id = #{ruleId,jdbcType=BIGINT}
             </if>

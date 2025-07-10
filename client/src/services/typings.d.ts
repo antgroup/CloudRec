@@ -17,6 +17,14 @@ declare namespace API {
     errorCode?: string;
     errorMsg?: string;
   }
+  
+  interface Result_Number_ {
+    msg?: string;
+    code?: number;
+    content?: number;
+    errorCode?: string;
+    errorMsg?: string;
+  }
 
   interface Result_T_ {
     msg?: string;
@@ -208,6 +216,7 @@ declare namespace API {
     tenantId?: number;
     tenantName?: string;
     resourceCount?: number;
+    riskCount?:number;
     lastScanTime?: string;
     resourceTypeList?: Array<string>;
     collectorStatus?: string;

@@ -48,6 +48,25 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './index.less';
 const { Paragraph } = Typography;
 
+const COMMON_STYLES = {
+  formItem: {
+    marginBottom: 0,
+    color: '#999',
+    fontSize: '12px',
+  },
+  paragraph: {
+    marginBottom: 0,
+    fontSize: '12px',
+    color: '#999',
+  },
+  paragraphTable: {
+    maxWidth: '300px',
+  },
+  paragraphExpanded: {
+    maxWidth: '500px',
+  },
+};
+
 interface IRiskQuantity {
   record: API.BaseAssetResultInfo;
 }
@@ -272,45 +291,66 @@ const AssetManagement: React.FC = () => {
       dataIndex: 'customFieldValue',
       valueType: 'text',
       align: 'left',
+      width: 500,
       render: (_, record: API.BaseAssetResultInfo) => {
         return (
-          <Row>
-            <Col span={24}>
-              {isEmpty(record?.resourceDetailConfigMap?.['BASE_INFO']) &&
-              isEmpty(record?.resourceDetailConfigMap?.['NETWORK']) ? (
-                '-'
-              ) : (
-                <>
-                  {record?.resourceDetailConfigMap?.['BASE_INFO']?.map(
-                    (item: Record<string, any>, index: number) => {
-                      return (
-                        <Form.Item
-                          key={index}
-                          label={item?.name}
-                          style={{ marginBottom: 0, color: '#333' }}
-                        >
-                          {item.value}
-                        </Form.Item>
-                      );
-                    },
-                  )}
-                  {record?.resourceDetailConfigMap?.['NETWORK']?.map(
-                    (item: Record<string, any>, index: number) => {
-                      return (
-                        <Form.Item
-                          key={index}
-                          label={item?.name}
-                          style={{ marginBottom: 0, color: '#333' }}
-                        >
-                          {item.value}
-                        </Form.Item>
-                      );
-                    },
-                  )}
-                </>
-              )}
-            </Col>
-          </Row>
+          <div style={{ maxHeight: '120px', overflow: 'auto' }}>
+            <Row>
+              <Col span={24}>
+                {isEmpty(record?.resourceDetailConfigMap?.['BASE_INFO']) &&
+                isEmpty(record?.resourceDetailConfigMap?.['NETWORK']) ? (
+                  '-'
+                ) : (
+                  <>
+                    {record?.resourceDetailConfigMap?.['BASE_INFO']?.map(
+                      (item: Record<string, any>, index: number) => {
+                        return (
+                          <Form.Item
+                            key={index}
+                            label={item?.name}
+                            style={COMMON_STYLES.formItem}
+                          >
+                            <Paragraph
+                              copyable={{ text: item.value }}
+                              style={{
+                                ...COMMON_STYLES.paragraph,
+                                ...COMMON_STYLES.paragraphTable,
+                              }}
+                              ellipsis={{ tooltip: item.value }}
+                            >
+                              {item.value}
+                            </Paragraph>
+                          </Form.Item>
+                        );
+                      },
+                    )}
+                    {record?.resourceDetailConfigMap?.['NETWORK']?.map(
+                      (item: Record<string, any>, index: number) => {
+                        return (
+                          <Form.Item
+                            key={index}
+                            label={item?.name}
+                            style={COMMON_STYLES.formItem}
+                          >
+                            <Paragraph
+                              copyable={{ text: item.value }}
+                              style={{
+                                ...COMMON_STYLES.paragraph,
+                                ...COMMON_STYLES.paragraphTable,
+                              }}
+                              ellipsis={{ tooltip: item.value }}
+                            >
+                              {item.value}
+                            </Paragraph>
+                          </Form.Item>
+                        );
+                      },
+                    )}
+                  </>
+                )}
+              </Col>
+            </Row>
+          </div>
         );
       },
     },
@@ -712,7 +752,7 @@ const AssetManagement: React.FC = () => {
                 }}
               >
                 <Row>
-                  <Col span={22}>
+                  <Col span={22} style={{ maxHeight: '200px', overflow: 'auto' }}>
                     {isEmpty(record?.resourceDetailConfigMap?.['BASE_INFO']) &&
                     isEmpty(record?.resourceDetailConfigMap?.['NETWORK']) ? (
                       <ConfigProvider
@@ -734,9 +774,18 @@ const AssetManagement: React.FC = () => {
                               <Form.Item
                                 key={index}
                                 label={item?.name}
-                                style={{ marginBottom: 0, color: '#333' }}
+                                style={COMMON_STYLES.formItem}
                               >
-                                {item.value}
+                                <Paragraph
+                                  copyable={{ text: item.value }}
+                                  style={{
+                                    ...COMMON_STYLES.paragraph,
+                                    ...COMMON_STYLES.paragraphExpanded,
+                                  }}
+                                  ellipsis={{ tooltip: item.value }}
+                                >
+                                  {item.value}
+                                </Paragraph>
                               </Form.Item>
                             );
                           },
@@ -747,9 +796,18 @@ const AssetManagement: React.FC = () => {
                               <Form.Item
                                 key={index}
                                 label={item?.name}
-                                style={{ marginBottom: 0, color: '#333' }}
+                                style={COMMON_STYLES.formItem}
                               >
-                                {item.value}
+                                <Paragraph
+                                  copyable={{ text: item.value }}
+                                  style={{
+                                    ...COMMON_STYLES.paragraph,
+                                    ...COMMON_STYLES.paragraphExpanded,
+                                  }}
+                                  ellipsis={{ tooltip: item.value }}
+                                >
+                                  {item.value}
+                                </Paragraph>
                               </Form.Item>
                             );
                           },

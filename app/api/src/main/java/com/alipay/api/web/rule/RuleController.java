@@ -23,10 +23,7 @@ import com.alipay.application.service.rule.exposed.InitRuleService;
 import com.alipay.application.service.rule.job.ScanService;
 import com.alipay.application.share.request.base.IdListRequest;
 import com.alipay.application.share.request.base.IdRequest;
-import com.alipay.application.share.request.rule.ChangeStatusRequest;
-import com.alipay.application.share.request.rule.ListRuleRequest;
-import com.alipay.application.share.request.rule.LoadRuleFromGithubRequest;
-import com.alipay.application.share.request.rule.SaveRuleRequest;
+import com.alipay.application.share.request.rule.*;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.rule.RuleTypeVO;
@@ -36,15 +33,16 @@ import com.alipay.common.enums.Status;
 import com.alipay.common.exception.BizException;
 import com.alipay.common.utils.PreventingSQLJoint;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import org.apache.commons.io.FileUtils;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -112,12 +110,23 @@ public class RuleController {
     /**
      * Detection by risk triggering rules
      */
-    @PostMapping("/scanByRule")
-    public ApiResponse<String> scanByRule(@RequestBody IdRequest request, BindingResult err) throws Exception {
+    @PostMapping("/scanRule")
+    public ApiResponse<String> scanRule(@RequestBody IdRequest request, BindingResult err) {
         if (err.hasErrors()) {
             return new ApiResponse<>(err);
         }
         return scanService.scanByRule(request.getId());
+    }
+
+    /**
+     * Detection by risk triggering rules
+     */
+    @PostMapping("/scanRuleList")
+    public ApiResponse<String> scanRuleList(@RequestBody IdListRequest request, BindingResult err) {
+        if (err.hasErrors()) {
+            return new ApiResponse<>(err);
+        }
+        return scanService.scanRuleList(request.getIdList());
     }
 
     /**
@@ -157,6 +166,7 @@ public class RuleController {
     /**
      * Query rule details interface
      */
+    @AuthenticateToken
     @PostMapping("/queryRuleDetail")
     public ApiResponse<RuleVO> queryRuleDetail(@RequestBody IdRequest idRequest) {
         return ruleService.queryRuleDetail(idRequest);
@@ -196,7 +206,7 @@ public class RuleController {
                 log.info("Rules directory: {}", tempPath);
                 ZipUtil.downloadFiles(response, tempPath, "rules");
                 log.info("Write rule completed");
-                
+
                 // Schedule directory deletion after 2 seconds
                 final String finalTempPath = tempPath;
                 scheduler.schedule(() -> {
@@ -247,5 +257,87 @@ public class RuleController {
     public ApiResponse<String> loadRuleFromGithub(@RequestBody LoadRuleFromGithubRequest request) {
         initRuleService.loadRuleFromGithub(request.getCoverage());
         return ApiResponse.SUCCESS;
+    }
+
+    /**
+     * Check if there is a new rule
+     *
+     * @return the number of new rules
+     */
+    @AuthenticateToken
+    @PostMapping("/checkExistNewRule")
+    public ApiResponse<Integer> checkExistNewRule() {
+        return new ApiResponse<>(initRuleService.checkExistNewRule());
+    }
+
+    /**
+     * Query tenant select rule list
+     */
+    @AuthenticateToken
+    @PostMapping("/queryEffectRuleList")
+    public ApiResponse<ListVO<RuleVO>> queryEffectRuleList(@RequestBody ListRuleRequest req) {
+        PreventingSQLJoint.checkSortParamField(req.getSortParam(), List.of("riskCount", "lastScanTime"));
+        PreventingSQLJoint.checkSortTypeField(req.getSortType());
+        ListVO<RuleVO> result = ruleService.queryEffectRuleList(req);
+        return new ApiResponse<>(result);
+    }
+
+    /**
+     * Tenant adds a selective rule interface
+     */
+    @AuthenticateToken
+    @PostMapping("/addTenantSelectRule")
+    public ApiResponse<String> addTenantSelectRule(HttpServletRequest request, @Validated @RequestBody AddTenantSelectRuleRequest req, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        return ruleService.addTenantSelectRule(req.getRuleCode());
+    }
+
+    /**
+     * Tenant deletes a selective rule interface
+     */
+    @AuthenticateToken
+    @PostMapping("/deleteTenantSelectRule")
+    public ApiResponse<String> deleteTenantSelectRule(HttpServletRequest request, @Validated @RequestBody DeleteTenantSelectRuleRequest req, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        return ruleService.deleteTenantSelectRule(req.getRuleCode());
+    }
+
+    /**
+     * Batch delete tenant select rule interface
+     */
+    @AuthenticateToken
+    @PostMapping("/batchDeleteTenantSelectRule")
+    public ApiResponse<String> batchDeleteTenantSelectRule(HttpServletRequest request, @Validated @RequestBody BatchDeleteTenantSelectRuleRequest req, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        return ruleService.batchDeleteTenantSelectRule(req.getRuleCodeList());
+    }
+
+    /**
+     * Batch delete tenant select rule interface
+     */
+    @AuthenticateToken
+    @PostMapping("/batchAddTenantSelectRule")
+    public ApiResponse<String> batchAddTenantSelectRule(HttpServletRequest request, @Validated @RequestBody BatchAddTenantSelectRuleRequest req, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        return ruleService.batchAddTenantSelectRule(req.getRuleCodeList());
+    }
+
+
+    /**
+     * 查询租户已自选规则名称列表
+     */
+    @AuthenticateToken
+    @GetMapping("/queryAllTenantSelectRuleList")
+    public ApiResponse<List<RuleVO>> queryAllTenantSelectRuleList(HttpServletRequest request) {
+        List<RuleVO> list = ruleService.queryAllTenantSelectRuleList();
+        return new ApiResponse<>(list);
     }
 }

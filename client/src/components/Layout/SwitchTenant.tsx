@@ -1,6 +1,6 @@
 import tenant from '@/assets/images/TENANT.png';
 import { changeTenant } from '@/services/tenant/TenantController';
-import { CaretDownOutlined } from '@ant-design/icons';
+import { CaretDownOutlined, SwapOutlined } from '@ant-design/icons';
 import { ProCard } from '@ant-design/pro-components';
 import { useIntl, useModel } from '@umijs/max';
 import { Button, Divider, Dropdown, List, message } from 'antd';
@@ -76,9 +76,7 @@ const SwitchTenant: React.FC<ISwitchTenant> = (props) => {
                         onClick={() => onClickSwitchTenant(item.id!)}
                         key="switchTenant"
                       >
-                        {intl.formatMessage({
-                          id: 'layout.routes.title.switchTenant',
-                        })}
+                        <SwapOutlined />
                       </Button>,
                     ]}
                   >

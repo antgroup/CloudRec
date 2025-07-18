@@ -399,7 +399,11 @@ public class AgentServiceImpl implements AgentService {
         // 5. pre handler - async execution using CompletableFuture
         final List<CloudAccountPO> accountList = list;
         final AgentRegistryPO registry = agentRegistryPO;
-        CompletableFuture.runAsync(() -> accountStartCollectPreHandler(accountList, registry), threadPoolConfig.asyncServiceExecutor());
+        CompletableFuture.runAsync(() -> accountStartCollectPreHandler(accountList, registry), threadPoolConfig.asyncServiceExecutor())
+                .exceptionally(e -> {
+                    log.error("Error in accountStartCollectPreHandler", e);
+                    return null;
+                });
 
         return new ApiResponse<>(collect);
     }

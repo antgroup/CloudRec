@@ -95,6 +95,7 @@ public class DateUtil {
                 .withNano(999999999);
         return Date.from(yesterdayEnd.atZone(ZoneId.systemDefault()).toInstant());
     }
+
     public static Date getYesterdayStartTime() {
         LocalDateTime yesterdayEnd = LocalDateTime.now().minusDays(1).withHour(0).withMinute(0).withSecond(0)
                 .withNano(999999999);
@@ -107,12 +108,15 @@ public class DateUtil {
         return Date.from(yesterdayEnd.atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public static int getDiffHours(Date date, Date lastScanTime) {
-        return (int) ((date.getTime() - lastScanTime.getTime()) / (1000 * 60 * 60));
+    public static int getDiffHours(Date d1, Date d2) {
+        if (d1 == null || d2 == null) {
+            return 0;
+        }
+        return (int) ((d1.getTime() - d2.getTime()) / (1000 * 60 * 60));
     }
 
     public static String formatISODateTime(String iSODateTime) {
-        if (StringUtils.isBlank(iSODateTime)){
+        if (StringUtils.isBlank(iSODateTime)) {
             return null;
         }
         String formattedDate = null;

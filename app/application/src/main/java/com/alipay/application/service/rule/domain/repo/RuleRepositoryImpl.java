@@ -387,4 +387,22 @@ public class RuleRepositoryImpl implements RuleRepository {
         return ruleAggs;
     }
 
+    /**
+     * Is there a new rule
+     *
+     * @return true: there is a new rule, false: no new rule
+     */
+    @Override
+    public int existNewRule() {
+        int newRuleCount = 0;
+        List<RuleAgg> ruleList = findRuleListFromGitHub();
+        for (RuleAgg rule : ruleList) {
+            RulePO existRule = ruleMapper.findOne(rule.getRuleCode());
+            if (existRule == null) {
+                newRuleCount++;
+            }
+        }
+
+        return newRuleCount;
+    }
 }

@@ -64,4 +64,16 @@ public class UserInfoDTO extends PageDTO {
     public Long getUserTenantId() {
         return this.globalTenantId != null ? this.globalTenantId : this.tenantId;
     }
+
+    @Override
+    public String toString() {
+        return "UserInfoDTO{" +
+                "uid=" + uid +
+                ", tenantName='" + tenantName + '\'' +
+                ", tenantId=" + tenantId +
+                ", globalTenantId=" + globalTenantId +
+                ", userId='" + userId + '\'' +
+                ", username='" + username + '\'' +
+                '}';
+    }
 }

@@ -913,3 +913,15 @@ ALTER TABLE `agent_registry`
 
 ALTER TABLE `cloud_account`
     ADD COLUMN `proxy_config` text DEFAULT NULL COMMENT '代理信息';
+
+ALTER TABLE cloud_account`
+    ADD COLUMN `email` varchar(255) DEFAULT NULL COMMENT '邮箱';
+
+CREATE TABLE `tenant_rule` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `gmt_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `tenant_id` bigint(20) unsigned NOT NULL COMMENT '租户id',
+  `rule_code` varchar(255) NOT NULL COMMENT '规则code',
+  PRIMARY KEY(`id`)
+) DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '租户自选规则';

@@ -48,7 +48,7 @@ public interface CloudResourceInstanceMapper {
 
     long findCountByCloudAccountId(String cloudAccountId);
 
-    void deleteByCloudAccountId(String cloudAccountId);
+    int deleteByCloudAccountId(String cloudAccountId);
 
     // 预删除
     int preDeleteByIdList(@Param("idList") List<Long> idList, @Param("deleteAt") Date deleteAt);

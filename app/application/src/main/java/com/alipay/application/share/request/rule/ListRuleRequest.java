@@ -105,4 +105,11 @@ public class ListRuleRequest extends BaseRequest {
      * rule Code list 规则的不变唯一标识
      */
     private List<String> ruleCodeList;
+
+    /**
+     * 默认规则：default
+     * 租户自选：selected
+     * 全部规则：all
+     */
+    private String effectRuleType;
 }

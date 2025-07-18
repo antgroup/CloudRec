@@ -235,7 +235,7 @@
     <delete id="deleteByCloudAccountId">
         DELETE
         FROM cloud_resource_instance_v1
-        WHERE cloud_account_id = #{cloudAccountId}
+        WHERE cloud_account_id = #{cloudAccountId} LIMIT 10000
     </delete>
 
 

@@ -44,6 +44,11 @@ public class RuleStatisticsDTO {
     private String ruleName;
 
     /**
+     * Rule Code
+     */
+    private String ruleCode;
+
+    /**
      * The number of risks corresponding to the rule
      */
     private Long count;

@@ -63,9 +63,6 @@ public interface IQueryResource {
     long queryResourceCount(String cloudAccount);
 
 
-    void removeResource(String cloudAccount);
-
-
     ApiResponse<List<ResourcePO>> queryTypeList(String platform);
 
 

@@ -30,7 +30,7 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
-        <table tableName="collector_task" domainObjectName="CollectorTaskPO" mapperName="CollectorTaskMapper"
+        <table tableName="tenant_rule" domainObjectName="TenantRulePO" mapperName="TenantRuleMapper"
                enableCountByExample="false"
                enableUpdateByExample="false"
                enableDeleteByExample="false"

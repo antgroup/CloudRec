@@ -700,7 +700,7 @@ const EditPage: React.FC = () => {
             intl.formatMessage({ id: 'common.message.text.create.success' }),
           );
         }
-        history.push('/ruleManagement/ruleProject');
+        history.push('/ruleManagement/ruleProject?tab=market');
       }
     });
   };
@@ -1287,7 +1287,7 @@ const EditPage: React.FC = () => {
                     label={intl.formatMessage({
                       id: 'rule.module.text.risk.context.template',
                     })}
-                    initialValue={CONTEXT_TEMPLATE}
+                    placeholder={CONTEXT_TEMPLATE}
                   />
                 </>
               )}

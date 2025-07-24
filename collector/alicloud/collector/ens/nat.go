@@ -17,8 +17,6 @@ package ens
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/cloudrec/alicloud/collector"
@@ -64,8 +62,6 @@ func ListNatGatewayResource(ctx context.Context, service schema.ServiceInterface
 				NatGateway:          natGateway,
 				ForwardTableEntries: describeForwardTableEntries(ctx, cli, natGateway.NatGatewayId),
 			}
-			jsonData, _ := json.Marshal(natGatewayDetail)
-			fmt.Printf("%s\n", jsonData)
 
 			res <- natGatewayDetail
 		}

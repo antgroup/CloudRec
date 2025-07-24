@@ -16,14 +16,17 @@
 package ens
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 func GetNatGatewayResource() schema.Resource {
@@ -34,9 +37,8 @@ func GetNatGatewayResource() schema.Resource {
 		Desc:               `https://api.aliyun.com/product/Ens`,
 		ResourceDetailFunc: ListNatGatewayResource,
 		RowField: schema.RowField{
-			ResourceId:   "$.natGateway.natGatewayId",
-			ResourceName: "$.natGateway.natGatewayName",
-			Address:      "$.natGateway.PublicIpAddress",
+			ResourceId:   "$.NatGateway.NatGatewayId",
+			ResourceName: "$.NatGateway.Name",
 		},
 		Regions:   []string{"cn-hangzhou"},
 		Dimension: schema.Global,
@@ -44,7 +46,8 @@ func GetNatGatewayResource() schema.Resource {
 }
 
 type NatGatewayDetail struct {
-	NatGateway ens.NatGateway
+	NatGateway          ens.NatGateway
+	ForwardTableEntries []ens.ForwardTableEntry
 }
 
 func ListNatGatewayResource(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -58,8 +61,11 @@ func ListNatGatewayResource(ctx context.Context, service schema.ServiceInterface
 	for describeNatGatewaysResponse.PageSize*describeNatGatewaysResponse.PageNumber <= describeNatGatewaysResponse.TotalCount {
 		for _, natGateway := range describeNatGatewaysResponse.NatGateways {
 			natGatewayDetail := NatGatewayDetail{
-				NatGateway: natGateway,
+				NatGateway:          natGateway,
+				ForwardTableEntries: describeForwardTableEntries(ctx, cli, natGateway.NatGatewayId),
 			}
+			jsonData, _ := json.Marshal(natGatewayDetail)
+			fmt.Printf("%s\n", jsonData)
 
 			res <- natGatewayDetail
 		}
@@ -71,4 +77,34 @@ func ListNatGatewayResource(ctx context.Context, service schema.ServiceInterface
 		}
 	}
 	return nil
+}
+
+func describeForwardTableEntries(ctx context.Context, cli *ens.Client, natgwid string) (forwardTableEntries []ens.ForwardTableEntry) {
+	describeForwardTableEntriesRequest := ens.CreateDescribeForwardTableEntriesRequest()
+	describeForwardTableEntriesRequest.NatGatewayId = natgwid
+
+	describeForwardTableEntriesResponse, err := cli.DescribeForwardTableEntries(describeForwardTableEntriesRequest)
+	if err != nil {
+		log.CtxLogger(ctx).Error("DescribeForwardTableEntries error", zap.Error(err))
+		return forwardTableEntries
+	}
+
+	pageSize, _ := strconv.Atoi(describeForwardTableEntriesResponse.PageSize)
+	pageNumber, _ := strconv.Atoi(describeForwardTableEntriesResponse.PageNumber)
+	totalCount, _ := strconv.Atoi(describeForwardTableEntriesResponse.TotalCount)
+
+	for pageSize*pageNumber <= totalCount {
+		forwardTableEntries = append(forwardTableEntries, describeForwardTableEntriesResponse.ForwardTableEntries...)
+
+		describeForwardTableEntriesRequest.PageNumber = requests.NewInteger(pageNumber + 1)
+		describeForwardTableEntriesResponse, err = cli.DescribeForwardTableEntries(describeForwardTableEntriesRequest)
+		if err != nil {
+			log.CtxLogger(ctx).Error("DescribeForwardTableEntries error", zap.Error(err))
+			return forwardTableEntries
+		}
+		pageSize, _ = strconv.Atoi(describeForwardTableEntriesResponse.PageSize)
+		pageNumber, _ = strconv.Atoi(describeForwardTableEntriesResponse.PageNumber)
+		totalCount, _ = strconv.Atoi(describeForwardTableEntriesResponse.TotalCount)
+	}
+	return forwardTableEntries
 }

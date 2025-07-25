@@ -99,6 +99,7 @@ public class CloudAccountApi {
         CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder()
                 .id(request.getId())
                 .cloudAccountId(request.getCloudAccountId())
+                .email(request.getEmail())
                 .alias(request.getAlias())
                 .platform(request.getPlatform())
                 .tenantId(request.getTenantId())

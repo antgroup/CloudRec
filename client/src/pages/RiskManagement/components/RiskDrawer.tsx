@@ -9,10 +9,11 @@ import {
   IgnoreReasonTypeList,
   RiskStatusList,
 } from '@/pages/RiskManagement/const';
+import EditDrawerForm from '@/pages/RuleManagement/WhiteList/components/EditDrawerForm';
 import { queryRiskDetailById } from '@/services/risk/RiskController';
 import { IValueType } from '@/utils/const';
 import { obtainPlatformIcon, obtainRiskStatus } from '@/utils/shared';
-import { ProfileOutlined } from '@ant-design/icons';
+import { ProfileOutlined, EyeOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { ActionType, ProCard } from '@ant-design/pro-components';
 import { useIntl, useModel, useRequest } from '@umijs/max';
 import {
@@ -25,8 +26,9 @@ import {
   Tag,
   Tooltip,
   Typography,
+  message,
 } from 'antd';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState, useCallback } from 'react';
 import styles from '../index.less';
 const { Text } = Typography;
 
@@ -54,6 +56,9 @@ const RiskDrawer: React.FC<IRiskDrawerProps> = (props) => {
   // Asset Details
   const [resourceDrawerVisible, setResourceDrawerVisible] =
     useState<boolean>(false);
+  // Whitelist Details
+  const [whiteListDrawerVisible, setWhiteListDrawerVisible] =
+    useState<boolean>(false);
 
   const initDrawer = (): void => {
     setRiskDrawerVisible(false);
@@ -80,6 +85,79 @@ const RiskDrawer: React.FC<IRiskDrawerProps> = (props) => {
     initDrawer();
   };
 
+  /**
+   * Share function - copy risk detail page URL to clipboard
+   * Uses modern Clipboard API with fallback for older browsers
+   */
+  const handleShare = useCallback((): void => {
+    if (!riskDrawerInfo?.id) {
+      message.error(intl.formatMessage({
+        id: 'common.message.text.copy.failed',
+      }));
+      return;
+    }
+
+    const riskDetailUrl = `${window.location.origin}/riskManagement/riskDetail?id=${riskDrawerInfo.id}`;
+    
+    // Modern Clipboard API with fallback
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(riskDetailUrl).then(() => {
+        message.success(intl.formatMessage({
+          id: 'common.message.text.copy.success',
+        }));
+      }).catch(() => {
+        fallbackCopyTextToClipboard(riskDetailUrl);
+      });
+    } else {
+      // Fallback for older browsers or insecure contexts
+      fallbackCopyTextToClipboard(riskDetailUrl);
+    }
+  }, [riskDrawerInfo?.id, intl]);
+
+  /**
+   * Fallback method for copying text to clipboard
+   * Creates a temporary textarea element to perform the copy operation
+   */
+  const fallbackCopyTextToClipboard = useCallback((text: string): void => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    
+    // Avoid scrolling to bottom and make invisible
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    textArea.style.pointerEvents = 'none';
+    textArea.style.zIndex = '-1';
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        message.success(intl.formatMessage({
+          id: 'common.message.text.copy.success',
+        }));
+      } else {
+        message.error(intl.formatMessage({
+          id: 'common.message.text.copy.failed',
+        }));
+      }
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      message.error(intl.formatMessage({
+        id: 'common.message.text.copy.failed',
+      }));
+    } finally {
+      // Ensure cleanup even if an error occurs
+      if (document.body.contains(textArea)) {
+        document.body.removeChild(textArea);
+      }
+    }
+  }, [intl]);
+
   useEffect((): void => {
     if (riskDrawerVisible && riskDrawerInfo?.id) {
       requestRiskDetailById(riskDrawerInfo.id);
@@ -89,9 +167,24 @@ const RiskDrawer: React.FC<IRiskDrawerProps> = (props) => {
   return (
     <>
       <Drawer
-        title={intl.formatMessage({
-          id: 'risk.module.text.detail.info',
-        })}
+        title={
+          <Flex justify="space-between" align="center">
+            <span>
+              {intl.formatMessage({
+                id: 'risk.module.text.detail.info',
+              })}
+            </span>
+            <Tooltip title={intl.formatMessage({ id: 'common.button.text.share' })}>
+              <Button
+                type="text"
+                icon={<ShareAltOutlined />}
+                onClick={handleShare}
+                style={{ marginRight: -8 }}
+                aria-label={intl.formatMessage({ id: 'common.button.text.share' })}
+              />
+            </Tooltip>
+          </Flex>
+        }
         width={'50%'}
         open={riskDrawerVisible}
         onClose={onClickCloseDrawerForm}
@@ -167,6 +260,20 @@ const RiskDrawer: React.FC<IRiskDrawerProps> = (props) => {
                     />
                   </>
                 )}
+                {/* Whitelist button - show only when risk is whitelisted */}
+                {riskInfo?.whitedId && (
+                    <Button
+                      type="link"
+                      size="small"
+                      icon={<EyeOutlined />}
+                      onClick={() => setWhiteListDrawerVisible(true)}
+                      style={{
+                        padding: '0 4px',
+                        height: 'auto',
+                        color: '#1890ff',
+                      }}
+                    />
+                )}
               </Space>
             </span>
             {/*<Button*/}
@@ -228,6 +335,30 @@ const RiskDrawer: React.FC<IRiskDrawerProps> = (props) => {
                 {riskInfo?.gmtCreate}
               </span>
             </Text>
+          </Flex>
+
+          {/* Cloud Account Information */}
+          <Flex
+            align={'center'}
+            style={{ margin: '10px 0 6px 0' }}
+          >
+            <span
+              style={{
+                marginRight: 8,
+                color: 'rgba(127, 127, 127, 1)',
+              }}
+            >
+              {intl.formatMessage({
+                id: 'common.select.label.cloudAccount',
+              })}
+              &nbsp;:&nbsp;
+            </span>
+            <span style={{ color: 'rgba(51, 51, 51, 1)', marginRight: 16 }}>
+              {riskInfo?.cloudAccountId || '-'}
+            </span>
+            <span style={{ color: 'rgba(127, 127, 127, 1)', marginRight: 16 }}>
+              {riskInfo?.alias || '-'}
+            </span>
           </Flex>
 
           <Flex
@@ -334,6 +465,18 @@ const RiskDrawer: React.FC<IRiskDrawerProps> = (props) => {
         setResourceDrawerVisible={setResourceDrawerVisible}
         riskDrawerInfo={riskDrawerInfo}
       />
+
+      {/* Whitelist Details Drawer */}
+      {riskInfo?.whitedId && (
+        <EditDrawerForm
+          editDrawerVisible={whiteListDrawerVisible}
+          setEditDrawerVisible={setWhiteListDrawerVisible}
+          whiteListDrawerInfo={{
+            id: riskInfo.whitedId,
+            isEditMode: false, // Read-only mode for viewing whitelist details
+          }}
+        />
+      )}
     </>
   );
 };

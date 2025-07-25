@@ -60,7 +60,7 @@ const EvaluateDrawer: React.FC<IEvaluateDrawerProps> = (props) => {
       title={intl.formatMessage({
         id: 'risk.module.text.testing.situation',
       })}
-      width={'40%'}
+      width={'50%'}
       destroyOnClose
       open={evaluateDrawerVisible}
       onClose={onClickCloseDrawerForm}

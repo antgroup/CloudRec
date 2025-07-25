@@ -49,4 +49,10 @@ public class QueryResourceExampleDataRequest {
      */
     private List<LinkDataParam> linkedDataList;
 
+
+    /**
+     * resourceId
+     */
+    private String resourceId;
+
 }

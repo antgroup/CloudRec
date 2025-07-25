@@ -43,8 +43,11 @@ const responseInterceptor = (response: any): any => {
     return response;
   }
   // Not logged in and there is a login callback address
-  if (code !== 200 && ['USER_NOT_LOGIN'].includes(content)) {
-    history.push('/login');
+  // Skip redirect for invitation page
+  if (code !== 200 && ['USER_NOT_LOGIN'].includes(content) && !window.location.pathname.includes('/invitation')) {
+    // Preserve URL parameters when redirecting to login
+    const currentSearch = window.location.search;
+    history.push(`/login${currentSearch}`);
   }
   // Exclude logged in exceptions
   if (code !== 200 && !['USER_NOT_LOGIN'].includes(content)) {
@@ -70,7 +73,7 @@ export const layout: RunTimeLayoutConfig = (props) => {
     },
     contentStyle,
     layout: 'mix', // Mixed navigation mode with avatars located on the upper right side
-    headerRender: !window?.location?.pathname?.includes('/login') as any, // As any Temporarily ignore TS type anomalies
+    headerRender: (!window?.location?.pathname?.includes('/login') && !window?.location?.pathname?.includes('/invitation')) as any, // As any Temporarily ignore TS type anomalies
     headerContentRender: () => <ProBreadcrumb />,
     footerRender: false,
     token: {

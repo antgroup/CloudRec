@@ -9,6 +9,7 @@ import {
 import { useIntl } from '@umijs/max';
 import { Button, message } from 'antd';
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styles from './index.less';
 
 const LoginPage: React.FC = () => {
@@ -16,15 +17,19 @@ const LoginPage: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   // Intl API
   const intl = useIntl();
+  // URL search params
+  const [searchParams] = useSearchParams();
   // Submit Loading
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
   // Click on user login
   const onClickToLogin = async (formData: API.UserInfo): Promise<void> => {
     const { userId, password } = formData;
+    const inviteCode = searchParams.get('code');
     setSubmitLoading(true);
     const r = await userLogin({
       userId,
       password,
+      inviteCode: inviteCode || undefined,
     });
     setSubmitLoading(false);
     if (r.code === 200) {

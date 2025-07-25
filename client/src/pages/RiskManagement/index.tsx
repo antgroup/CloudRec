@@ -12,14 +12,17 @@ import {
   RiskStatusList,
 } from '@/pages/RiskManagement/const';
 import EditDrawerForm from '@/pages/RuleManagement/WhiteList/components/EditDrawerForm';
+import RuleDetailDrawer from '@/pages/RuleManagement/RuleProject/components/RuleDetailDrawer';
 import { cloudAccountBaseInfoList } from '@/services/account/AccountController';
 import { queryGroupTypeList } from '@/services/resource/ResourceController';
 import {
   cancelIgnoreRisk,
   exportRiskList,
+  listCloudAccountStatistics,
   listRuleStatistics,
   queryRiskList,
 } from '@/services/risk/RiskController';
+import { queryAllTenantSelectRuleList } from '@/services/rule/RuleController';
 import { RangePresets, RiskLevelList } from '@/utils/const';
 import {
   BlobExportXLSXFn,
@@ -31,7 +34,7 @@ import {
   valueListAddTag,
   valueListAsValueEnum,
 } from '@/utils/shared';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import {
   ActionType,
   PageContainer,
@@ -56,6 +59,7 @@ import {
   Select,
   Spin,
   Tag,
+  Typography,
   message,
 } from 'antd';
 import { debounce, isEmpty } from 'lodash';
@@ -69,19 +73,36 @@ const RiskManagement: React.FC = () => {
   // Ant Design Provide monitoring of screen width changes
   const breakpoints: Partial<Record<Breakpoint, boolean>> = useBreakpoint();
   // Platform Rule Group List
-  const { platformList, ruleGroupList, ruleTypeList, allRuleList } =
-    useModel('rule');
+  const { platformList, ruleGroupList, ruleTypeList } = useModel('rule');
+
+  // Tenant selected rule list data
+  const { data: tenantRuleList }: any = useRequest(
+    () => {
+      return queryAllTenantSelectRuleList({});
+    },
+    {
+      formatResult: (r: any) =>
+        r.content?.map((item: { [key: string]: any }) => ({
+          ...item,
+          key: item?.id,
+          label: item?.ruleName,
+          value: item?.ruleCode,
+        })) || [],
+    },
+  );
   // Query Data
   const { search } = useLocation();
   const searchParams: URLSearchParams = new URLSearchParams(search);
   // Risk level
   const riskLevelQuery = searchParams.get('riskLevel');
-  // platform
+  // Platform
   const platformQuery = searchParams.get('platform');
   // Rule Code
   const ruleCodeQuery = searchParams.get('ruleCode');
-  // Resource Id
+  // Resource ID
   const resourceIdQuery = searchParams.get('resourceId');
+  // Cloud Account ID
+  const cloudAccountIdQuery = searchParams.get('cloudAccountId');
   // Message Instance
   const [messageApi, contextHolder] = message.useMessage();
   // Table Action
@@ -105,8 +126,12 @@ const RiskManagement: React.FC = () => {
   // White List Drawer Visible
   const [editWhiteDrawerVisible, setEditWhiteDrawerVisible] =
     useState<boolean>(false);
+  // Rule Detail Drawer Visible
+  const [ruleDetailDrawerVisible, setRuleDetailDrawerVisible] = useState<boolean>(false);
+  // Rule Detail Info
+  const [ruleDetailInfo, setRuleDetailInfo] = useState<{ ruleId?: number; ruleCode?: string }>({});
   // Filter Factor
-  const [filterFactor, setFilterFactor] = useState({});
+  const [filterFactor, setFilterFactor] = useState<Record<string, any>>({});
   // Risk status
   const [status, setStatus] = useState<string>(
     RiskStatusList[0]?.value as string,
@@ -147,6 +172,9 @@ const RiskManagement: React.FC = () => {
   );
 
   useEffect((): void => {
+    // Initialize filter factor with URL parameters to trigger default request
+    const urlParams: Record<string, any> = {};
+
     // Cloud platform
     if (!isEmpty(platformQuery)) {
       form?.setFieldValue('platformList', [platformQuery]);
@@ -154,20 +182,34 @@ const RiskManagement: React.FC = () => {
       form.setFieldValue('resourceType', null);
       setResourceTypeList([]);
       requestResourceTypeList([platformQuery!]);
+      urlParams.platformList = [platformQuery];
     }
     // Risk Level
     if (!isEmpty(riskLevelQuery)) {
       form?.setFieldValue('riskLevelList', [riskLevelQuery]);
+      urlParams.riskLevelList = [riskLevelQuery];
     }
     // Rule Name
     if (!isEmpty(ruleCodeQuery)) {
       formActionRef.current?.setFieldValue('ruleCodeList', [ruleCodeQuery]);
+      urlParams.ruleCodeList = [ruleCodeQuery];
     }
     // Resource Id
     if (!isEmpty(resourceIdQuery)) {
       formActionRef.current?.setFieldValue('resourceId', resourceIdQuery);
+      urlParams.resourceId = resourceIdQuery;
     }
-  }, [platformQuery, riskLevelQuery, ruleCodeQuery, resourceIdQuery]);
+    // Set cloud account ID from URL query parameter
+    if (!isEmpty(cloudAccountIdQuery)) {
+      formActionRef.current?.setFieldValue('cloudAccountId', cloudAccountIdQuery);
+      urlParams.cloudAccountId = cloudAccountIdQuery;
+    }
+
+    // Update filter factor to trigger table request with URL parameters
+    if (Object.keys(urlParams).length > 0) {
+      setFilterFactor(urlParams);
+    }
+  }, [platformQuery, riskLevelQuery, ruleCodeQuery, resourceIdQuery, cloudAccountIdQuery]);
 
   // Cloud account list data
   const {
@@ -214,8 +256,12 @@ const RiskManagement: React.FC = () => {
     {
       manual: true,
       formatResult: (r) => {
+        const originalData = r?.content || [];
+        // Store original data for search filtering
+        setOriginalRuleData(originalData);
+        
         let array = [];
-        array = r?.content?.map((item: Record<string, any>) => {
+        array = originalData.map((item: Record<string, any>) => {
           return {
             label: (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -230,7 +276,50 @@ const RiskManagement: React.FC = () => {
                 </Flex>
               </div>
             ),
-            value: item.ruleId,
+            value: item.ruleCode,
+          };
+        });
+        return array;
+      },
+    },
+  );
+
+  // Store original cloud account data for search filtering
+  const [originalCloudAccountData, setOriginalCloudAccountData] = useState<Record<string, any>[]>([]);
+  
+  // Store original rule data for search filtering
+  const [originalRuleData, setOriginalRuleData] = useState<Record<string, any>[]>([]);
+
+  const {
+    data: cloudAccountStatisticsList,
+    run: requestCloudAccountStatistics,
+  } = useRequest(
+    (params: API.RiskInfo) => {
+      return listCloudAccountStatistics({ ...params });
+    },
+    {
+      manual: true,
+      formatResult: (r) => {
+        const originalData = r?.content || [];
+        // Store original data for search filtering
+        setOriginalCloudAccountData(originalData);
+        
+        let array = [];
+        array = originalData.map((item: Record<string, any>) => {
+          return {
+            label: (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>{item?.alias || item?.cloudAccountId}</span>
+                <Flex align={'center'}>
+                  <Tag
+                    style={{ margin: '0 0 0 8px' }}
+                  >
+                    {item?.count || '-'}
+                  </Tag>
+                </Flex>
+              </div>
+            ),
+            value: item.cloudAccountId,
           };
         });
         return array;
@@ -246,7 +335,7 @@ const RiskManagement: React.FC = () => {
     };
     setExportLoading(true);
     exportRiskList({ ...postBody }, { responseType: 'blob' })
-      .then((r) => {
+      .then((r: any) => {
         if (r.type === 'application/json') {
           const reader = new FileReader();
           reader.onload = () => {
@@ -257,10 +346,10 @@ const RiskManagement: React.FC = () => {
               messageApi.error(intl.formatMessage({ id: 'common.message.text.export.failed' }));
             }
           };
-          reader.readAsText(r);
+          reader.readAsText(r as Blob);
         } else {
           BlobExportXLSXFn(
-            r,
+            r as Blob,
             `CloudRec ${intl.formatMessage({
               id: 'risk.module.text.risk.data',
             })}`,
@@ -278,7 +367,6 @@ const RiskManagement: React.FC = () => {
   };
 
   // Table Column Search
-  const [ruleIdList, setRuleIdList] = useState<Array<number>>();
 
   const handleFilterDropdownVisibleChange = async (visible: boolean) => {
     if (visible) {
@@ -291,6 +379,29 @@ const RiskManagement: React.FC = () => {
     }
   };
 
+  const handleCloudAccountFilterDropdownVisibleChange = async (visible: boolean) => {
+    if (visible) {
+      const postBody = {
+        status: status,
+        ...form?.getFieldsValue(),
+        ...formActionRef?.current?.getFieldsValue(),
+      };
+      
+      // Ensure ruleCodeList is included if it exists in formActionRef
+      if (!postBody.ruleCodeList && formActionRef.current?.getFieldValue('ruleCodeList')) {
+        postBody.ruleCodeList = formActionRef.current.getFieldValue('ruleCodeList');
+      }
+      
+      // Remove ruleIdList from the request if it exists as we use ruleCodeList instead
+      if (postBody.ruleIdList) {
+        delete postBody.ruleIdList;
+      }
+      
+      // Keep cloudAccountId in the request to ensure proper filtering
+      await requestCloudAccountStatistics(postBody);
+    }
+  };
+
   const getColumnSearchProps = () => ({
     filterDropdown: ({ confirm }: { confirm: any }) => {
       return (
@@ -299,16 +410,49 @@ const RiskManagement: React.FC = () => {
             maxTagCount={'responsive'}
             allowClear
             mode={'multiple'}
+            showSearch
             placeholder={intl.formatMessage({
               id: 'common.select.text.placeholder',
             })}
             popupMatchSelectWidth={false}
             options={riskListGroupByRuleNameList || []}
-            onChange={debounce((value): void => {
-              setRuleIdList(value);
+            filterOption={(input, option) => {
+              // Filter by ruleName and ruleCode for better search experience
+              // Since label is a React component, we need to search in the original data
+              const searchText = input.toLowerCase();
+              const value = option?.value?.toString().toLowerCase() || '';
+              
+              // Find the original data item to get ruleName and ruleCode
+              const originalItem = originalRuleData?.find(
+                (item: any) => item.ruleCode === option?.value
+              );
+              
+              if (originalItem) {
+                // Search in both ruleName and ruleCode from the original data
+                const ruleName = originalItem.ruleName?.toLowerCase() || '';
+                const ruleCode = originalItem.ruleCode?.toLowerCase() || '';
+                return ruleName.includes(searchText) || ruleCode.includes(searchText) || value.includes(searchText);
+              }
+              
+              // Fallback to value search if original item not found
+              return value.includes(searchText);
+            }}
+            onChange={(value): void => {
+              // Update ruleCodeList in formActionRef instead of using ruleIdList
+              formActionRef.current?.setFieldValue('ruleCodeList', value);
+              // Update filterFactor to include the selected ruleCodeList
+              setFilterFactor(prev => ({
+                ...prev,
+                ruleCodeList: value
+              }));
+              // Trigger table reload
+              tableActionRef.current?.reload();
               confirm();
-            }, 1000)}
-            style={{ minWidth: 180 }}
+            }}
+            onBlur={(): void => {
+              confirm();
+            }}
+            style={{ minWidth: 320 }}
           />
         </div>
       );
@@ -317,7 +461,13 @@ const RiskManagement: React.FC = () => {
       onOpenChange: handleFilterDropdownVisibleChange,
     },
     filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+      <SearchOutlined
+        style={{
+          color: filtered ? '#1677ff' : '#1890ff',
+          fontSize: '18px',
+          fontWeight: 'bold'
+        }}
+      />
     ),
     destroyOnClose: true,
   });
@@ -334,28 +484,39 @@ const RiskManagement: React.FC = () => {
         id: 'home.module.inform.columns.ruleName',
       }),
       dataIndex: 'ruleName',
+      width: 400,
       valueType: 'text',
       align: 'left',
       hideInSearch: true,
       render: (_, record: API.BaseRiskResultInfo) => {
+        const handleRuleNameClick = () => {
+          if (record?.ruleVO?.id) {
+            setRuleDetailInfo({ ruleId: record.ruleVO.id, ruleCode: record.ruleId?.toString() });
+            setRuleDetailDrawerVisible(true);
+          }
+        };
+
         return (
           <Flex align={'center'}>
             <img
               src={record?.icon || DEFAULT_RESOURCE_ICON}
               alt="RESOURCE_ICON"
-              style={{ width: 18, height: 18 }}
+              style={{ width: 20, height: 20 }}
             />
-            <Disposition
-              text={record?.ruleVO?.ruleName || '-'}
-              maxWidth={breakpoints?.xxl ? 280 : 240}
-              rows={1}
+            <Typography.Text
+              copyable={record?.ruleVO?.ruleName ? { text: record.ruleVO.ruleName } : false}
               style={{
-                color: '#333',
+                color: record?.ruleVO?.id ? '#1890ff' : '#333',
                 fontSize: 14,
                 marginLeft: 8,
+                maxWidth: breakpoints?.xxl ? 450 : 400,
+                cursor: record?.ruleVO?.id ? 'pointer' : 'default',
               }}
-              placement={'topLeft'}
-            />
+              ellipsis={{ tooltip: record?.ruleVO?.ruleName || '-' }}
+              onClick={record?.ruleVO?.id ? handleRuleNameClick : undefined}
+            >
+              {record?.ruleVO?.ruleName || '-'}
+            </Typography.Text>
           </Flex>
         );
       },
@@ -367,11 +528,187 @@ const RiskManagement: React.FC = () => {
       }),
       dataIndex: 'ruleCodeList',
       valueType: 'select',
-      valueEnum: valueListAsValueEnum(allRuleList),
+      valueEnum: valueListAsValueEnum(tenantRuleList),
       hideInTable: true,
+      colSize: 2, // Rule name takes half width (12/24)
       fieldProps: {
         mode: 'multiple',
       },
+    },
+    {
+      title: intl.formatMessage({
+        id: 'common.select.label.cloudAccount',
+      }),
+      dataIndex: 'cloudAccountId',
+      valueType: 'select',
+      colSize: 1, // Cloud account takes 1/4 width (6/24)
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: 'common.select.query.text.placeholder',
+        }),
+        showSearch: true,
+        notFoundContent: fetching && <Spin size="small" />,
+        onSearch: debounceFetcher,
+        options: baseCloudAccountList || [],
+        onChange: (value) => {
+          // 当表格上方的云账号搜索组件值变化时，更新filterFactor
+          setFilterFactor(prev => ({
+            ...prev,
+            cloudAccountId: value
+          }));
+        },
+      },
+      align: 'left',
+      filterDropdown: ({ confirm }: { confirm: any }) => {
+        return (
+          <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+            <Select
+              allowClear
+              showSearch
+              placeholder={intl.formatMessage({
+                id: 'common.select.text.placeholder',
+              })}
+              popupMatchSelectWidth={false}
+              options={cloudAccountStatisticsList || []}
+              filterOption={(input, option) => {
+                // Filter by cloudAccountId and alias for better search experience
+                // Since label is a React component, we need to search in the original data
+                const searchText = input.toLowerCase();
+                const value = option?.value?.toString().toLowerCase() || '';
+                
+                // Find the original data item to get alias and cloudAccountId
+                const originalItem = originalCloudAccountData?.find(
+                  (item: any) => item.cloudAccountId === option?.value
+                );
+                
+                if (originalItem) {
+                  // Search in both alias and cloudAccountId from the original data
+                  const alias = originalItem.alias?.toLowerCase() || '';
+                  const cloudAccountId = originalItem.cloudAccountId?.toLowerCase() || '';
+                  return alias.includes(searchText) || cloudAccountId.includes(searchText) || value.includes(searchText);
+                }
+                
+                // Fallback to value search if original item not found
+                return value.includes(searchText);
+              }}
+              onChange={(value): void => {
+                formActionRef.current?.setFieldValue('cloudAccountId', value);
+                // Update filterFactor to include the selected cloudAccountId
+                setFilterFactor(prev => ({
+                  ...prev,
+                  cloudAccountId: value
+                }));
+                // Trigger table reload
+                tableActionRef.current?.reload();
+                confirm();
+              }}
+              onBlur={(): void => {
+                confirm();
+              }}
+              style={{ minWidth: 320 }}
+            />
+          </div>
+        );
+      },
+      filterDropdownProps: {
+        onOpenChange: handleCloudAccountFilterDropdownVisibleChange,
+      },
+      filterIcon: (filtered: boolean) => (
+        <SearchOutlined
+          style={{
+            color: filtered ? '#1677ff' : '#1890ff',
+            fontSize: '18px',
+            fontWeight: 'bold'
+          }}
+        />
+      ),
+      render: (_, record) => {
+        return (
+          <div>
+            <Typography.Text
+              copyable={record?.cloudAccountId ? { text: record.cloudAccountId } : false}
+              style={{ color: 'rgb(51, 51, 51)' }}
+              ellipsis={{ tooltip: record?.cloudAccountId || '-' }}
+            >
+              {record?.cloudAccountId || '-'}
+            </Typography.Text>
+            <Flex style={{ fontSize: '12px', color: '#999' }}>
+              {obtainPlatformEasyIcon(record.platform!, platformList)}
+              {record?.alias || '-'}
+            </Flex>
+          </div>
+        );
+      },
+    },
+    {
+      title: intl.formatMessage({
+        id: 'home.module.inform.columns.ruleTypeName',
+      }),
+      dataIndex: 'ruleTypeIdList',
+      valueType: 'cascader',
+      hideInTable: true,
+      colSize: 1, // Rule type takes 1/4 width (6/24)
+      fieldProps: {
+        multiple: true,
+        options: ruleTypeList,
+        showCheckedStrategy: SHOW_CHILD,
+        fieldNames: {
+          label: 'typeName',
+          value: 'id',
+          children: 'childList',
+        },
+      },
+    },
+    {
+      title: intl.formatMessage({
+        id: 'layout.routes.title.ruleGroup',
+      }),
+      dataIndex: 'ruleGroupIdList',
+      valueType: 'select',
+      valueEnum: valueListAsValueEnum(ruleGroupList),
+      hideInTable: true,
+      colSize: 1, // Rule group takes 1/4 width (6/24)
+      fieldProps: {
+        mode: 'multiple',
+      },
+    },
+    
+    {
+      title: intl.formatMessage({
+        id: 'cloudAccount.extend.title.asset.type',
+      }),
+      dataIndex: 'resourceTypeList',
+      valueType: 'cascader',
+      align: 'left',
+      hideInTable: true,
+      colSize: 1, // Resource type takes 1/4 width (6/24)
+      fieldProps: {
+        multiple: true,
+        showCheckedStrategy: SHOW_CHILD,
+        options: resourceTypeList,
+        showSearch: true,
+        allowClear: true,
+      },
+    },
+    {
+      title: intl.formatMessage({
+        id: 'common.table.columns.assetId',
+      }),
+      dataIndex: 'resourceId',
+      valueType: 'text',
+      align: 'left',
+      hideInTable: true,
+      colSize: 1, // Resource ID takes 1/4 width (6/24)
+    },
+    {
+      title: intl.formatMessage({
+        id: 'cloudAccount.extend.title.asset.name',
+      }),
+      dataIndex: 'resourceName',
+      valueType: 'text',
+      align: 'left',
+      hideInTable: true,
+      colSize: 1, // Resource name takes 1/4 width (6/24)
     },
     {
       title: intl.formatMessage({
@@ -404,82 +741,7 @@ const RiskManagement: React.FC = () => {
       align: 'left',
       hideInTable: true,
       hideInSearch: status !== 'IGNORED',
-    },
-    {
-      title: intl.formatMessage({
-        id: 'layout.routes.title.ruleGroup',
-      }),
-      dataIndex: 'ruleGroupIdList',
-      valueType: 'select',
-      valueEnum: valueListAsValueEnum(ruleGroupList),
-      hideInTable: true,
-      fieldProps: {
-        mode: 'multiple',
-      },
-    },
-    {
-      title: intl.formatMessage({
-        id: 'cloudAccount.extend.title.asset.type',
-      }),
-      dataIndex: 'resourceTypeList',
-      valueType: 'cascader',
-      align: 'left',
-      hideInTable: true,
-      fieldProps: {
-        multiple: true,
-        showCheckedStrategy: SHOW_CHILD,
-        options: resourceTypeList,
-        showSearch: true,
-        allowClear: true,
-      },
-    },
-    {
-      title: intl.formatMessage({
-        id: 'home.module.inform.columns.ruleTypeName',
-      }),
-      dataIndex: 'ruleTypeIdList',
-      valueType: 'cascader',
-      hideInTable: true,
-      fieldProps: {
-        multiple: true,
-        options: ruleTypeList,
-        showCheckedStrategy: SHOW_CHILD,
-        fieldNames: {
-          label: 'typeName',
-          value: 'id',
-          children: 'childList',
-        },
-      },
-    },
-    {
-      title: intl.formatMessage({
-        id: 'common.select.label.cloudAccount',
-      }),
-      dataIndex: 'cloudAccountId',
-      valueType: 'select',
-      fieldProps: {
-        placeholder: intl.formatMessage({
-          id: 'common.select.query.text.placeholder',
-        }),
-        showSearch: true,
-        notFoundContent: fetching && <Spin size="small" />,
-        onSearch: debounceFetcher,
-        options: baseCloudAccountList || [],
-      },
-      align: 'left',
-      render: (_, record) => {
-        return (
-          <div>
-            <section style={{ color: 'rgb(51, 51, 51)' }}>
-              {record?.cloudAccountId || '-'}
-            </section>
-            <Flex style={{ fontSize: '12px', color: '#999' }}>
-              {obtainPlatformEasyIcon(record.platform!, platformList)}
-              {record?.alias || '-'}
-            </Flex>
-          </div>
-        );
-      },
+      colSize: 6, // Ignore type takes full width when visible
     },
     {
       title: intl.formatMessage({
@@ -497,53 +759,31 @@ const RiskManagement: React.FC = () => {
       title: intl.formatMessage({
         id: 'cloudAccount.extend.title.asset.name',
       }),
-      dataIndex: 'resourceName',
+      dataIndex: 'resourceNameDisplay',
       valueType: 'text',
       align: 'left',
-      width: 200,
+      width: 300,
+      hideInSearch: true,
       render: (_, record: API.BaseRiskResultInfo) => {
+        const tooltipText = record?.resourceStatus === AssetStatusList[1].value
+          ? `(${intl.formatMessage({
+          id: 'risk.module.text.not.exist',
+        })}) ` + record.resourceName
+          : record.resourceName || '-';
+
         return (
-          <>
-            <DispositionPro
-              placement={'topLeft'}
-              maxWidth={400}
-              rows={1}
-              text={
-                <>
-                  {record.resourceName || '-'}
-                  <ExistTag status={record?.resourceStatus} />
-                </>
-              }
-              tooltipText={
-                record?.resourceStatus === AssetStatusList[1].value
-                  ? `(${intl.formatMessage({
-                      id: 'risk.module.text.not.exist',
-                    })}) ` + record.resourceName
-                  : record.resourceName || '-'
-              }
-            />
-          </>
+          <Flex align={'center'}>
+            <Typography.Text
+              copyable={record?.resourceName ? { text: record.resourceName } : false}
+              style={{ maxWidth: 450 }}
+              ellipsis={{ tooltip: tooltipText }}
+            >
+              {record.resourceName || '-'}
+            </Typography.Text>
+            <ExistTag status={record?.resourceStatus} />
+          </Flex>
         );
       },
-    },
-    {
-      title: intl.formatMessage({
-        id: 'common.table.columns.assetId',
-      }),
-      dataIndex: 'resourceId',
-      valueType: 'text',
-      align: 'left',
-      hideInTable: true,
-    },
-    {
-      title: intl.formatMessage({
-        id: 'common.table.columns.assetStatus',
-      }),
-      dataIndex: 'resourceStatus',
-      valueType: 'select',
-      valueEnum: valueListAsValueEnum(AssetStatusList),
-      align: 'left',
-      hideInTable: true,
     },
     {
       title: intl.formatMessage({
@@ -552,6 +792,7 @@ const RiskManagement: React.FC = () => {
       dataIndex: 'createTimeRange',
       valueType: 'dateTimeRange',
       hideInTable: true,
+      colSize: 1, // First discovery takes 1/4 width (6/24)
       fieldProps: {
         presets: RangePresets,
       },
@@ -569,6 +810,7 @@ const RiskManagement: React.FC = () => {
       dataIndex: 'modifiedTimeRange',
       valueType: 'dateTimeRange',
       hideInTable: true,
+      colSize: 1, // Recent discovery takes 1/4 width (6/24)
       fieldProps: {
         presets: RangePresets,
       },
@@ -578,6 +820,17 @@ const RiskManagement: React.FC = () => {
           gmtModifiedEnd: value[1],
         }),
       },
+    },
+    {
+      title: intl.formatMessage({
+        id: 'common.table.columns.assetStatus',
+      }),
+      dataIndex: 'resourceStatus',
+      valueType: 'select',
+      valueEnum: valueListAsValueEnum(AssetStatusList),
+      align: 'left',
+      hideInTable: true,
+      colSize: 1, // Asset status takes 1/4 width (6/24)
     },
     {
       title: intl.formatMessage({
@@ -731,8 +984,7 @@ const RiskManagement: React.FC = () => {
       resourceTypeList, // resourceTypeList
       status = 'UNREPAIRED', // Risk status
       ignoreReasonTypeList, // Ignore type
-      ruleTypeIdList,
-      ruleIdList, // Table rule name filtering
+      ruleTypeIdList, // Rule type filtering
       gmtCreateStart, // Start time of risk creation
       gmtCreateEnd, // End time of risk creation
       gmtModifiedStart, // Start time of risk update
@@ -768,7 +1020,24 @@ const RiskManagement: React.FC = () => {
     if (riskLevelList) postBody.riskLevelList = riskLevelList;
     if (ruleCodeList) postBody.ruleCodeList = ruleCodeList;
     if (resourceId) postBody.resourceId = resourceId;
-    if (ruleIdList && !isEmpty(ruleIdList)) postBody.ruleIdList = ruleIdList;
+    
+    // 确保cloudAccountId被正确传递
+    // 1. 如果params中有cloudAccountId，直接使用
+    // 2. 如果formActionRef中有cloudAccountId，使用formActionRef中的值
+    // 3. 如果filterFactor中有cloudAccountId，使用filterFactor中的值
+    const formCloudAccountId = formActionRef.current?.getFieldValue('cloudAccountId');
+    const filterFactorCloudAccountId = filterFactor.cloudAccountId;
+    
+    if (cloudAccountId) {
+      postBody.cloudAccountId = cloudAccountId;
+    } else if (formCloudAccountId) {
+      postBody.cloudAccountId = formCloudAccountId;
+    } else if (filterFactorCloudAccountId) {
+      postBody.cloudAccountId = filterFactorCloudAccountId;
+    }
+    
+    // We now use ruleCodeList instead of ruleIdList
+    // No cloudAccountIdList variable exists in this scope, so this condition should be removed
     const { content, code } = await queryRiskList(postBody);
     return {
       data: content?.data || [],
@@ -837,16 +1106,27 @@ const RiskManagement: React.FC = () => {
           onChange: (key) => {
             setStatus(key as string);
             formActionRef.current?.setFieldValue('ignoreReasonTypeList', []);
-            // Reset some filtering criteria
-            formActionRef.current?.resetFields();
-            form.setFieldValue('platformList', []);
-            form.setFieldValue('riskLevelList', null);
-            // @ts-ignore
-            tableActionRef.current?.reset();
-            // Trigger a re request for TableList
-            setFilterFactor({
+
+            // Preserve current query conditions when switching status
+            const currentFormData = form.getFieldsValue();
+            const currentSearchData = formActionRef.current?.getFieldsValue() || {};
+
+            // Only reset ignore reason type list for status-specific filtering
+            // Keep other filter conditions intact
+            const preservedFilters = {
+              ...filterFactor,
+              ...currentFormData,
+              ...currentSearchData,
               status: key,
-            });
+              ignoreReasonTypeList: [], // Reset only this field
+            };
+
+            // Update filter factor with preserved conditions
+            setFilterFactor(preservedFilters);
+
+            // Reload table with preserved filters
+            // @ts-ignore
+            tableActionRef.current?.reload();
           },
         }}
       />
@@ -855,9 +1135,8 @@ const RiskManagement: React.FC = () => {
         rowKey={'id'}
         search={{
           span: 6,
-          defaultCollapsed: false, // Default Expand
-          collapseRender: false, // Hide expand/close button
           labelWidth: 0,
+          defaultColsNumber: 6, // Show 6 fields in collapsed state to include asset-related fields
         }}
         headerTitle={
           <div className={styleType['customTitle']}>
@@ -888,12 +1167,14 @@ const RiskManagement: React.FC = () => {
         }}
         onSubmit={(): void => {
           const customFormData = form.getFieldsValue();
+          const searchFormData = formActionRef.current?.getFieldsValue() || {};
           setFilterFactor({
             ...filterFactor,
             ...customFormData,
+            ...searchFormData, // 确保搜索表单中的值也被包含在filterFactor中
           });
         }}
-        params={{ ...filterFactor, ruleIdList }}
+        params={{ ...filterFactor }}
         pagination={{
           showQuickJumper: false,
           showSizeChanger: true,
@@ -922,6 +1203,13 @@ const RiskManagement: React.FC = () => {
         setEditDrawerVisible={setEditWhiteDrawerVisible}
         whiteListDrawerInfo={whiteListInfoRef.current}
         tableActionRef={tableActionRef}
+      />
+
+      <RuleDetailDrawer
+        visible={ruleDetailDrawerVisible}
+        onClose={() => setRuleDetailDrawerVisible(false)}
+        ruleId={ruleDetailInfo.ruleId}
+        ruleCode={ruleDetailInfo.ruleCode}
       />
     </PageContainer>
   );

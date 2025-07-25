@@ -1,0 +1,111 @@
+.noPermissionContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px 20px;
+
+  .ant-result {
+    padding: 48px 32px;
+
+    .ant-result-icon {
+      margin-bottom: 32px;
+
+      .anticon {
+        font-size: 72px;
+        color: #faad14;
+      }
+    }
+
+    .ant-result-title {
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 1.8;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .ant-result-subtitle {
+      color: rgba(0, 0, 0, 0.45);
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .ant-result-extra {
+      text-align: center;
+
+      .ant-btn {
+        height: 40px;
+        padding: 6.4px 15px;
+        font-size: 14px;
+        border-radius: 6px;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+        transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  // Dark theme support
+  .dark & {
+    .ant-result-title {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .ant-result-subtitle {
+      color: rgba(255, 255, 255, 0.45);
+    }
+  }
+
+  // Mobile responsive
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    min-height: 300px;
+
+    .ant-result {
+      padding: 24px 16px;
+
+      .ant-result-icon .anticon {
+        font-size: 48px;
+      }
+
+      .ant-result-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+
+      .ant-result-subtitle {
+        font-size: 13px;
+        margin-bottom: 24px;
+      }
+    }
+  }
+}
+
+// Animation for smooth entrance
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.noPermissionContainer .ant-result {
+  animation: fadeInUp 0.6s ease-out;
+}

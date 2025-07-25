@@ -60,10 +60,18 @@ public interface RuleRepository {
     List<RuleAgg> findRuleListFromLocalFile();
 
     /**
-     * 关联规则和全局变量
+     * Association rules and global variables
      *
-     * @param id
-     * @param globalVariables
+     * @param id              rule id
+     * @param globalVariables global variables
      */
     void relatedGlobalVariables(Long id, List<GlobalVariable> globalVariables);
+
+
+    /**
+     * Is there a new rule
+     *
+     * @return int new rule count
+     */
+    int existNewRule();
 }

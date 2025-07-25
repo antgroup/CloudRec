@@ -56,6 +56,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/api/agent/**")
                 .excludePathPatterns("/api/user/queryUserInfo")
                 .excludePathPatterns("/api/user/login")
+                .excludePathPatterns("/api/user/register")
+                .excludePathPatterns("/api/tenant/checkInviteCode")
                 .excludePathPatterns("/api/open/v1/**")
                 .excludePathPatterns("/api/cloudAccount/acceptCloudAccount");
     }

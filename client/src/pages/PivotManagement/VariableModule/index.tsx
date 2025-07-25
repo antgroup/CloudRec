@@ -1,4 +1,5 @@
 import styles from '@/components/Common/index.less';
+import PermissionWrapper from '@/components/Common/PermissionWrapper';
 import {
   deleteGlobalVariableConfig,
   listGlobalVariableConfig,
@@ -15,7 +16,7 @@ import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
 import EditModalForm from './components/EditModalForm';
 
-const VariableModule: React.FC = () => {
+const VariableModuleContent: React.FC = () => {
   // Table Action
   const tableActionRef = useRef<ActionType>();
   // Global Variable Info
@@ -238,6 +239,14 @@ const VariableModule: React.FC = () => {
         tableActionRef={tableActionRef}
       />
     </Layout>
+  );
+};
+
+const VariableModule: React.FC = () => {
+  return (
+    <PermissionWrapper accessKey="isPlatformAdmin">
+      <VariableModuleContent />
+    </PermissionWrapper>
   );
 };
 

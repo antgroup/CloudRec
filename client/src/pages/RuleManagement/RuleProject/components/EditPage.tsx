@@ -207,7 +207,8 @@ const EditPage: React.FC = () => {
     loading: resourceExampleDataLoading,
   } = useRequest(
     (values) => {
-      return queryResourceExampleData(values);
+      // Using type assertion to match the expected API.RuleGroupInfo type
+      return queryResourceExampleData(values as API.RuleGroupInfo);
     },
     {
       formatResult: (result): void => {
@@ -584,11 +585,66 @@ const EditPage: React.FC = () => {
   const onClickEvaluate = async (): Promise<any> => {
     const postBody: Record<string, any> = {};
     const type = form.getFieldValue('type');
+    
     if (type === EVALUATE_TYPE_LIST[0].value) {
+      const instanceId = form.getFieldValue('instanceId');
+      
+      // Prepare the base postBody with common fields
       postBody.ruleRego = codeEditor;
-      postBody.input = inputEditor;
       postBody.globalVariableConfigIdList = selectedRowKeys;
       postBody.linkedDataList = formData?.linkedDataList || [];
+      
+      // If instanceId is provided, call queryResourceExampleData first
+      if (instanceId) {
+        try {
+          // Prepare parameters for resource example data query
+          // Using type assertion to match the expected API.RuleGroupInfo type
+          const exampleDataParams: any = {
+            platform: form.getFieldValue('platform'),
+            resourceType: form.getFieldValue('resourceType'),
+            linkedDataList: formData?.linkedDataList || [],
+            resourceId: instanceId
+          };
+          
+          // Call the API and get the result directly
+          const result = await queryResourceExampleData(exampleDataParams);
+          
+          // Process the result and update the input for the next API call
+          if (result.msg === 'success') {
+            const { content } = result;
+            try {
+              // Create JSON string for the input
+              const jsonString = JSON.stringify(content, null, 4) || '';
+              
+              // Update the React state (this is async and might not be reflected immediately)
+              setInputEditor(jsonString);
+              
+              // But also use the value directly in the postBody
+              postBody.input = jsonString;
+              
+              // Wait for the UI to update before proceeding
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            } catch (e) {
+              console.info('Error processing input data:', e);
+              // If there's an error, use the current inputEditor state
+              postBody.input = inputEditor;
+            }
+          } else {
+            // If the API call wasn't successful, use the current inputEditor state
+            postBody.input = inputEditor;
+          }
+        } catch (error) {
+          console.error('Error fetching resource example data:', error);
+          return;
+        }
+      } else {
+        // If no instanceId, just use the current inputEditor state
+        postBody.input = inputEditor;
+      }
+      
+      if (instanceId) {
+        postBody.instanceId = instanceId;
+      }
     } else {
       // Tenant ||  Cloud Account
       postBody.type = type;
@@ -601,14 +657,16 @@ const EditPage: React.FC = () => {
       );
       postBody.linkedDataList = formData?.linkedDataList || [];
       if (type === EVALUATE_TYPE_LIST[1].value && !selectId) {
-        return messageApi.error(`请选择${EVALUATE_TYPE_LIST[1].label}`);
+        return messageApi.error(`Please Select${EVALUATE_TYPE_LIST[1].label}`);
       } else if (type === EVALUATE_TYPE_LIST[2].value && !selectId) {
-        return messageApi.error(`请选择${EVALUATE_TYPE_LIST[2].label}`);
+        return messageApi.error(`Please Select${EVALUATE_TYPE_LIST[2].label}`);
       }
     }
+    
     setEvaluateRegoLoading(true);
     const res: API.Result_T_ = await evaluateRego(postBody);
     setEvaluateRegoLoading(false);
+    
     if (type === EVALUATE_TYPE_LIST[0].value) {
       if (res.code === 200 && res.msg === 'success') {
         messageApi.success(
@@ -647,6 +705,7 @@ const EditPage: React.FC = () => {
   const onClickNextStep = (): any => {
     form.validateFields().then(async (values): Promise<any> => {
       if (current === 0) {
+        // Using type assertion to match the expected API.RuleGroupInfo type
         await requestResourceExampleData({
           platform: values?.platform,
           resourceType: values?.resourceType,
@@ -700,7 +759,7 @@ const EditPage: React.FC = () => {
             intl.formatMessage({ id: 'common.message.text.create.success' }),
           );
         }
-        history.push('/ruleManagement/ruleProject');
+        history.push('/ruleManagement/ruleProject?tab=market');
       }
     });
   };
@@ -1161,6 +1220,7 @@ const EditPage: React.FC = () => {
                                 style={{ width: 114 }}
                                 onChange={(value): void => {
                                   form.setFieldValue('selectId', null);
+                                  form.setFieldValue('instanceId', null);
                                   if (value === EVALUATE_TYPE_LIST[2].value)
                                     debounceFetcher();
                                 }}
@@ -1169,7 +1229,20 @@ const EditPage: React.FC = () => {
                             <ProFormDependency name={['type']}>
                               {({ type }) => {
                                 let element = <></>;
-                                if (type === EVALUATE_TYPE_LIST[1].value) {
+                                if (type === EVALUATE_TYPE_LIST[0].value) {
+                                  // Show instanceId input for example data type
+                                  element = (
+                                    <Form.Item name="instanceId" noStyle>
+                                      <Input
+                                        placeholder={intl.formatMessage({
+                                          id: 'rule.extend.placeholder.input',
+                                        })}
+                                        style={{ width: 160 }}
+                                        allowClear
+                                      />
+                                    </Form.Item>
+                                  );
+                                } else if (type === EVALUATE_TYPE_LIST[1].value) {
                                   element = (
                                     <Form.Item noStyle name={'selectId'}>
                                       <Select
@@ -1287,7 +1360,7 @@ const EditPage: React.FC = () => {
                     label={intl.formatMessage({
                       id: 'rule.module.text.risk.context.template',
                     })}
-                    initialValue={CONTEXT_TEMPLATE}
+                    placeholder={CONTEXT_TEMPLATE}
                   />
                 </>
               )}

@@ -1,4 +1,5 @@
 import styles from '@/components/Common/index.less';
+import PermissionWrapper from '@/components/Common/PermissionWrapper';
 import EditModalForm from '@/pages/PivotManagement/UserModule/components/EditModalForm';
 import {
   changeUserStatus,
@@ -15,9 +16,10 @@ import {
 } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
 import { Button, Divider, Popconfirm, Switch, Tooltip, message } from 'antd';
+import { EditOutlined, DeleteOutlined, UserOutlined, CrownOutlined } from '@ant-design/icons';
 import React, { useRef, useState } from 'react';
 
-const TenantModule: React.FC = () => {
+const UserModuleContent: React.FC = () => {
   // Message API
   const [messageApi, contextHolder] = message.useMessage();
   // Intl API
@@ -103,6 +105,22 @@ const TenantModule: React.FC = () => {
       hideInSearch: true,
       align: 'center',
       valueEnum: valueListAsValueEnum(UserTypeList),
+      render: (_, record: API.UserInfo) => {
+        const isAdmin = record.roleName === 'admin';
+        return (
+          <Tooltip
+            title={intl.formatMessage({
+              id: isAdmin ? 'common.tag.text.admin' : 'common.tag.text.user',
+            })}
+          >
+            {isAdmin ? (
+              <CrownOutlined style={{ color: '#faad14', fontSize: '16px' }} />
+            ) : (
+              <UserOutlined style={{ color: '#1890ff', fontSize: '16px' }} />
+            )}
+          </Tooltip>
+        );
+      },
     },
     {
       title: intl.formatMessage({
@@ -113,20 +131,23 @@ const TenantModule: React.FC = () => {
       align: 'center',
       render: (_, record: API.UserInfo) => (
         <>
-          <Button
-            size={'small'}
-            type={'link'}
-            onClick={(): void => {
-              setEditFormVisible(true);
-              userInfoRef.current = {
-                ...record,
-              };
-            }}
-          >
-            {intl.formatMessage({
+          <Tooltip
+            title={intl.formatMessage({
               id: 'common.button.text.edit',
             })}
-          </Button>
+          >
+            <Button
+              size={'small'}
+              type={'link'}
+              icon={<EditOutlined />}
+              onClick={(): void => {
+                setEditFormVisible(true);
+                userInfoRef.current = {
+                  ...record,
+                };
+              }}
+            />
+          </Tooltip>
           <Divider type={'vertical'} />
           <Popconfirm
             title={intl.formatMessage({
@@ -140,11 +161,18 @@ const TenantModule: React.FC = () => {
               id: 'common.button.text.cancel',
             })}
           >
-            <Button type="link" danger size={'small'}>
-              {intl.formatMessage({
+            <Tooltip
+              title={intl.formatMessage({
                 id: 'common.button.text.delete',
               })}
-            </Button>
+            >
+              <Button
+                type="link"
+                danger
+                size={'small'}
+                icon={<DeleteOutlined />}
+              />
+            </Tooltip>
           </Popconfirm>
           <Divider type={'vertical'} style={{ margin: '0 12px 0 0' }} />
           <Tooltip
@@ -240,4 +268,12 @@ const TenantModule: React.FC = () => {
   );
 };
 
-export default TenantModule;
+const UserModule: React.FC = () => {
+  return (
+    <PermissionWrapper accessKey="isPlatformAdmin">
+      <UserModuleContent />
+    </PermissionWrapper>
+  );
+};
+
+export default UserModule;

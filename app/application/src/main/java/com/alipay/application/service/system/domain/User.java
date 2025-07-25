@@ -47,6 +47,11 @@ public class User {
 
     private Date lastLoginTime;
 
+    /**
+     * The user's currently selected tenant role name
+     */
+    private String selectTenantRoleName;
+
     public static final String DEFAULT_USER_ID = "cloudrec";
     private static final String DEFAULT_USER_PASSWORD = "cloudrec";
 

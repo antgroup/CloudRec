@@ -96,6 +96,7 @@ const EditModalForm: React.FC<IEditFormProps> = (props) => {
             id: 'tenant.module.text.tenant.name',
           })}
           rules={[{ required: true }]}
+          disabled={tenantInfo.disable}
         />
 
         <ProFormText
@@ -113,6 +114,7 @@ const EditModalForm: React.FC<IEditFormProps> = (props) => {
           name={'status'}
           rules={[{ required: true }]}
           options={TenantStatusList as any}
+          disabled={tenantInfo.disable}
         />
       </ModalForm>
     </>

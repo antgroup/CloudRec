@@ -1,0 +1,182 @@
+// Import antd variables if needed
+// @import '~antd/es/style/themes/default.less';
+
+// Tenant card layout variables
+@tenant-card-width: 320px;
+@tenant-card-height: 240px;
+@tenant-card-margin: 24px;
+@tenant-card-pro-width: 340px;
+@tenant-card-pro-height: 260px;
+@tenant-card-pro-margin: 32px;
+
+.tenantModuleWrap {
+  :global {
+    .ant-spin-nested-loading {
+      width: 100%;
+      .ant-spin-container {
+        min-height: 356px;
+      }
+    }
+  }
+  
+  .tenantCardList {
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 16px 0;
+
+    // <= 768px (Mobile)
+    @media screen and (max-width: 768px) {
+      width: @tenant-card-width !important;
+      .tenantCard {
+        margin: 0 0 26px 0 !important;
+      }
+    }
+
+    // 768px < width < 1264px (Tablet)
+    @media screen and (min-width: 769px) and (max-width: 1263px) {
+      width: calc(@tenant-card-width * 2 + @tenant-card-margin * 1);
+      .tenantCard:not(:nth-child(2n)) {
+        margin: 0 @tenant-card-margin 26px 0 !important;
+      }
+      .tenantCard:nth-child(2n) {
+        margin: 0 0 24px 0 !important;
+      }
+    }
+
+    // 1264px <= width < 1919px (Desktop)
+    @media screen and (min-width: 1264px) and (max-width: 1918px) {
+      width: calc(@tenant-card-pro-width * 3 + @tenant-card-margin * 2);
+      .tenantCard:not(:nth-child(3n)) {
+        margin: 0 @tenant-card-margin 26px 0 !important;
+      }
+      .tenantCard:nth-child(3n) {
+        margin: 0 0 24px 0 !important;
+      }
+      .tenantCard {
+        width: @tenant-card-pro-width;
+        height: @tenant-card-pro-height;
+      }
+    }
+
+    // 1920px <= width < 2047px (Large Desktop)
+    @media screen and (min-width: 1920px) and (max-width: 2046px) {
+      width: calc(@tenant-card-pro-width * 4 + @tenant-card-margin * 3);
+      .tenantCard:not(:nth-child(4n)) {
+        margin: 0 @tenant-card-margin 26px 0 !important;
+      }
+      .tenantCard:nth-child(4n) {
+        margin: 0 0 26px 0 !important;
+      }
+      .tenantCard {
+        width: @tenant-card-pro-width;
+        height: @tenant-card-pro-height;
+      }
+    }
+
+    // >= 2048px (Ultra Wide)
+    @media screen and (min-width: 2048px) {
+      width: calc(@tenant-card-pro-width * 5 + @tenant-card-pro-margin * 4);
+      .tenantCard:not(:nth-child(5n)) {
+        margin: 0 @tenant-card-pro-margin 26px 0 !important;
+      }
+      .tenantCard:nth-child(5n) {
+        margin: 0 0 24px 0 !important;
+      }
+      .tenantCard {
+        width: @tenant-card-pro-width;
+        height: @tenant-card-pro-height;
+        padding: 18px 16px;
+        .divider {
+          margin: 18px 0 !important;
+        }
+        .propertyWrap {
+          .propertyName {
+            margin-bottom: 3px !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+.tenantCard {
+  width: @tenant-card-width;
+  height: @tenant-card-height;
+  background: rgba(22, 119, 255, 0.04);
+  margin: 0 @tenant-card-margin 24px 0;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .divider {
+    margin: 14px 0;
+    border-color: #e8e8e8;
+  }
+  
+  .propertyWrap {
+    .propertyName {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 4px;
+    }
+  }
+  
+  .tenantNameWrap {
+    .tenantName {
+      font-size: 18px;
+      font-weight: 600;
+      color: #262626;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    
+    .tenantDesc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.4;
+      word-break: break-word;
+      max-height: 40px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+}
+
+// Search form styles
+.searchForm {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Empty state styles
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  
+  .emptyIcon {
+    font-size: 64px;
+    color: #d9d9d9;
+    margin-bottom: 16px;
+  }
+  
+  .emptyText {
+    font-size: 16px;
+    color: #999;
+    margin-bottom: 24px;
+  }
+}

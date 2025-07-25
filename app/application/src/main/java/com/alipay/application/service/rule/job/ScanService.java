@@ -20,6 +20,8 @@ import com.alipay.application.service.rule.domain.RuleAgg;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.dao.po.CloudAccountPO;
 
+import java.util.List;
+
 /*
  *@title ScanService
  *@description
@@ -60,7 +62,7 @@ public interface ScanService {
      * @param cloudAccountPO cloudAccountPO
      * @throws Exception Exception
      */
-    void scanByRule(RuleAgg ruleAgg, CloudAccountPO cloudAccountPO) throws Exception;
+    void scanByRule(RuleAgg ruleAgg, CloudAccountPO cloudAccountPO, Boolean selectedByGlobalTenant) throws Exception;
 
     /**
      * 扫描指定规则的数据
@@ -69,4 +71,11 @@ public interface ScanService {
      * @return ApiResponse<String>
      */
     ApiResponse<String> scanByRule(Long ruleId);
+
+    /**
+     * 扫描指定规则列表的数据
+     * @param ruleIdList 规则列表
+     * @return ApiResponse<String>
+     */
+    ApiResponse<String> scanRuleList(List<Long> ruleIdList);
 }

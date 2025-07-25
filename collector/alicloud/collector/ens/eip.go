@@ -16,13 +16,13 @@
 package ens
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -55,7 +55,8 @@ func ListEipAddressesResource(ctx context.Context, service schema.ServiceInterfa
 		log.CtxLogger(ctx).Warn("DescribeEnsEipAddresses error", zap.Error(err))
 		return err
 	}
-	for describeEnsEipAddressesResponse.PageSize*describeEnsEipAddressesResponse.PageNumber <= describeEnsEipAddressesResponse.TotalCount {
+
+	for {
 		for _, eipAddress := range describeEnsEipAddressesResponse.EipAddresses.EipAddress {
 			eipAddressDetail := EipAddressDetail{
 				EipAddress: eipAddress,
@@ -63,6 +64,11 @@ func ListEipAddressesResource(ctx context.Context, service schema.ServiceInterfa
 
 			res <- eipAddressDetail
 		}
+
+		if describeEnsEipAddressesResponse.PageSize*describeEnsEipAddressesResponse.PageNumber >= describeEnsEipAddressesResponse.TotalCount {
+			break
+		}
+
 		describeEnsEipAddressesRequest.PageNumber = requests.NewInteger(describeEnsEipAddressesResponse.PageNumber + 1)
 		describeEnsEipAddressesResponse, err = cli.DescribeEnsEipAddresses(describeEnsEipAddressesRequest)
 		if err != nil {

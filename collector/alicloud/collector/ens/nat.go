@@ -56,7 +56,7 @@ func ListNatGatewayResource(ctx context.Context, service schema.ServiceInterface
 		log.CtxLogger(ctx).Error("DescribeNatGateways error", zap.Error(err))
 		return err
 	}
-	for describeNatGatewaysResponse.PageSize*describeNatGatewaysResponse.PageNumber <= describeNatGatewaysResponse.TotalCount {
+	for {
 		for _, natGateway := range describeNatGatewaysResponse.NatGateways {
 			natGatewayDetail := NatGatewayDetail{
 				NatGateway:          natGateway,
@@ -65,6 +65,11 @@ func ListNatGatewayResource(ctx context.Context, service schema.ServiceInterface
 
 			res <- natGatewayDetail
 		}
+
+		if describeNatGatewaysResponse.PageSize*describeNatGatewaysResponse.PageNumber >= describeNatGatewaysResponse.TotalCount {
+			break
+		}
+
 		describeNatGatewaysRequest.PageNumber = requests.NewInteger(describeNatGatewaysResponse.PageNumber + 1)
 		describeNatGatewaysResponse, err = cli.DescribeNatGateways(describeNatGatewaysRequest)
 		if err != nil {
@@ -72,6 +77,7 @@ func ListNatGatewayResource(ctx context.Context, service schema.ServiceInterface
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -89,8 +95,12 @@ func describeForwardTableEntries(ctx context.Context, cli *ens.Client, natgwid s
 	pageNumber, _ := strconv.Atoi(describeForwardTableEntriesResponse.PageNumber)
 	totalCount, _ := strconv.Atoi(describeForwardTableEntriesResponse.TotalCount)
 
-	for pageSize*pageNumber <= totalCount {
+	for {
 		forwardTableEntries = append(forwardTableEntries, describeForwardTableEntriesResponse.ForwardTableEntries...)
+
+		if pageSize*pageNumber >= totalCount {
+			break
+		}
 
 		describeForwardTableEntriesRequest.PageNumber = requests.NewInteger(pageNumber + 1)
 		describeForwardTableEntriesResponse, err = cli.DescribeForwardTableEntries(describeForwardTableEntriesRequest)
@@ -102,5 +112,6 @@ func describeForwardTableEntries(ctx context.Context, cli *ens.Client, natgwid s
 		pageNumber, _ = strconv.Atoi(describeForwardTableEntriesResponse.PageNumber)
 		totalCount, _ = strconv.Atoi(describeForwardTableEntriesResponse.TotalCount)
 	}
+
 	return forwardTableEntries
 }

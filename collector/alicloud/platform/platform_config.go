@@ -124,6 +124,7 @@ func GetPlatformConfig() *schema.Platform {
 			cloudcenter.GetSasConfigResource(),
 			cloudcenter.GetCloudCenterResource(),
 			elasticsearch.GetResource(),
+			elasticsearch.GetLogstashResource(),
 			arms.GetTraceAppResource(),
 			arms.GetGrafanaWorkspaceResource(),
 			ecs.GetInstanceResource(),

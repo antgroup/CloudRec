@@ -44,10 +44,12 @@ import (
 	"github.com/cloudrec/alicloud/collector/eci"
 	"github.com/cloudrec/alicloud/collector/ecp"
 	"github.com/cloudrec/alicloud/collector/ecs"
+	"github.com/cloudrec/alicloud/collector/eflo"
 	"github.com/cloudrec/alicloud/collector/elasticsearch"
 	"github.com/cloudrec/alicloud/collector/ens"
 	"github.com/cloudrec/alicloud/collector/ess"
 	"github.com/cloudrec/alicloud/collector/fc"
+	"github.com/cloudrec/alicloud/collector/ga"
 	"github.com/cloudrec/alicloud/collector/hitsdb"
 	"github.com/cloudrec/alicloud/collector/ims"
 	"github.com/cloudrec/alicloud/collector/kafka"
@@ -58,6 +60,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/maxcompute"
 	"github.com/cloudrec/alicloud/collector/mse"
 	"github.com/cloudrec/alicloud/collector/nas"
+	"github.com/cloudrec/alicloud/collector/ons"
 	"github.com/cloudrec/alicloud/collector/oss"
 	"github.com/cloudrec/alicloud/collector/pl"
 	"github.com/cloudrec/alicloud/collector/ram"
@@ -193,6 +196,9 @@ func GetPlatformConfig() *schema.Platform {
 			ecp.GetInstanceResource(),
 			swas.GetInstanceResource(),
 			vpc.GetVPNConnectionResource(),
+			ga.GetAcceleratorResource(),
+			eflo.GetNodeResource(),
+			ons.GetInstanceResource(),
 		},
 
 		Service:        &collector.Services{},
@@ -223,7 +229,7 @@ func GetPlatformConfigTest() *schema.Platform {
 	}
 
 	return schema.GetInstance(schema.PlatformConfig{
-		Name: string(constant.AlibabaCloud),
+		Name:      string(constant.AlibabaCloud),
 		Resources: []schema.Resource{
 			//test.TestBlockResource(),
 			//test.TestAutoExitResource(),

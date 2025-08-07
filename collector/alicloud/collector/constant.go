@@ -91,4 +91,6 @@ const (
 	EfloCluster           = "Eflo Cluster"
 	EfloNode              = "Eflo Node"
 	SWAS                  = "SWAS"
+	ONS_INSTANCE          = "ONS Instance"
+	GAAccelerator         = "GA Accelerator"
 )

@@ -36,6 +36,7 @@ import (
 	ddoscoo20200101 "github.com/alibabacloud-go/ddoscoo-20200101/v3/client"
 	dds20151201 "github.com/alibabacloud-go/dds-20151201/v8/client"
 	dms_enterprise20181101 "github.com/alibabacloud-go/dms-enterprise-20181101/client"
+	eds_aic20230930 "github.com/alibabacloud-go/eds-aic-20230930/v4/client"
 	elasticsearch20170613 "github.com/alibabacloud-go/elasticsearch-20170613/v3/client"
 	ess20220222 "github.com/alibabacloud-go/ess-20220222/v2/client"
 	fc20230330 "github.com/alibabacloud-go/fc-20230330/v4/client"
@@ -59,7 +60,6 @@ import (
 	slb20140515 "github.com/alibabacloud-go/slb-20140515/v4/client"
 	sls20201230 "github.com/alibabacloud-go/sls-20201230/v6/client"
 	tablestore20201209 "github.com/alibabacloud-go/tablestore-20201209/client"
-	eds_aic20230930 "github.com/alibabacloud-go/eds-aic-20230930/v4/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	waf_openapi20211001 "github.com/alibabacloud-go/waf-openapi-20211001/v4/client"
@@ -73,11 +73,14 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eci"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eflo"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/eflo-controller"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/swas-open"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ga"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
 	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 	"github.com/core-sdk/constant"
@@ -174,7 +177,10 @@ type Services struct {
 	ECI             *eci.Client
 	ECP             *eds_aic20230930.Client
 	Eflo            *eflo.Client
+	EfloController  *eflo_controller.Client
 	SWAS            *swas_open.Client
+	Ons             *ons.Client
+	GA              *ga.Client
 }
 
 // Clone creates a new instance of Services with copied configuration
@@ -463,6 +469,21 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.ECP, err = createECPClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ecp client failed", zap.Error(err))
+		}
+	case ONS_INSTANCE:
+		s.Ons, err = ons.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init ons client failed", zap.Error(err))
+		}
+	case EfloNode:
+		s.EfloController, err = eflo_controller.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init eflo controller client failed", zap.Error(err))
+		}
+	case GAAccelerator:
+		s.GA, err = ga.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init ga client failed", zap.Error(err))
 		}
 	}
 

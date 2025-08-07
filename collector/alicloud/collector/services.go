@@ -59,6 +59,7 @@ import (
 	slb20140515 "github.com/alibabacloud-go/slb-20140515/v4/client"
 	sls20201230 "github.com/alibabacloud-go/sls-20201230/v6/client"
 	tablestore20201209 "github.com/alibabacloud-go/tablestore-20201209/client"
+	eds_aic20230930 "github.com/alibabacloud-go/eds-aic-20230930/v4/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	waf_openapi20211001 "github.com/alibabacloud-go/waf-openapi-20211001/v4/client"
@@ -171,6 +172,7 @@ type Services struct {
 	ResourceCenter  *resourcecenter20221201.Client
 	DTS             *dts.Client
 	ECI             *eci.Client
+	ECP             *eds_aic20230930.Client
 	Eflo            *eflo.Client
 	SWAS            *swas_open.Client
 }
@@ -456,6 +458,11 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.SWAS, err = swas_open.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init swas client failed", zap.Error(err))
+		}
+	case ECPInstance:
+		s.ECP, err = createECPClient(param.Region, s.Config)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init ecp client failed", zap.Error(err))
 		}
 	}
 
@@ -944,6 +951,15 @@ func createRocketMQClient(regionId string, config *openapi.Config) (_result *roc
 	config.Endpoint = tea.String("rocketmq." + regionId + ".aliyuncs.com")
 	_result = &rocketmq20220801.Client{}
 	_result, _err = rocketmq20220801.NewClient(config)
+	_result.RegionId = tea.String(regionId)
+	return _result, _err
+}
+
+// createECPClient returns the service connection for Elastic Cloud Phone (ECP)
+func createECPClient(regionId string, config *openapi.Config) (_result *eds_aic20230930.Client, _err error) {
+	config.Endpoint = tea.String("eds-aic." + regionId + ".aliyuncs.com")
+	_result = &eds_aic20230930.Client{}
+	_result, _err = eds_aic20230930.NewClient(config)
 	_result.RegionId = tea.String(regionId)
 	return _result, _err
 }

@@ -42,6 +42,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/dns"
 	"github.com/cloudrec/alicloud/collector/dts"
 	"github.com/cloudrec/alicloud/collector/eci"
+	"github.com/cloudrec/alicloud/collector/ecp"
 	"github.com/cloudrec/alicloud/collector/ecs"
 	"github.com/cloudrec/alicloud/collector/elasticsearch"
 	"github.com/cloudrec/alicloud/collector/ens"
@@ -189,6 +190,7 @@ func GetPlatformConfig() *schema.Platform {
 			dts.GetDTSInstanceResource(),
 			eci.GetECIContainerGroupResource(),
 			eci.GetECIImageCacheResource(),
+			ecp.GetInstanceResource(),
 			swas.GetInstanceResource(),
 			vpc.GetVPNConnectionResource(),
 		},

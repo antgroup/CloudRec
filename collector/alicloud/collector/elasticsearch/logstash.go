@@ -34,8 +34,8 @@ func GetLogstashResource() schema.Resource {
 		Desc:               `https://api.aliyun.com/product/elasticsearch`,
 		ResourceDetailFunc: GetLogstashDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.instanceId",
-			ResourceName: "$.description",
+			ResourceId:   "$.Instance.instanceId",
+			ResourceName: "$.Instance.description",
 		},
 		Regions: []string{
 			"cn-qingdao",

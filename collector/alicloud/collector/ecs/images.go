@@ -62,7 +62,7 @@ func GetImagesDetail(ctx context.Context, service schema.ServiceInterface, res c
 			Image: image,
 		}
 	}
-	
+
 	return nil
 }
 

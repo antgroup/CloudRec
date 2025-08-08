@@ -232,7 +232,7 @@ func GetPlatformConfigTest() *schema.Platform {
 	}
 
 	return schema.GetInstance(schema.PlatformConfig{
-		Name: string(constant.AlibabaCloud),
+		Name:      string(constant.AlibabaCloud),
 		Resources: []schema.Resource{
 			//test.TestBlockResource(),
 			//test.TestAutoExitResource(),

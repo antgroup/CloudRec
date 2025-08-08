@@ -131,6 +131,7 @@ func GetPlatformConfig() *schema.Platform {
 			elasticsearch.GetLogstashResource(),
 			arms.GetTraceAppResource(),
 			arms.GetGrafanaWorkspaceResource(),
+			arms.GetARMSPrometheusResource(),
 			ecs.GetInstanceResource(),
 			ecs.GetSecurityGroupData(),
 			ecs.GetImagesResource(),

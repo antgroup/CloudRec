@@ -93,4 +93,5 @@ const (
 	SWAS                  = "SWAS"
 	ONS_INSTANCE          = "ONS Instance"
 	GAAccelerator         = "GA Accelerator"
+	ARMSPrometheus        = "ARMS Prometheus"
 )

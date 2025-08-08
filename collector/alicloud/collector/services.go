@@ -405,7 +405,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init cloudAPI client failed", zap.Error(err))
 		}
-	case TraceApp, GrafanaWorkspace:
+	case TraceApp, GrafanaWorkspace, ARMSPrometheus:
 		s.ARMS, err = CreateARMSClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init arms client failed", zap.Error(err))

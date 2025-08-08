@@ -70,6 +70,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/rocketmq"
 	"github.com/cloudrec/alicloud/collector/swas"
 	"github.com/cloudrec/alicloud/collector/tablestore"
+	"github.com/cloudrec/alicloud/collector/vod"
 	"github.com/cloudrec/alicloud/collector/vpc"
 	"github.com/cloudrec/alicloud/collector/vpc/eip"
 	"github.com/cloudrec/alicloud/collector/vpc/nat"
@@ -202,6 +203,7 @@ func GetPlatformConfig() *schema.Platform {
 			eflo.GetNodeResource(),
 			ons.GetInstanceResource(),
 			dcdn.GetDCDNDomainResource(),
+			vod.GetVODDomainResource(),
 		},
 
 		Service:        &collector.Services{},

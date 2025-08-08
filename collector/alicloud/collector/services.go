@@ -81,6 +81,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/swas-open"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
 	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
@@ -183,6 +184,7 @@ type Services struct {
 	Ons             *ons.Client
 	GA              *ga.Client
 	DCDN            *dcdn.Client
+	VOD             *vod.Client
 }
 
 // Clone creates a new instance of Services with copied configuration
@@ -491,6 +493,11 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.DCDN, err = dcdn.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init dcdn client failed", zap.Error(err))
+		}
+	case VODDomain:
+		s.VOD, err = vod.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init vod client failed", zap.Error(err))
 		}
 	}
 

@@ -37,6 +37,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/db/polardb"
 	"github.com/cloudrec/alicloud/collector/db/rds"
 	"github.com/cloudrec/alicloud/collector/db/selectdb"
+	"github.com/cloudrec/alicloud/collector/dcdn"
 	"github.com/cloudrec/alicloud/collector/ddos"
 	"github.com/cloudrec/alicloud/collector/dms"
 	"github.com/cloudrec/alicloud/collector/dns"
@@ -200,6 +201,7 @@ func GetPlatformConfig() *schema.Platform {
 			ga.GetAcceleratorResource(),
 			eflo.GetNodeResource(),
 			ons.GetInstanceResource(),
+			dcdn.GetDCDNDomainResource(),
 		},
 
 		Service:        &collector.Services{},
@@ -230,7 +232,7 @@ func GetPlatformConfigTest() *schema.Platform {
 	}
 
 	return schema.GetInstance(schema.PlatformConfig{
-		Name:      string(constant.AlibabaCloud),
+		Name: string(constant.AlibabaCloud),
 		Resources: []schema.Resource{
 			//test.TestBlockResource(),
 			//test.TestAutoExitResource(),

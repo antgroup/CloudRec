@@ -94,4 +94,5 @@ const (
 	ONS_INSTANCE          = "ONS Instance"
 	GAAccelerator         = "GA Accelerator"
 	ARMSPrometheus        = "ARMS Prometheus"
+	DCDNDomain            = "DCDN Domain"
 )

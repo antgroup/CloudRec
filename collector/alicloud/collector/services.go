@@ -71,6 +71,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/clickhouse"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/dcdn"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/dts"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/dysmsapi"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eci"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eflo"
@@ -176,6 +177,7 @@ type Services struct {
 	APIG            *apig20240327.Client
 	ResourceCenter  *resourcecenter20221201.Client
 	DTS             *dts.Client
+	Dysmsapi        *dysmsapi.Client
 	ECI             *eci.Client
 	ECP             *eds_aic20230930.Client
 	Eflo            *eflo.Client
@@ -498,6 +500,11 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.VOD, err = vod.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init vod client failed", zap.Error(err))
+		}
+	case SMSTemplate:
+		s.Dysmsapi, err = dysmsapi.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init dysmsapi client failed", zap.Error(err))
 		}
 	}
 

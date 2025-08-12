@@ -68,6 +68,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/redis"
 	"github.com/cloudrec/alicloud/collector/resourcecenter"
 	"github.com/cloudrec/alicloud/collector/rocketmq"
+	"github.com/cloudrec/alicloud/collector/sms"
 	"github.com/cloudrec/alicloud/collector/swas"
 	"github.com/cloudrec/alicloud/collector/tablestore"
 	"github.com/cloudrec/alicloud/collector/vod"
@@ -204,6 +205,7 @@ func GetPlatformConfig() *schema.Platform {
 			ons.GetInstanceResource(),
 			dcdn.GetDCDNDomainResource(),
 			vod.GetVODDomainResource(),
+			sms.GetSMSTemplateResource(),
 		},
 
 		Service:        &collector.Services{},

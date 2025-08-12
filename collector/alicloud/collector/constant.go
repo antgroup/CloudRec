@@ -96,4 +96,5 @@ const (
 	ARMSPrometheus        = "ARMS Prometheus"
 	DCDNDomain            = "DCDN Domain"
 	VODDomain             = "VOD Domain"
+	SMSTemplate           = "SMS Template"
 )

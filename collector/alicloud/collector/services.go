@@ -508,7 +508,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init dysmsapi client failed", zap.Error(err))
 		}
-	case CloudStorageGateway:
+	case CloudStorageGateway, CloudStorageGatewayStorageBundle:
 		s.SGW, err = sgw.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init sgw client failed", zap.Error(err))

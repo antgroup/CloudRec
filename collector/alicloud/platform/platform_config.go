@@ -132,6 +132,7 @@ func GetPlatformConfig() *schema.Platform {
 			cloudcenter.GetSasConfigResource(),
 			cloudcenter.GetCloudCenterResource(),
 			cloudstoragegateway.GetCloudStorageGatewayResource(),
+			cloudstoragegateway.GetCloudStorageGatewayStorageBundleResource(),
 			elasticsearch.GetResource(),
 			elasticsearch.GetLogstashResource(),
 			arms.GetTraceAppResource(),

@@ -61,7 +61,7 @@ func GetInstanceResource() schema.Resource {
 }
 
 type InstanceDetail struct {
-	Instance []*aic20230930.DescribeAndroidInstancesResponseBodyInstanceModel
+	Instance *aic20230930.DescribeAndroidInstancesResponseBodyInstanceModel
 }
 
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -85,10 +85,13 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 			break
 		}
 
-		d := &InstanceDetail{
-			Instance: resp.Body.InstanceModel,
+		for _, instance := range resp.Body.InstanceModel {
+			inst := instance
+			d := &InstanceDetail{
+				Instance: inst,
+			}
+			res <- d
 		}
-		res <- d
 
 		if resp.Body.NextToken == nil || *resp.Body.NextToken == "" {
 			break

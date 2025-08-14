@@ -71,13 +71,13 @@ func GetLogstashDetail(ctx context.Context, service schema.ServiceInterface, res
 	cli := service.(*collector.Services).Elasticsearch
 
 	size := 50
+	page := 1
 	for {
 		listLogstashRequest := &client.ListLogstashRequest{
-			Page: tea.Int32(1),
+			Page: tea.Int32(int32(page)),
 			Size: tea.Int32(int32(size)),
 		}
-		headers := make(map[string]*string)
-		resp, err := cli.ListLogstashWithOptions(listLogstashRequest, headers, collector.RuntimeObject)
+		resp, err := cli.ListLogstash(listLogstashRequest)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListLogstashWithOptions error", zap.Error(err))
 			return err
@@ -89,12 +89,11 @@ func GetLogstashDetail(ctx context.Context, service schema.ServiceInterface, res
 			res <- d
 		}
 
-		count := len(resp.Body.Result)
-		if count < size {
+		if len(resp.Body.Result) < size {
 			break
 		}
 
-		*listLogstashRequest.Page = *listLogstashRequest.Page + 1
+		page++
 	}
 
 	return nil

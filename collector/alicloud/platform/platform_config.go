@@ -187,6 +187,7 @@ func GetPlatformConfig() *schema.Platform {
 			ens.GetNatGatewayResource(),
 			cloudapi.GetCloudAPIResource(),
 			cloudapi.GetAPIGatewayResource(),
+			cloudapi.GetAPIGatewayAppResource(),
 			kms.GetKMSResource(),
 			ack.GetClusterResource(),
 			mse.GetMSEResource(),

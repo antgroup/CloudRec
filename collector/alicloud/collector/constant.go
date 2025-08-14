@@ -83,6 +83,7 @@ const (
 	Bastionhost           = "Bastionhost"
 	APIG                  = "APIG"
 	APIGateway            = "API Gateway"
+	APIGatewayApp         = "API Gateway App"
 	ResourceCenter        = "ResourceCenter"
 	DTSInstance           = "DTS Instance"
 	ECIContainerGroup     = "ECI ContainerGroup"

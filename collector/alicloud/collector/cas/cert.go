@@ -34,7 +34,7 @@ func GetCERTResource() schema.Resource {
 		Desc:               `https://api.aliyun.com/product/cas`,
 		ResourceDetailFunc: GetCertificateOrderDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.CertificateOrder.InstanceId",
+			ResourceId:   "$.InstanceId",
 			ResourceName: "$.CertificateOrder.Name",
 		},
 		Regions: []string{
@@ -52,6 +52,7 @@ func GetCERTResource() schema.Resource {
 }
 
 type CertificateOrderDetail struct {
+	InstanceId       string
 	CertificateOrder *cas20200407.ListUserCertificateOrderResponseBodyCertificateOrderList
 }
 
@@ -72,8 +73,13 @@ func GetCertificateOrderDetail(ctx context.Context, service schema.ServiceInterf
 		}
 
 		for _, cert := range response.Body.CertificateOrderList {
+			instanceId := *cert.InstanceId
+			if instanceId == "" {
+				instanceId = *cert.Name
+			}
 			d := CertificateOrderDetail{
 				CertificateOrder: cert,
+				InstanceId:       instanceId,
 			}
 
 			res <- d

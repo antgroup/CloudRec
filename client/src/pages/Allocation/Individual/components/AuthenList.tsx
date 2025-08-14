@@ -7,7 +7,7 @@ import {
   deleteAccessKey,
   queryAccessKeyList,
 } from '@/services/user/UserController';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { MinusOutlined, EditOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
 import { Button, Flex, message, Popconfirm } from 'antd';
@@ -157,7 +157,7 @@ const AuthenList: React.FC = () => {
           })}
         >
           <Button type="link" danger>
-            <DeleteOutlined />
+            <MinusOutlined />
           </Button>
         </Popconfirm>
       ),

@@ -7,6 +7,7 @@ import {
   queryWhiteListRuleById,
   queryWhiteListRuleExampleData,
   queryWhiteListTestRun,
+  queryWhiteRuleGrabLock,
 } from '@/services/rule/RuleController';
 import { valueListAsValueEnum } from '@/utils/shared';
 import {
@@ -62,7 +63,7 @@ const DEBOUNCE_TIME = 600;
 interface IWhiteListDrawerProps {
   editDrawerVisible: boolean;
   setEditDrawerVisible: Dispatch<SetStateAction<boolean>>;
-  whiteListDrawerInfo: API.BaseWhiteListRuleInfo;
+  whiteListDrawerInfo: API.BaseWhiteListRuleInfo & { isEditMode?: boolean };
   tableActionRef?: React.RefObject<ActionType | undefined>;
 }
 
@@ -86,7 +87,13 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
     whiteListDrawerInfo,
     tableActionRef,
   } = props;
-  const { id, riskId } = whiteListDrawerInfo;
+  const { id, riskId, isEditMode = true } = whiteListDrawerInfo;
+  // 获取锁状态
+  const isLockHolder = (whiteListDrawerInfo as any)?.isLockHolder || false;
+  // 是否为只读模式
+  const isReadOnly = !isEditMode;
+  // 抢锁按钮Loading
+  const [grabLockLoading, setGrabLockLoading] = useState<boolean>(false);
   // Message Instance
   const [messageApi, contextHolder] = message.useMessage();
   // Intl API
@@ -128,6 +135,31 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
 
   const onClickCloseDrawerForm = (): void => {
     setEditDrawerVisible(false);
+  };
+
+  // 抢锁功能
+  const onClickGrabLock = async (): Promise<void> => {
+    setGrabLockLoading(true);
+    const postBody = { id: id };
+    const r = await queryWhiteRuleGrabLock(postBody);
+    setGrabLockLoading(false);
+    if (r.code === 200) {
+      messageApi.success(
+        intl.formatMessage({
+          id: 'common.message.text.edit.success',
+        }),
+      );
+      // 抢锁成功后切换到编辑模式
+       if (whiteListDrawerInfo) {
+         whiteListDrawerInfo.isEditMode = true;
+         (whiteListDrawerInfo as any).isLockHolder = true;
+       }
+      // 重新加载数据
+      if (id) {
+        requestWhiteListRuleDetailById(id);
+      }
+      tableActionRef?.current?.reloadAndRest?.();
+    }
   };
 
   // Submit subscription information
@@ -363,6 +395,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
       },
       valueType: 'select',
       fieldProps: (form, { rowIndex }) => {
+        if (isReadOnly) return { options: [] };
         const key = editorFormRef.current?.getRowData?.(rowIndex)?.key;
         if (!key) return [];
         const array = whiteListConfigList?.find((item) => item.key === key);
@@ -392,6 +425,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
         return 'select';
       },
       fieldProps: (form, { rowIndex }) => {
+        if (isReadOnly) return { options: [] };
         const key = editorFormRef.current?.getRowData?.(rowIndex)?.key;
         // @ts-ignore
         if (['resourceId', 'ip', 'resourceName']?.includes(key)) return {};
@@ -437,7 +471,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
             })}
           </div>
         }
-        recordCreatorProps={{
+        recordCreatorProps={isReadOnly ? undefined : {
           creatorButtonText: intl.formatMessage({
             id: 'involve.extend.title.addRowConfig',
           }),
@@ -447,7 +481,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
         }}
         onChange={() => formRef.current?.setFieldValue('condition', undefined)}
         columns={ruleConfigColumns}
-        editable={{
+        editable={isReadOnly ? undefined : {
           type: 'multiple',
           editableKeys,
           onChange: setEditableRowKeys,
@@ -477,6 +511,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
                       required: ruleConfigList?.length > 1,
                     },
                   ]}
+                  disabled={isReadOnly}
                 />
               </Col>
               <Col>
@@ -513,6 +548,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
             value={codeEditor}
             onChange={onRegoEditorChange}
             editorStyle={{ height: EDITOR_HEIGHT }}
+            readOnly={isReadOnly}
           />
         </Col>
 
@@ -521,14 +557,15 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
             <Flex justify={'space-between'} align={'center'}>
               <span>INPUT</span>
               <Button
-                type={'link'}
-                style={{ paddingRight: 0 }}
-                onClick={onClickExecuteWhiteListRule}
-              >
-                {intl.formatMessage({
-                  id: 'common.button.text.test',
-                })}
-              </Button>
+                  type={'link'}
+                  style={{ paddingRight: 0 }}
+                  onClick={onClickExecuteWhiteListRule}
+                  disabled={isReadOnly}
+                >
+                  {intl.formatMessage({
+                    id: 'common.button.text.test',
+                  })}
+                </Button>
             </Flex>
           </Title>
 
@@ -537,6 +574,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
             editorKey={'WHITE_LIST_INPUT_EDITOR'}
             value={inputEditor}
             onChange={onInputEditorChange}
+            readOnly={isReadOnly}
           />
         </Col>
       </Row>
@@ -548,9 +586,15 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
       <Drawer
         title={
           id
-            ? intl.formatMessage({
-                id: 'rule.extend.title.edit.whiteList',
-              })
+            ? isReadOnly
+              ? intl.formatMessage({
+                  id: 'common.button.text.view',
+                }) + intl.formatMessage({
+                  id: 'rule.extend.text.whiteList.title',
+                })
+              : intl.formatMessage({
+                  id: 'rule.extend.title.edit.whiteList',
+                })
             : intl.formatMessage({
                 id: 'rule.module.text.createWhiteList',
               })
@@ -569,6 +613,31 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
         <Spin
           spinning={whiteListRuleDetailLoading || whitedContentByRiskILoading}
         >
+          {/* 锁状态提示 */}
+          {id && !isLockHolder && (
+            <div style={{ 
+              marginBottom: 16, 
+              padding: '12px 16px', 
+              backgroundColor: '#fff7e6', 
+              border: '1px solid #ffd591', 
+              borderRadius: '6px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ color: '#d46b08' }}>
+                {intl.formatMessage({ id: 'rule.message.not.holding.lock' })}
+              </span>
+              <Button
+                type="primary"
+                size="small"
+                loading={grabLockLoading}
+                onClick={onClickGrabLock}
+              >
+                {intl.formatMessage({ id: 'rule.table.columns.text.grab.lock' })}
+              </Button>
+            </div>
+          )}
           <ProForm<{
             ruleConfigList: RuleDataSourceType[];
           }>
@@ -578,15 +647,28 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
             submitter={{
               submitButtonProps: {
                 loading: submitLoading,
+                disabled: isReadOnly,
               },
               render: (props, dom) => (
                 <Flex justify={'end'} gap="small">
-                  <Button onClick={() => onClickCloseDrawerForm()}>
-                    {intl.formatMessage({
-                      id: 'common.button.text.cancel',
-                    })}
-                  </Button>
-                  {dom}
+                  {isReadOnly ? (
+                    <>
+                      <Button onClick={() => onClickCloseDrawerForm()}>
+                        {intl.formatMessage({
+                          id: 'common.button.text.close',
+                        })}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={() => onClickCloseDrawerForm()}>
+                        {intl.formatMessage({
+                          id: 'common.button.text.cancel',
+                        })}
+                      </Button>
+                      {dom}
+                    </>
+                  )}
                 </Flex>
               ),
             }}
@@ -609,6 +691,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
                 ],
               }}
               fieldProps={{ onChange: handleWhiteListRuleChange }}
+              disabled={isReadOnly}
             />
 
             <ProFormText
@@ -623,6 +706,7 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
                   },
                 ],
               }}
+              disabled={isReadOnly}
             />
 
             <ProFormTextArea
@@ -637,34 +721,35 @@ const EditDrawerForm: React.FC<IWhiteListDrawerProps> = (props) => {
                   },
                 ],
               }}
+              disabled={isReadOnly}
             />
 
             <ProFormDependency name={['ruleType']}>
               {({ ruleType }) => {
                 return (
                   <ProFormSelect
-                    label={intl.formatMessage({
-                      id: 'rule.extend.text.risk.rule.code',
-                    })}
-                    disabled={!!riskId}
-                    name={'riskRuleCode'}
-                    formItemProps={{
-                      rules: [
-                        {
-                          required: false,
-                        },
-                      ],
-                    }}
-                    options={allRuleList || []}
-                    fieldProps={{
-                      showSearch: true,
-                      filterOption: true,
-                      onChange: debounce((value): void => {
-                        if (ruleType === WhiteListRuleTypeList[1].value)
-                          requestWhiteListRuleExampleData(value);
-                      }, DEBOUNCE_TIME),
-                    }}
-                  />
+              label={intl.formatMessage({
+                id: 'rule.extend.text.risk.rule.code',
+              })}
+              disabled={!!riskId || isReadOnly}
+              name={'riskRuleCode'}
+              formItemProps={{
+                rules: [
+                  {
+                    required: false,
+                  },
+                ],
+              }}
+              options={allRuleList || []}
+              fieldProps={{
+                showSearch: true,
+                filterOption: true,
+                onChange: debounce((value): void => {
+                  if (ruleType === WhiteListRuleTypeList[1].value)
+                    requestWhiteListRuleExampleData(value);
+                }, DEBOUNCE_TIME),
+              }}
+            />
                 );
               }}
             </ProFormDependency>

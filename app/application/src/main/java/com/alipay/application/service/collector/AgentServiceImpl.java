@@ -16,12 +16,17 @@
  */
 package com.alipay.application.service.collector;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alipay.application.service.collector.domain.Agent;
+import com.alipay.application.service.collector.domain.CollectRecordInfo;
 import com.alipay.application.service.collector.domain.TaskResp;
 import com.alipay.application.service.collector.domain.repo.AgentRepository;
 import com.alipay.application.service.collector.domain.repo.CollectorTaskRepository;
 import com.alipay.application.service.collector.enums.TaskStatus;
 import com.alipay.application.service.common.Platform;
+import com.alipay.application.service.common.utils.DBDistributedLockUtil;
+import com.alipay.application.service.common.utils.ThreadPoolConfig;
 import com.alipay.application.service.resource.DelResourceService;
 import com.alipay.application.service.resource.job.ClearJob;
 import com.alipay.application.service.rule.job.AccountScanJob;
@@ -38,6 +43,7 @@ import com.alipay.common.enums.PlatformType;
 import com.alipay.common.enums.Status;
 import com.alipay.common.exception.BizException;
 import com.alipay.common.utils.DateUtil;
+import com.alipay.common.utils.ListUtils;
 import com.alipay.dao.dto.AgentRegistryDTO;
 import com.alipay.dao.dto.CloudAccountDTO;
 import com.alipay.dao.dto.CollectorRecordDTO;
@@ -52,11 +58,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -68,6 +74,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *@version 1.0
  *@create 2024/8/13 14:20
  */
+
 @Slf4j
 @Service
 public class AgentServiceImpl implements AgentService {
@@ -98,8 +105,6 @@ public class AgentServiceImpl implements AgentService {
     @Resource
     private AccountScanJob accountScanJob;
     @Resource
-    private CloudResourceInstanceMapper cloudResourceInstanceMapper;
-    @Resource
     private DelResourceService delResourceService;
     @Resource
     private CollectorRecordMapper collectorRecordMapper;
@@ -107,9 +112,12 @@ public class AgentServiceImpl implements AgentService {
     private CollectorTaskRepository collectorTaskRepository;
     @Resource
     private CollectorTaskMapper collectorTaskMapper;
-
     @Resource
     private CollectorLogMapper collectorLogMapper;
+    @Resource
+    private ThreadPoolConfig threadPoolConfig;
+    @Resource
+    private DBDistributedLockUtil dbDistributedLockUtil;
 
     @Value("${collector.bucket.url}")
     private String bucketUrl;
@@ -125,15 +133,15 @@ public class AgentServiceImpl implements AgentService {
 
         if (agent != null && Status.exit.name().equals(agent.getStatus())) {
             registryResponse.setStatus(agent.getStatus());
-            agentRepository.del(agent.getId());
             return new ApiResponse<>(registryResponse);
         }
 
         if (agent == null) {
-            agent = Agent.newAgent(registry.getPlatform(), registry.getRegistryValue(), registry.getCron(), registry.getAgentName(), registry.getSecretKey(), onceToken);
+            agent = Agent.newAgent(registry.getPlatform(), registry.getRegistryValue(), registry.getCron(),
+                    registry.getAgentName(), registry.getSecretKey(), onceToken, JSON.toJSONString(registry.getHealthStatus()));
             agentRepository.save(agent);
         } else {
-            agent.refreshAgent(registry.getOnceToken(), registry.getSecretKey());
+            agent.refreshAgent(registry.getOnceToken(), registry.getSecretKey(), JSON.toJSONString(registry.getHealthStatus()));
             agentRepository.save(agent);
         }
         registryResponse.setPersistentToken(agent.getPersistentToken());
@@ -148,21 +156,38 @@ public class AgentServiceImpl implements AgentService {
         return new ApiResponse<>(registryResponse);
     }
 
+    /**
+     * Query agent list with memory-based pagination
+     * This method retrieves all matching agents and performs pagination in memory
+     * 
+     * @param dto the agent registry query parameters
+     * @return ApiResponse containing paginated agent list
+     */
     @Override
     public ApiResponse<ListVO<AgentRegistryVO>> queryAgentList(AgentRegistryDTO dto) {
         ListVO<AgentRegistryVO> listVO = new ListVO<>();
-        int count = agentRegistryMapper.findCount(dto);
-        if (count == 0) {
+        
+        // Get all matching agents without database pagination
+        AgentRegistryDTO queryDto = new AgentRegistryDTO();
+        queryDto.setPlatform(dto.getPlatform());
+        queryDto.setAgentName(dto.getAgentName());
+        queryDto.setRegistryValue(dto.getRegistryValue());
+        queryDto.setStatus(dto.getStatus());
+        
+        List<AgentRegistryPO> allAgents = agentRegistryMapper.findAggList(queryDto);
+        
+        if (allAgents.isEmpty()) {
             return new ApiResponse<>(listVO);
         }
-
-        dto.setOffset();
-        List<AgentRegistryPO> list = agentRegistryMapper.findAggList(dto);
-        List<AgentRegistryVO> collect = list.stream().map(AgentRegistryVO::build).toList();
-
+        
+        // Memory-based pagination using utility method
+        ListUtils.PaginationResult<AgentRegistryPO> paginationResult = ListUtils.paginate(allAgents, dto.getPage(), dto.getSize());
+        List<AgentRegistryPO> pagedAgents = paginationResult.getData();
+        List<AgentRegistryVO> collect = pagedAgents.stream().map(AgentRegistryVO::build).toList();
+        
         listVO.setData(collect);
-        listVO.setTotal(count);
-
+        listVO.setTotal(paginationResult.getTotal());
+        
         return new ApiResponse<>(listVO);
     }
 
@@ -263,7 +288,7 @@ public class AgentServiceImpl implements AgentService {
         List<OnceTokenVO> result = new ArrayList<>();
 
         // alibaba account
-        String scriptTemplate = "curl -L -o %s.tar.gz %s/%s.tar.gz && tar -xzf %s.tar.gz && cd %s && nohup ./%s --serverUrl \"%s\" --accessToken \"%s\" > logs/task.log 2>&1 < /dev/null &";
+        String scriptTemplate = "curl -L -o %s.tar.gz %s/%s.tar.gz && tar -xzf %s.tar.gz && cd %s && nohup ./%s --serverUrl \"%s\" --accessToken \"%s\" > /dev/null 2>&1 &";
         String alicloudScript = parseScript(scriptTemplate, "deploy_alicloud", "cloudrec_collector_alicloud", bucketUrl, serverUrl, existPO.getOnceToken());
         result.add(createOnceToken(Platform.getPlatformName(PlatformType.ALI_CLOUD.getPlatform()), alicloudScript, userPO, existPO));
 
@@ -324,86 +349,124 @@ public class AgentServiceImpl implements AgentService {
     @Transactional(rollbackFor = RuntimeException.class)
     @Override
     public ApiResponse<List<AgentCloudAccountVO>> queryCloudAccountList(String persistentToken, String registryValue,
-                                                                        String platform, List<String> sites, List<Long> taskIds) {
+                                                                        String platform, List<String> sites, List<Long> taskIds, Integer freeCloudAccountCount) {
 
-        // 1. check persistentToken
-        AgentRegistryPO agentRegistryPO = checkPersistentToken(platform, registryValue, persistentToken);
-        if (agentRegistryPO.getSecretKey() == null) {
-            throw new RuntimeException(platform + ":" + registryValue + "SecretKey not exist");
+        String lockKey = "query::cloud::account:list";
+        if (!dbDistributedLockUtil.tryLock(lockKey, 5 * 60)) {
+            throw new BizException("Failed to acquire the lock");
         }
 
-        // 2. check collector count
-        AgentRegistryDTO agentRegistryDTO = new AgentRegistryDTO();
-        agentRegistryDTO.setStatus(Status.valid.name());
-        agentRegistryDTO.setPlatform(platform);
-        List<AgentRegistryPO> collectorList = agentRegistryMapper.findList(agentRegistryDTO);
-        if (collectorList.isEmpty()) {
-            try {
-                Thread.sleep(10 * 1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        try {
+            // 1. check persistentToken
+            AgentRegistryPO agentRegistryPO = checkPersistentToken(platform, registryValue, persistentToken);
+            if (agentRegistryPO.getSecretKey() == null) {
+                throw new RuntimeException(platform + ":" + registryValue + "SecretKey not exist");
             }
-            collectorList = agentRegistryMapper.findList(agentRegistryDTO);
+
+            // 2. check collector count
+            AgentRegistryDTO agentRegistryDTO = new AgentRegistryDTO();
+            agentRegistryDTO.setStatus(Status.valid.name());
+            agentRegistryDTO.setPlatform(platform);
+            List<AgentRegistryPO> collectorList = agentRegistryMapper.findList(agentRegistryDTO);
             if (collectorList.isEmpty()) {
-                throw new RuntimeException(platform + ":" + registryValue + "Abnormal heartbeat");
-            }
-        }
-
-        // 3. get task account
-        List<CloudAccountPO> list = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(taskIds)) {
-            List<CollectorTaskPO> collectorTaskPOList = collectorTaskMapper.findByIds(taskIds);
-            // Obtain it preferentially from the collection task table
-            if (CollectionUtils.isNotEmpty(collectorTaskPOList)) {
-                list = collectorTaskPOList.stream()
-                        // Avoid being preempted by other collectors, causing tasks to run multiple times
-                        .filter(po -> po.getRegistryValue().equals(registryValue))
-                        .map(po -> cloudAccountMapper.findByCloudAccountId(po.getCloudAccountId()))
-                        .toList();
-                collectorTaskRepository.updateTaskStatus(taskIds, TaskStatus.running.name());
-            }
-        } else {
-            // Get the number of accounts to be executed based on the currently surviving collector
-            list = cloudAccountMapper.findNotRunningAccount(platform, sites);
-            if (list.isEmpty()) {
-                throw new RuntimeException(platform + ":" + registryValue
-                        + "The account accounts of the current platform are all in operation and account accounts cannot be allocated");
+                try {
+                    Thread.sleep(10 * 1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                collectorList = agentRegistryMapper.findList(agentRegistryDTO);
+                if (collectorList.isEmpty()) {
+                    throw new RuntimeException(platform + ":" + registryValue + "Abnormal heartbeat");
+                }
             }
 
-            if (collectorList.isEmpty()) {
-                throw new RuntimeException(platform + ":" + registryValue + "There is currently no collector running");
-            }
-
-            if (collectorList.size() != 1 && list.size() > collectorList.size()) {
-                list = list.stream().limit(Math.min(list.size() / collectorList.size(), MAX_ACCOUNT_COUNT)).toList();
+            // 3. get task account
+            List<CloudAccountPO> list = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(taskIds)) {
+                List<CollectorTaskPO> collectorTaskPOList = collectorTaskMapper.findByIds(taskIds);
+                // Obtain it preferentially from the collection task table
+                if (CollectionUtils.isNotEmpty(collectorTaskPOList)) {
+                    list = collectorTaskPOList.stream()
+                            // Avoid being preempted by other collectors, causing tasks to run multiple times
+                            .filter(po -> po.getRegistryValue().equals(registryValue))
+                            .map(po -> cloudAccountMapper.findByCloudAccountId(po.getCloudAccountId()))
+                            .toList();
+                    collectorTaskRepository.updateTaskStatus(taskIds, TaskStatus.running.name());
+                }
             } else {
-                list = list.stream().limit(MAX_ACCOUNT_COUNT).toList();
+                // Get the number of accounts to be executed based on the currently surviving collector
+                list = cloudAccountMapper.findNotRunningAccount(platform, sites);
+                if (list.isEmpty()) {
+                    throw new RuntimeException(platform + ":" + registryValue
+                            + "The account accounts of the current platform are all in operation and account accounts cannot be allocated");
+                }
+
+                if (collectorList.isEmpty()) {
+                    throw new RuntimeException(platform + ":" + registryValue + "There is currently no collector running");
+                }
+
+                // Apply freeCloudAccountCount limit if specified
+                int accountLimit = MAX_ACCOUNT_COUNT;
+                if (freeCloudAccountCount != null && freeCloudAccountCount > 0) {
+                    accountLimit = Math.min(freeCloudAccountCount, MAX_ACCOUNT_COUNT);
+                }
+
+                if (collectorList.size() != 1 && list.size() > collectorList.size()) {
+                    list = list.stream().limit(Math.min(list.size() / collectorList.size(), accountLimit)).toList();
+                } else {
+                    list = list.stream().limit(accountLimit).toList();
+                }
             }
+
+            // 4. build result
+            List<AgentCloudAccountVO> collect = list.stream()
+                    .filter(po -> StringUtils.isNotBlank(po.getCredentialsJson()))
+                    .map(po -> {
+                        try {
+                            return AgentCloudAccountVO.build(po, agentRegistryPO);
+                        } catch (Exception e) {
+                            log.error("build AgentCloudAccountVO error,cloudAccountId:{}", po.getCloudAccountId(), e);
+                            return null;
+                        }
+                    }).filter(Objects::nonNull).toList();
+
+            // 5. pre handler
+            accountLockCollectPreHandler(list);
+
+            return new ApiResponse<>(collect);
+        } catch (Exception e) {
+            log.error("queryCloudAccountList error", e);
+        } finally {
+            dbDistributedLockUtil.releaseLock(lockKey);
         }
 
-        // 4. build result
-        List<AgentCloudAccountVO> collect = list.stream()
-                .filter(po -> StringUtils.isNotBlank(po.getCredentialsJson()))
-                .map(po -> {
-                    try {
-                        return AgentCloudAccountVO.build(po, agentRegistryPO);
-                    } catch (Exception e) {
-                        log.error("build AgentCloudAccountVO error,cloudAccountId:{}", po.getCloudAccountId(), e);
-                        return null;
-                    }
-                }).filter(Objects::nonNull).toList();
-
-        // 5. pre handler
-        accountStartCollectPreHandler(list, agentRegistryPO);
-
-        return new ApiResponse<>(collect);
+        throw new BizException("Failed to obtain cloud account, server exception");
     }
 
-    @Async
-    void accountStartCollectPreHandler(List<CloudAccountPO> list, AgentRegistryPO agentRegistryPO) {
-        // Change the status of this batch of account accounts to running
-        list.forEach(cloudAccountPO -> {
+
+    /**
+     * Change the cloud account collection account to running to prevent other collectors from preempting
+     * @param list cloud account list
+     */
+    private void accountLockCollectPreHandler(List<CloudAccountPO> list) {
+        for (CloudAccountPO cloudAccountPO : list) {
+            // TODO change inQueue status
+            cloudAccountPO.setCollectorStatus(Status.running.name());
+            cloudAccountMapper.updateByPrimaryKeySelective(cloudAccountPO);
+        }
+    }
+
+    /**
+     * The account actually starts running, modify the account status and pre-delete asset data
+     * @param list cloud account list
+     * @param agentRegistryPO agent registry po
+     */
+    private void accountStartCollectPreHandler(List<CloudAccountPO> list, AgentRegistryPO agentRegistryPO) {
+        log.info("accountStartCollectPreHandler start");
+        for (CloudAccountPO cloudAccountPO : list) {
+            log.info("accountStartCollectPreHandler cloudAccountId:{}", cloudAccountPO.getCloudAccountId());
             try {
+                // Change the status of this batch of account accounts to running
                 cloudAccountPO.setCollectorStatus(Status.running.name());
                 cloudAccountPO.setLastScanTime(new Date());
                 cloudAccountMapper.updateByPrimaryKeySelective(cloudAccountPO);
@@ -425,11 +488,15 @@ public class AgentServiceImpl implements AgentService {
                 }
 
                 // Pre-delete asset data
-                delResourceService.preDeleteByCloudAccountId(cloudAccountPO.getCloudAccountId());
+                int effectCount = delResourceService.preDeleteByCloudAccountId(cloudAccountPO.getCloudAccountId());
+                log.info("accountStartCollectPreHandler delResourceService.preDeleteByCloudAccountId,cloudAccountId:{},effectCount:{}", cloudAccountPO.getCloudAccountId(), effectCount);
             } catch (Exception e) {
                 log.error("accountStartCollectPreHandler error,cloudAccountId:{}", cloudAccountPO.getCloudAccountId(), e);
             }
-        });
+            log.info("accountStartCollectPreHandler end,cloudAccountId:{}", cloudAccountPO.getCloudAccountId());
+        }
+
+        log.info("accountStartCollectPreHandler end");
     }
 
 
@@ -526,6 +593,30 @@ public class AgentServiceImpl implements AgentService {
 
     @Transactional(rollbackFor = RuntimeException.class)
     @Override
+    public void runningStartSignal(String token, String cloudAccountId, CollectRecordInfo collectRecordInfo) {
+        log.info("runningStartSignal, cloudAccountId:{}, collectRecordInfo:{}", cloudAccountId, collectRecordInfo);
+        CollectorRecordPO collectorRecordPO = collectorRecordMapper.selectByPrimaryKey(collectRecordInfo.getCollectRecordId());
+        if (collectorRecordPO != null) {
+            collectorRecordPO.setStartTime(new Date());
+            collectorRecordPO.setCollectRecordInfo(JSON.toJSONString(collectRecordInfo, SerializerFeature.WriteMapNullValue));
+            collectorRecordMapper.updateByPrimaryKeySelective(collectorRecordPO);
+
+            if (collectRecordInfo.getEnableCollection()) {
+                CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(cloudAccountId);
+                AgentRegistryPO agentRegistryPO = agentRegistryMapper.findOne(cloudAccountPO.getPlatform(), collectorRecordPO.getRegistryValue());
+                CompletableFuture.runAsync(() -> accountStartCollectPreHandler(Collections.singletonList(cloudAccountPO), agentRegistryPO), threadPoolConfig.asyncServiceExecutor())
+                        .exceptionally(e -> {
+                            log.error("Error in accountStartCollectPreHandler", e);
+                            return null;
+                        });
+            }
+        }
+
+
+    }
+
+    @Transactional(rollbackFor = RuntimeException.class)
+    @Override
     public void runningFinishSignal(String cloudAccountId, Long taskId) {
         CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(cloudAccountId);
         if (cloudAccountPO == null) {
@@ -566,22 +657,29 @@ public class AgentServiceImpl implements AgentService {
         }
 
         log.info("Cloud account collection finished, cloudAccountId:{}", cloudAccountId);
-        // Delayed tasks:Delete historical version data
-        // Delete 10s to prevent data submission from not completing
-        SchedulerManager.getScheduler().schedule(
-                () ->
-                {
-                    try {
-                        clearJob.commitDeleteResourceByCloudAccount(cloudAccountId);
-                        accountScanJob.scanByCloudAccountId(cloudAccountId);
-                    } catch (Exception e) {
-                        log.error("Delete historical version data or scan failed, cloudAccountId:{}", cloudAccountId, e);
-                    }
-                },
-                10,
-                TimeUnit.SECONDS
-        );
 
+        CollectorRecordPO lastOneCollectRecord = collectorRecordMapper.findLastOne(cloudAccountId);
+        if (lastOneCollectRecord != null) {
+            CollectRecordInfo collectRecordInfo = JSON.parseObject(lastOneCollectRecord.getCollectRecordInfo(), CollectRecordInfo.class);
+            if (collectRecordInfo != null && collectRecordInfo.getEnableCollection()) {
+                log.info("Delete historical version data or scan, cloudAccountId:{}", cloudAccountId);
+                // Delayed tasks:Delete historical version data
+                // Delete 10s to prevent data submission from not completing
+                SchedulerManager.getScheduler().schedule(
+                        () ->
+                        {
+                            try {
+                                clearJob.commitDeleteResourceByCloudAccount(cloudAccountId);
+                                accountScanJob.scanByCloudAccountId(cloudAccountId);
+                            } catch (Exception e) {
+                                log.error("Delete historical version data or scan failed, cloudAccountId:{}", cloudAccountId, e);
+                            }
+                        },
+                        10,
+                        TimeUnit.SECONDS
+                );
+            }
+        }
     }
 
 
@@ -597,6 +695,7 @@ public class AgentServiceImpl implements AgentService {
 
             if (agentRegistryPO.getStatus().equals(Status.exit.name())) {
                 clear(agentRegistryPO.getId());
+                return;
             }
 
             // If the patient is in a healthy state, a heartbeat of 1 minute will be changed to unhealthy.
@@ -605,6 +704,7 @@ public class AgentServiceImpl implements AgentService {
                     agentRegistryPO.setStatus(Status.unusual.name());
                     agentRegistryMapper.updateByPrimaryKeySelective(agentRegistryPO);
                 }
+                return;
             }
 
             // Unhealthy, no heartbeat within 5 minutes will be changed to offline
@@ -625,7 +725,7 @@ public class AgentServiceImpl implements AgentService {
             for (AgentRegistryCloudAccountPO po : agentRegistryCloudAccountPOList) {
                 agentRegistryCloudAccountMapper.deleteByPrimaryKey(po.getId());
                 CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(po.getCloudAccountId());
-                if (cloudAccountPO != null) {
+                if (cloudAccountPO != null && Status.running.name().equals(cloudAccountPO.getCollectorStatus())) {
                     cloudAccountPO.setCollectorStatus(Status.waiting.name());
                     cloudAccountMapper.updateByPrimaryKeySelective(cloudAccountPO);
                 }
@@ -638,8 +738,9 @@ public class AgentServiceImpl implements AgentService {
         CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder().collectorStatus(Status.running.name()).build();
         List<CloudAccountPO> cloudAccountPOS = cloudAccountMapper.findList(cloudAccountDTO);
         for (CloudAccountPO cloudAccountPO : cloudAccountPOS) {
+            // 8h has not been scanned, the status is waiting
             if (cloudAccountPO.getLastScanTime() == null
-                    || System.currentTimeMillis() - cloudAccountPO.getLastScanTime().getTime() > 60 * 1000) {
+                    || System.currentTimeMillis() - cloudAccountPO.getLastScanTime().getTime() > 8 * 60 * 60 * 1000) {
                 cloudAccountPO.setCollectorStatus(Status.waiting.name());
                 cloudAccountMapper.updateByPrimaryKeySelective(cloudAccountPO);
             }

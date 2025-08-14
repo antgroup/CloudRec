@@ -17,11 +17,10 @@
 package com.alipay.application.service.rule.utils;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -36,9 +35,8 @@ import java.util.UUID;
  *@version 1.0
  *@create 2024/7/26 15:52
  */
+@Slf4j
 public class RegoCmdExecutorUtils {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegoCmdExecutorUtils.class);
 
     @Data
     public static class RegoCmdExecutorResponse {
@@ -71,12 +69,12 @@ public class RegoCmdExecutorUtils {
 
             return new RegoCmdExecutorResponse(lints, fixResp);
         } catch (IOException e) {
-            LOGGER.error("IO Error: " + e.getMessage());
+            log.error("IO Error: {}", e.getMessage(), e);
         } finally {
             if (tempFile != null && tempFile.exists()) {
                 boolean delete = tempFile.delete();
                 if (!delete) {
-                    LOGGER.error("Failed to delete temp file:{}", tempFile.getAbsolutePath());
+                    log.warn("Failed to delete temp file:{}", tempFile.getAbsolutePath());
                 }
             }
         }
@@ -95,7 +93,7 @@ public class RegoCmdExecutorUtils {
         CommandLine cmdLine = new CommandLine("regal");
         cmdLine.addArgument("lint");
         cmdLine.addArgument(file.getAbsolutePath());
-        LOGGER.info("file path>>>>>:{}", file.getAbsolutePath());
+        log.info("file path>>>>>:{}", file.getAbsolutePath());
 
         DefaultExecutor executor = DefaultExecutor.builder().get();
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
@@ -105,7 +103,7 @@ public class RegoCmdExecutorUtils {
         try {
             executor.execute(cmdLine);
         } catch (IOException e) {
-            LOGGER.info("ExecuteException: " + e.getMessage());
+            log.warn("ExecuteException: {}", e.getMessage());
         }
 
         return stdout.toString(StandardCharsets.UTF_8);
@@ -128,7 +126,7 @@ public class RegoCmdExecutorUtils {
             executor.execute(cmdLine);
         } catch (IOException e) {
             // Handle non-zero exit values
-            LOGGER.info("ExecuteException: " + e.getMessage());
+            log.warn("ExecuteException: {}", e.getMessage());
         }
 
         // Return the stdout content

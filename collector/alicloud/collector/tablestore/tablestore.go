@@ -34,8 +34,8 @@ func GetTablestoreResource() schema.Resource {
 		Desc:               "https://api.aliyun.com/product/Tablestore",
 		ResourceDetailFunc: GetInstanceDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.InstanceInfo.SPInstanceId",
-			ResourceName: "$.InstanceInfo.SPInstanceName",
+			ResourceId:   "$.InstanceInfo.InstanceName",
+			ResourceName: "$.InstanceInfo.InstanceName",
 		},
 		Regions: []string{
 			"cn-qingdao",
@@ -88,7 +88,6 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 		res <- Detail{
 			InstanceInfo: describeInstanceDetail(ctx, cli, instance.InstanceName),
 		}
-
 	}
 	return nil
 }

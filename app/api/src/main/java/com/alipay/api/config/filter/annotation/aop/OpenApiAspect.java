@@ -16,16 +16,25 @@
  */
 package com.alipay.api.config.filter.annotation.aop;
 
+import com.alipay.application.service.system.domain.User;
+import com.alipay.application.service.system.domain.repo.UserRepository;
 import com.alipay.application.service.system.utils.DigestSignUtils;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.common.exception.OpenAipNoAuthException;
+import com.alipay.dao.context.UserInfoContext;
+import com.alipay.dao.context.UserInfoDTO;
+import com.alipay.dao.mapper.OpenApiAuthMapper;
+import com.alipay.dao.po.OpenApiAuthPO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 
 @Aspect
@@ -34,31 +43,43 @@ public class OpenApiAspect {
 
     @Resource
     private DigestSignUtils digestSignUtils;
+    
+    @Resource
+    private OpenApiAuthMapper openApiAuthMapper;
+    
+    @Resource
+    private UserRepository userRepository;
 
     @Pointcut("@annotation(com.alipay.api.config.filter.annotation.aop.OpenApi)")
-    public void annotatedMethod() {
+    public void openApiPointcut() {
     }
 
-    @Before("@annotation(com.alipay.api.config.filter.annotation.aop.OpenApi)")
+    @Before("openApiPointcut()")
     public void processRequest(JoinPoint joinPoint) {
-        HttpServletRequest request = getRequestFromArgs(joinPoint.getArgs());
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         ApiResponse<String> response = digestSignUtils.isAuth(request);
         if (response.getCode() != ApiResponse.SUCCESS_CODE) {
             throw new OpenAipNoAuthException(response.getMsg());
         }
-
-
-    }
-
-    private HttpServletRequest getRequestFromArgs(Object[] args) {
-        for (Object arg : args) {
-            if (arg instanceof HttpServletRequest) {
-                return (HttpServletRequest) arg;
+        
+        String accessKey = request.getHeader(DigestSignUtils.accessKeyName);
+        OpenApiAuthPO openApiAuthPO = openApiAuthMapper.findByAccessKey(accessKey);
+        if (openApiAuthPO != null) {
+            String userId = openApiAuthPO.getUserId();
+            User user = userRepository.find(userId);
+            if (user != null) {
+                UserInfoDTO userInfoDTO = new UserInfoDTO();
+                userInfoDTO.setUid(user.getId());
+                userInfoDTO.setUserId(user.getUserId());
+                userInfoDTO.setUsername(user.getUsername());
+                userInfoDTO.setTenantId(user.getTenantId());
+                UserInfoContext.setCurrentUser(userInfoDTO);
             }
         }
-        return null;
     }
-
-
-
+    
+    @After("openApiPointcut()")
+    public void clearUserInfo() {
+        UserInfoContext.clear();
+    }
 }

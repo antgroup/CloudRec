@@ -14,13 +14,14 @@
         <result column="secret_key" jdbcType="VARCHAR" property="secretKey"/>
         <result column="once_token" jdbcType="VARCHAR" property="onceToken"/>
         <result column="persistent_token" jdbcType="VARCHAR" property="persistentToken"/>
+        <result column="health_status" jdbcType="VARCHAR" property="healthStatus"/>
     </resultMap>
     <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.alipay.dao.po.AgentRegistryPO">
         <result column="cloud_account_id" jdbcType="LONGVARCHAR" property="cloudAccountId"/>
     </resultMap>
     <sql id="Base_Column_List">
         id
-        , gmt_create, gmt_modified, platform, registry_value, registry_time, cron, status,agent_name,secret_key,once_token,persistent_token
+        , gmt_create, gmt_modified, platform, registry_value, registry_time, cron, status,agent_name,secret_key,once_token,persistent_token,health_status
     </sql>
     <sql id="Blob_Column_List">
         cloud_account_id
@@ -78,6 +79,9 @@
             <if test="persistentToken != null">
                 persistent_token,
             </if>
+            <if test="healthStatus != null">
+                health_status,
+            </if>
             <if test="cloudAccountId != null">
                 cloud_account_id,
             </if>
@@ -119,6 +123,9 @@
             <if test="persistentToken != null">
                 #{persistentToken,jdbcType=VARCHAR},
             </if>
+            <if test="healthStatus != null">
+                #{healthStatus,jdbcType=VARCHAR},
+            </if>
             <if test="cloudAccountId != null">
                 #{cloudAccountId,jdbcType=LONGVARCHAR},
             </if>
@@ -159,6 +166,9 @@
             </if>
             <if test="persistentToken != null">
                 persistent_token = #{persistentToken,jdbcType=VARCHAR},
+            </if>
+            <if test="healthStatus != null">
+                health_status = #{healthStatus,jdbcType=VARCHAR},
             </if>
             <if test="cloudAccountId != null">
                 cloud_account_id = #{cloudAccountId,jdbcType=LONGVARCHAR},
@@ -220,12 +230,11 @@
     <select id="findAggList" resultMap="ResultMapWithBLOBs">
         SELECT
         gmt_create, gmt_modified, registry_value, registry_time, cron, status,agent_name,once_token,
-        GROUP_CONCAT(platform) as platform
+        GROUP_CONCAT(platform) as platform,health_status
         FROM agent_registry
         <include refid="findListWhere"></include>
         GROUP BY agent_name,once_token
         ORDER BY id DESC
-        <include refid="getListLimit"></include>
     </select>
     <select id="findListByOnceToken" resultMap="BaseResultMap">
         SELECT

@@ -219,6 +219,19 @@
         AND resource_type = #{resourceType}
         AND platform = #{platform}
     </select>
+
+    <select id="findByResourceId" resultMap="ResultMapWithBLOBs">
+        SELECT
+        <include refid="Base_Column_List"/>
+        ,
+        <include refid="Blob_Column_List"/>
+        FROM cloud_resource_instance_v1
+        WHERE
+        resource_id = #{resourceId}
+        AND resource_type = #{resourceType}
+        AND platform = #{platform}
+        LIMIT 1
+    </select>
     <select id="findExampleLimit1" resultMap="ResultMapWithBLOBs">
         SELECT
         <include refid="Base_Column_List"/>
@@ -235,7 +248,7 @@
     <delete id="deleteByCloudAccountId">
         DELETE
         FROM cloud_resource_instance_v1
-        WHERE cloud_account_id = #{cloudAccountId}
+        WHERE cloud_account_id = #{cloudAccountId} LIMIT 10000
     </delete>
 
 
@@ -248,9 +261,9 @@
         FROM cloud_resource_instance_v1
         <include refid="findListWhere"/>
         <if test="scrollId != null and scrollId != ''">
-            AND id &lt; #{scrollId}
+            AND id > #{scrollId}
         </if>
-        ORDER BY id DESC
+        ORDER BY id ASC
         LIMIT #{size}
     </select>
 

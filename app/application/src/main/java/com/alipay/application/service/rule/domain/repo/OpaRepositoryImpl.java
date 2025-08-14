@@ -30,8 +30,7 @@ import com.bisnode.opa.client.data.OpaDocument;
 import com.bisnode.opa.client.policy.OpaPolicy;
 import com.bisnode.opa.client.query.QueryForDocumentRequest;
 import jakarta.annotation.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -39,11 +38,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 class OpaRepositoryImpl implements OpaRepository {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OpaRepositoryImpl.class);
-
 
     @Resource
     private OpaClient client;
@@ -51,7 +48,6 @@ class OpaRepositoryImpl implements OpaRepository {
 
     @Override
     public String createOrUpdatePolicy(String policyContent) {
-        // 从 policyContent 解析
         String regoPackage = findPackage(policyContent);
 
         OpaPolicy opaPolicy = new OpaPolicy(regoPackage, policyContent);
@@ -70,7 +66,7 @@ class OpaRepositoryImpl implements OpaRepository {
         try {
             client.createOrUpdatePolicy(opaPolicy);
         } catch (Exception e) {
-            LOGGER.error("createOrUpdatePolicy error:{}, policyContent:{}", e, policyContent);
+            log.error("createOrUpdatePolicy error:{}, policyContent:{}", e, policyContent);
         }
     }
 
@@ -80,7 +76,7 @@ class OpaRepositoryImpl implements OpaRepository {
         try {
             client.createOrOverwriteDocument(opaDocument);
         } catch (Exception e) {
-            LOGGER.info("upsertData error:{}", e.getMessage());
+            log.info("upsertData error:{}", e.getMessage());
         }
     }
 
@@ -92,7 +88,7 @@ class OpaRepositoryImpl implements OpaRepository {
     @Override
     public Map callOpa(String policyContent, String jsonInputStr) {
         if (policyContent.contains("http.send")) {
-            throw new RuntimeException("函数 http.send 当前暂不支持");
+            throw new RuntimeException("The function http.send is not currently supported");
         }
         Object obj = JSON.parse(jsonInputStr);
         String aPackage = findPackage(policyContent);
@@ -105,7 +101,6 @@ class OpaRepositoryImpl implements OpaRepository {
             resp.put("risk", false);
         }
 
-        LOGGER.info("resp:{}", resp);
         return resp;
     }
 
@@ -124,7 +119,7 @@ class OpaRepositoryImpl implements OpaRepository {
             resp.put("risk", false);
         }
 
-        LOGGER.info("resp:{}", resp);
+        log.info("resp:{}", resp);
         return resp;
     }
 

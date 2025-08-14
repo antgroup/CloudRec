@@ -28,9 +28,9 @@ import com.alipay.common.exception.StatusNotFindException;
  */
 public enum SecurityProductStatus {
 
-    // 开通
+    // 云产品开通状态：开通
     open,
-    // 关闭
+    // 云产品开通状态：关闭
     close,
     ;
 

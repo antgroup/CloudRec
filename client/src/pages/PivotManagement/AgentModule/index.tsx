@@ -1,4 +1,5 @@
 import styles from '@/components/Common/index.less';
+import PermissionWrapper from '@/components/Common/PermissionWrapper';
 import TokenModal from '@/pages/PivotManagement/AgentModule/components/showOnceToken';
 import {
   exitAgent,
@@ -16,7 +17,7 @@ import { useIntl } from '@umijs/max';
 import { Button, Popconfirm, Tooltip, message } from 'antd';
 import React, { useRef, useState } from 'react';
 
-const AgentModule: React.FC = () => {
+const AgentModuleContent: React.FC = () => {
   // Table Action
   const tableActionRef = useRef<ActionType>();
   // Token Modal Visible
@@ -101,6 +102,15 @@ const AgentModule: React.FC = () => {
       hideInSearch: true,
       align: 'left',
       width: 120,
+    },
+    {
+      title: intl.formatMessage({
+        id: 'collector.module.text.registry.Information',
+      }),
+      dataIndex: 'healthStatus',
+      hideInSearch: true,
+      align: 'left',
+      width: 220,
     },
     {
       title: intl.formatMessage({
@@ -260,6 +270,14 @@ const AgentModule: React.FC = () => {
         tokenInfo={tokenInfo}
       />
     </PageContainer>
+  );
+};
+
+const AgentModule: React.FC = () => {
+  return (
+    <PermissionWrapper accessKey="isPlatformAdmin">
+      <AgentModuleContent />
+    </PermissionWrapper>
   );
 };
 

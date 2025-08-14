@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 
 interface IJSONEditor {
   value?: string;
-  editorKey: string;
+  editorKey?: string;
   onChange?: (value: string) => void;
   editorStyle?: React.CSSProperties;
   readOnly?: boolean;
@@ -14,21 +14,31 @@ const JSONEditor = (props: IJSONEditor) => {
   monaco.languages.register({ id: 'json' });
 
   const {
-    value,
+    value = "{}",
     onChange,
     editorStyle = {},
-    editorKey,
+    editorKey = "json-editor",
     readOnly = false,
   } = props;
 
   const editorRef = useRef<any>();
   const editorInstance = useRef<any>();
 
+  const validateJSON = (jsonString: string = "{}"): string => {
+    try {
+      JSON.parse(jsonString);
+      return jsonString;
+    } catch (e) {
+      console.warn('Invalid JSON string:', e);
+      return "{}";
+    }
+  };
+
   useEffect((): any => {
     if (!editorRef.current) return;
     if (!editorInstance.current) {
       editorInstance.current = monaco.editor.create(editorRef.current, {
-        value: value,
+        value: validateJSON(value),
         language: 'json',
         theme: 'vs', // OR 'vs', 'hc-black' and so on
         readOnly: readOnly,
@@ -37,7 +47,9 @@ const JSONEditor = (props: IJSONEditor) => {
       });
       // When the editor value is modified, it will be displayed back to the parent component state
       editorInstance.current.onDidChangeModelContent((): void => {
-        onChange?.(editorInstance.current.getValue());
+        const newValue = editorInstance.current.getValue();
+        console.log('[JSONEditor] 编辑器内容变更:', { newValue });
+        onChange?.(newValue);
       });
     } else {
       editorInstance.current.setValue(value);
@@ -55,7 +67,7 @@ const JSONEditor = (props: IJSONEditor) => {
   // Dealing with external value changes
   useEffect((): void => {
     if (editorInstance.current && value !== editorInstance.current.getValue()) {
-      editorInstance.current.setValue(value);
+      editorInstance.current.setValue(validateJSON(value));
     }
   }, [value]);
 

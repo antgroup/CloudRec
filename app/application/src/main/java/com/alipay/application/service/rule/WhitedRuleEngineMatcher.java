@@ -47,7 +47,7 @@ public class WhitedRuleEngineMatcher {
         }
 
 
-        String riskValue = risk.get(key).toString().trim();
+        String riskValue = risk.get(key).trim();
 
         switch (operator) {
             case "EQ":

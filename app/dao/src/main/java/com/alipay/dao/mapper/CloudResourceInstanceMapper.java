@@ -39,6 +39,10 @@ public interface CloudResourceInstanceMapper {
                                     @Param("cloudAccountId") String cloudAccountId,
                                     @Param("resourceId") String resourceId);
 
+    CloudResourceInstancePO findByResourceId(@Param("platform") String platform,
+                                             @Param("resourceType") String resourceType,
+                                             @Param("resourceId") String resourceId);
+
     CloudResourceInstancePO findExampleLimit1(@Param("platform") String platform,
                                               @Param("resourceType") String resourceType);
 
@@ -48,7 +52,7 @@ public interface CloudResourceInstanceMapper {
 
     long findCountByCloudAccountId(String cloudAccountId);
 
-    void deleteByCloudAccountId(String cloudAccountId);
+    int deleteByCloudAccountId(String cloudAccountId);
 
     // 预删除
     int preDeleteByIdList(@Param("idList") List<Long> idList, @Param("deleteAt") Date deleteAt);

@@ -182,6 +182,11 @@ public class RuleScanResultVO {
      */
     private String resourceStatus;
 
+    /**
+     * 如果风险处于加白状态，关联的白名单id
+     */
+    private Long whitedId;
+
     public static RuleScanResultVO buildDetail(RuleScanResultPO ruleScanResultPO) {
         if (ruleScanResultPO == null) {
             return null;

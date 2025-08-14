@@ -17,9 +17,7 @@
 package com.alipay.application.service.account.utils;
 
 import com.alipay.application.service.system.utils.SecretKeyUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.extern.slf4j.Slf4j;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -29,8 +27,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+@Slf4j
 public class AESEncryptionUtils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AESEncryptionUtils.class);
 
     private static final String ALGORITHM = "AES";
 
@@ -105,7 +103,7 @@ public class AESEncryptionUtils {
             byte[] decryptedBytes = cipher.doFinal(decodedBytes);
             return new String(decryptedBytes);
         } catch (Exception e) {
-            LOGGER.error("decrypt error", e);
+            log.error("decrypt error", e);
         }
         return null;
     }

@@ -10,10 +10,26 @@ declare namespace API {
     };
   }
 
+  interface Result_List {
+    code: number;
+    errorCode: string;
+    errorMsg: string;
+    msg: string;
+    content: Array<Record<string, any>>;
+  }
+
   interface Result_String_ {
     msg?: string;
     code?: number;
     content?: string;
+    errorCode?: string;
+    errorMsg?: string;
+  }
+
+  interface Result_Number_ {
+    msg?: string;
+    code?: number;
+    content?: number;
     errorCode?: string;
     errorMsg?: string;
   }
@@ -113,6 +129,10 @@ declare namespace API {
     ruleCode?: string;
     /** Rule Group Name List */
     ruleGroupNameList?: Array<string>;
+    /** Whether the rule is selected by current tenant */
+    tenantSelected?: boolean;
+    /** List of tenant names that have selected this rule */
+    selectedTenantNameList?: Array<string>;
   }
 
   /** Platform Results */
@@ -152,8 +172,11 @@ declare namespace API {
     tenantId?: number;
     tenantName?: string;
     roleName?: string;
+    selectTenantRoleName?: string;
     token?: string;
     tenantIds?: string;
+    code?: string;
+    inviteCode?: string;
   }
 
   interface TenantInfo {
@@ -168,6 +191,7 @@ declare namespace API {
     memberCount?: number;
     tenantId?: number;
     pageLimit?: boolean;
+    disable?: boolean;
   }
 
   interface AgentInfo {
@@ -187,7 +211,7 @@ declare namespace API {
   }
 
   interface TenantUser {
-    userId: number;
+    userId: string;
     tenantId: number;
   }
 
@@ -208,6 +232,7 @@ declare namespace API {
     tenantId?: number;
     tenantName?: string;
     resourceCount?: number;
+    riskCount?: number;
     lastScanTime?: string;
     resourceTypeList?: Array<string>;
     collectorStatus?: string;
@@ -219,6 +244,7 @@ declare namespace API {
     site?: string;
     owner?: string;
     projectId?: string;
+    proxyConfig?: string;
   }
 
   interface RiskInfo {
@@ -882,4 +908,35 @@ declare namespace API {
     data: CollectorRecord[];
     total: number;
   };
+
+  interface ListRuleRequest {
+    page?: number;
+    size?: number;
+    ruleGroupIdList?: Array<number>;
+    ruleName?: string;
+    riskLevel?: string;
+    riskLevelList?: Array<string>;
+    platform?: string;
+    platformList?: Array<string>;
+    resourceType?: string;
+    resourceTypeList?: Array<Array<string>>;
+    ruleDesc?: string;
+    groupName?: string;
+    groupNameList?: Array<string>;
+    ruleTypeIdList?: Array<Array<number>>;
+    status?: string;
+    sortParam?: string;
+    sortType?: string;
+    ruleCodeList?: Array<string>;
+  }
+
+  interface AddTenantSelectRuleRequest {
+    /** 规则代码，规则的唯一标识 */
+    ruleCode: string;
+  }
+
+  interface DeleteTenantSelectRuleRequest {
+    /** 规则代码，规则的唯一标识 */
+    ruleCode: string;
+  }
 }

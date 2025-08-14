@@ -52,4 +52,9 @@ public class QueryCloudAccountRequest {
      * 任务id列表
      */
     private List<Long> taskIds;
+
+    /**
+     * 需要获取的空闲云账户数量
+     */
+    private Integer freeCloudAccountCount;
 }

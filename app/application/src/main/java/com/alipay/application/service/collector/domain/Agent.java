@@ -61,7 +61,10 @@ public class Agent {
 
     private String onceToken;
 
-    public static Agent newAgent(String platform, String registryValue, String cron, String agentName, String secretKey, String onceToken) {
+    private String healthStatus;
+
+    public static Agent newAgent(String platform, String registryValue, String cron, String agentName, String secretKey,
+                                 String onceToken, String healthStatus) {
         Agent agent = new Agent();
         agent.setPlatform(platform);
         agent.setRegistryValue(registryValue);
@@ -72,15 +75,17 @@ public class Agent {
         agent.setSecretKey(secretKey);
         agent.setPersistentToken(UUID.randomUUID().toString());
         agent.setOnceToken(onceToken);
+        agent.setHealthStatus(healthStatus);
         return agent;
     }
 
-    public void refreshAgent(String token, String secretKey) {
+    public void refreshAgent(String token, String secretKey, String healthStatus) {
         this.setRegistryTime(new Date());
         this.setStatus(Status.valid.name());
         this.setCron(cron);
         this.setAgentName(agentName);
         this.setSecretKey(secretKey);
         this.setOnceToken(token);
+        this.setHealthStatus(healthStatus);
     }
 }

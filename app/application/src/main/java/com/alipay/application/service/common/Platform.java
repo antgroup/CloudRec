@@ -70,10 +70,6 @@ public class Platform {
         }
     }
 
-    public static List<String> getPlatformNameList(String... type) {
-        return Arrays.stream(type).map(Platform::getPlatformName).toList();
-    }
-
     public static List<String> getPlatformNameList(PlatformType... type) {
         return Arrays.stream(type).map(t -> getPlatformName(t.getPlatform())).toList();
     }

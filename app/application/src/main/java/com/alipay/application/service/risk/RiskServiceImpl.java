@@ -28,11 +28,13 @@ import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.rule.RuleScanResultExportVO;
 import com.alipay.application.share.vo.rule.RuleScanResultVO;
+import com.alipay.common.exception.BizErrorCodeEnum;
 import com.alipay.common.exception.BizException;
-import com.alipay.common.exception.RoleCheckException;
 import com.alipay.common.utils.ExcelUtils;
 import com.alipay.common.utils.ListUtils;
 import com.alipay.dao.context.UserInfoContext;
+import com.alipay.dao.dto.CloudAccountStatisticsDTO;
+import com.alipay.dao.dto.ResourceTypeStatisticsDTO;
 import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.dto.RuleStatisticsDTO;
 import com.alipay.dao.mapper.RuleScanResultMapper;
@@ -42,13 +44,13 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -81,6 +83,10 @@ public class RiskServiceImpl implements RiskService {
 
     private static final String dbCacheKey_agg = "risk::query_risk_list_agg";
 
+    private static final String dbCacheKey_account_agg = "risk::query_risk_list_account_agg";
+
+    private static final String dbCacheKey_resourceType_agg = "risk::query_risk_list_resourceType_agg";
+
     private static final String localLockPrefix = "risk::export_risk_list";
 
     @Override
@@ -99,6 +105,7 @@ public class RiskServiceImpl implements RiskService {
         }
 
         ruleScanResultDTO.setCloudAccountIdList(cloudAccount.queryCloudAccountIdList(ruleScanResultDTO.getCloudAccountId()));
+        ruleScanResultDTO.setCloudAccountId(null);
         ruleScanResultDTO.setTenantId(UserInfoContext.getCurrentUser().getTenantId());
 
         ListVO<RuleScanResultVO> listVO = new ListVO<>();
@@ -174,17 +181,18 @@ public class RiskServiceImpl implements RiskService {
         RuleScanResultPO ruleScanResultPO = ruleScanResultMapper.selectByPrimaryKey(riskId);
 
         if (ruleScanResultPO == null) {
-            throw new BizException("Risk ID not found");
+            throw new BizException(BizErrorCodeEnum.FORBIDDEN, "The risk not found");
         }
 
         Long tenantId = UserInfoContext.getCurrentUser().getTenantId();
+        //  Global tenants do not continue to judge
         if (tenantId == null) {
             return ruleScanResultPO;
         }
 
         // If the tenant ID does not match, an exception is thrown
         if (!tenantId.equals(ruleScanResultPO.getTenantId())) {
-            throw new RoleCheckException("Tenant not match");
+            throw new BizException(BizErrorCodeEnum.FORBIDDEN, "Tenant not match");
         }
 
         return ruleScanResultPO;
@@ -245,8 +253,10 @@ public class RiskServiceImpl implements RiskService {
      */
     @Override
     public List<RuleStatisticsDTO> listRuleStatistics(RuleScanResultDTO ruleScanResultDTO) {
+        // When the global tenant is in, the ID is null, which means that all
+        Long tenantId = UserInfoContext.getCurrentUser().getTenantId();
         boolean needCache = false;
-        String key = CacheUtil.buildKey(dbCacheKey_agg, UserInfoContext.getCurrentUser().getUserTenantId());
+        String key = CacheUtil.buildKey(dbCacheKey_agg, tenantId);
         if (judgeCacheCond(ruleScanResultDTO)) {
             needCache = true;
             DbCachePO dbCachePO = dbCacheUtil.get(key);
@@ -255,10 +265,63 @@ public class RiskServiceImpl implements RiskService {
                 });
             }
         }
+        ruleScanResultDTO.setTenantId(tenantId);
         if (ruleScanResultDTO.getCloudAccountId() != null) {
             ruleScanResultDTO.setCloudAccountIdList(cloudAccount.queryCloudAccountIdList(ruleScanResultDTO.getCloudAccountId()));
         }
         List<RuleStatisticsDTO> ruleStatisticsDTOS = ruleScanResultMapper.listRuleStatistics(ruleScanResultDTO);
+        if (needCache) {
+            dbCacheUtil.put(key, ruleStatisticsDTOS);
+        }
+
+        return ruleStatisticsDTOS;
+    }
+
+    @Override
+    public List<CloudAccountStatisticsDTO> listCloudAccountStatistics(RuleScanResultDTO dto) {
+        // When the global tenant is in, the ID is null, which means that all
+        Long tenantId = UserInfoContext.getCurrentUser().getTenantId();
+        boolean needCache = false;
+        String key = CacheUtil.buildKey(dbCacheKey_account_agg, tenantId);
+        if (judgeCacheCond(dto)) {
+            needCache = true;
+            DbCachePO dbCachePO = dbCacheUtil.get(key);
+            if (dbCachePO != null) {
+                return JSON.parseObject(dbCachePO.getValue(), new TypeReference<>() {
+                });
+            }
+        }
+        dto.setTenantId(tenantId);
+        if (Strings.isNotBlank(dto.getCloudAccountId())) {
+            dto.setCloudAccountIdList(cloudAccount.queryCloudAccountIdList(dto.getCloudAccountId()));
+        }
+        List<CloudAccountStatisticsDTO> ruleStatisticsDTOS = ruleScanResultMapper.listCloudAccountStatistics(dto);
+        if (needCache) {
+            dbCacheUtil.put(key, ruleStatisticsDTOS);
+        }
+
+        return ruleStatisticsDTOS;
+    }
+
+    @Override
+    public List<ResourceTypeStatisticsDTO> listResourceTypeStatistics(RuleScanResultDTO dto) {
+        // When the global tenant is in, the ID is null, which means that all
+        Long tenantId = UserInfoContext.getCurrentUser().getTenantId();
+        boolean needCache = false;
+        String key = CacheUtil.buildKey(dbCacheKey_resourceType_agg, tenantId);
+        if (judgeCacheCond(dto)) {
+            needCache = true;
+            DbCachePO dbCachePO = dbCacheUtil.get(key);
+            if (dbCachePO != null) {
+                return JSON.parseObject(dbCachePO.getValue(), new TypeReference<>() {
+                });
+            }
+        }
+        dto.setTenantId(tenantId);
+        if (Strings.isNotBlank(dto.getCloudAccountId())) {
+            dto.setCloudAccountIdList(cloudAccount.queryCloudAccountIdList(dto.getCloudAccountId()));
+        }
+        List<ResourceTypeStatisticsDTO> ruleStatisticsDTOS = ruleScanResultMapper.listResourceTypeStatistics(dto);
         if (needCache) {
             dbCacheUtil.put(key, ruleStatisticsDTOS);
         }

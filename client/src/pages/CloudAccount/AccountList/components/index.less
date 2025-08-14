@@ -1,0 +1,135 @@
+.leftInfoLabel {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.rightInfoLabel {
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.basicInfoValue {
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #1890ff;
+    transform: translateX(4px);
+  }
+}
+
+.accountModal {
+  :global {
+    .ant-modal-content {
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: box-shadow 0.3s ease;
+
+      &:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .ant-modal-header {
+      border-bottom: none;
+      padding: 24px 24px 0;
+    }
+
+    .ant-form-item {
+      margin-bottom: 24px;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+    }
+
+    .ant-divider {
+      margin: 24px 0;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    .ant-typography {
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #1890ff;
+      }
+    }
+  }
+}
+
+.sectionDivider {
+  margin: 24px 0;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+
+  &:hover {
+    opacity: 1;
+    transform: scaleX(1.02);
+  }
+
+  :global(.ant-typography) {
+    color: rgba(0, 0, 0, 0.65);
+    font-size: 14px;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #1890ff;
+    }
+  }
+}
+
+.proxyCollapse {
+  margin: 24px 0;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #1890ff;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+  }
+
+  :global {
+    .ant-collapse-header {
+      padding: 16px 24px !important;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: rgba(24, 144, 255, 0.02);
+      }
+
+      .ant-typography {
+        color: rgba(0, 0, 0, 0.65);
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: #1890ff;
+        }
+      }
+    }
+
+    .ant-collapse-content {
+      border-top: 1px solid #f0f0f0;
+      transition: border-color 0.3s ease;
+
+      &-box {
+        padding: 24px;
+      }
+    }
+
+    .ant-collapse-arrow {
+      transition: transform 0.3s ease;
+    }
+  }
+}

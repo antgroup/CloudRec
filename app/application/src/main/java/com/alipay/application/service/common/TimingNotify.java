@@ -25,8 +25,7 @@ import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.dto.SubscriptionDTO;
 import com.alipay.dao.po.*;
 import com.alipay.application.service.common.enums.SubscriptionType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,10 +37,9 @@ import java.util.List;
  *@version 1.0
  *@create 2024/9/18 13:58
  */
+@Slf4j
 @Component
 public class TimingNotify extends Notify {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TimingNotify.class);
 
     public void execute() {
         // Load the account account
@@ -72,7 +70,7 @@ public class TimingNotify extends Notify {
 
                     List<RuleScanResultPO> ruleScanResultPOList = filterList(data, FilterParam.buildParam(rulePO, cloudAccountPO), subscriptionPO.getRuleConfigJson());
                     if (ruleScanResultPOList.isEmpty()) {
-                        LOGGER.info("ruleId {} cloudAccountId {} The rule scan result is empty and execution is skipped.", rulePO.getId(), cloudAccountPO.getCloudAccountId());
+                        log.info("ruleId {} cloudAccountId {} The rule scan result is empty and execution is skipped.", rulePO.getId(), cloudAccountPO.getCloudAccountId());
                         continue;
                     }
 
@@ -80,7 +78,7 @@ public class TimingNotify extends Notify {
                         // Determine whether an alarm is required
                         boolean doAction = judgeNotifyCond(subscriptionActionPO);
                         if (!doAction) {
-                            LOGGER.info("Subscription id: {}, rule id: {}, alarm conditions not met", subscriptionPO.getId(), subscriptionActionPO.getSubscriptionId());
+                            log.info("Subscription id: {}, rule id: {}, alarm conditions not met", subscriptionPO.getId(), subscriptionActionPO.getSubscriptionId());
                             continue;
                         }
 

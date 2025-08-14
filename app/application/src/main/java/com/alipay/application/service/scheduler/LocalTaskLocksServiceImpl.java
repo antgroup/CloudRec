@@ -22,8 +22,7 @@ import com.alipay.dao.po.LocalTaskExecuteLogPO;
 import com.alipay.dao.po.LocalTaskLocksPO;
 import jakarta.annotation.Resource;
 import lombok.Synchronized;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.net.InetAddress;
@@ -37,11 +36,9 @@ import java.util.Objects;
  * Date: 2025/3/4
  * Author: lz
  */
+@Slf4j
 @Service
 public class LocalTaskLocksServiceImpl implements LocalTaskLocksService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalTaskLocksServiceImpl.class);
-
 
     @Resource
     private LocalTaskLocksMapper localTaskLocksMapper;
@@ -60,7 +57,7 @@ public class LocalTaskLocksServiceImpl implements LocalTaskLocksService {
         try {
             InetAddress inetAddress = InetAddress.getLocalHost();
             String hostAddress = inetAddress.getHostAddress();
-            LOGGER.info("query task status,  taskName:{}, hostAddress:{}", taskName, hostAddress);
+            log.info("query task status,  taskName:{}, hostAddress:{}", taskName, hostAddress);
             LocalTaskLocksPO localTaskLocksPO = localTaskLocksMapper.selectByTaskName(taskName);
             if (Objects.nonNull(localTaskLocksPO)) {
                 //当前任务正在运行,判断锁过期
@@ -70,7 +67,7 @@ public class LocalTaskLocksServiceImpl implements LocalTaskLocksService {
                     boolean moreThanOneMinute = isMoreThanOneMinute(localTaskLocksPO.getGmtCreate());
                     if (moreThanOneMinute) {
                         releaseLockTask(taskName, false, "lock timeout");
-                        LOGGER.info("lock timeout and task not finish , release lock, taskName:{}, hostAddress:{}", taskName, hostAddress);
+                        log.info("lock timeout and task not finish , release lock, taskName:{}, hostAddress:{}", taskName, hostAddress);
                         return true;
                     }
                 }
@@ -92,12 +89,12 @@ public class LocalTaskLocksServiceImpl implements LocalTaskLocksService {
             localTaskExecuteLogMapper.insertSelective(localTaskExecuteLogPO);
 
             if (insert == 0) {
-                LOGGER.info("LocalTaskLocks insert lock record failed");
+                log.info("LocalTaskLocks insert lock record failed");
                 return false;
             }
             return true;
         } catch (UnknownHostException e) {
-            LOGGER.error("query freeStatus error", e);
+            log.error("query freeStatus error", e);
             throw new RuntimeException(e);
         }
     }
@@ -116,10 +113,10 @@ public class LocalTaskLocksServiceImpl implements LocalTaskLocksService {
                 localTaskExecuteLogMapper.updateByPrimaryKeySelective(localTaskExecuteLogPO);
             }
             //释放锁
-            LOGGER.info("release lock task, hostAddress:{}, taskName:{}", inetAddress.getHostAddress(), taskName);
+            log.info("release lock task, hostAddress:{}, taskName:{}", inetAddress.getHostAddress(), taskName);
             localTaskLocksMapper.deleteByTaskName(taskName);
         } catch (UnknownHostException e) {
-            LOGGER.error("release lock task error", e);
+            log.error("release lock task error", e);
             throw new RuntimeException(e);
         }
     }

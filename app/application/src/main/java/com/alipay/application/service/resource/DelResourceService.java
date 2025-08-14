@@ -13,9 +13,12 @@ public interface DelResourceService {
     /**
      * 预删除资源，将资源的逻辑删除次数 + 1
      *
-     * @param cloudAccountId
-     * @return
+     * @param cloudAccountId 云账号id
+     * @return 受影响数量
      */
     int preDeleteByCloudAccountId(String cloudAccountId);
+
+
+    void removeResource(String cloudAccount);
 
 }

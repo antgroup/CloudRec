@@ -47,4 +47,9 @@ public interface InitRuleService {
      * 将规则从数据库中写如代码文件中
      */
     String writeRule(List<Long> idList);
+
+    /**
+     * Check if new rules exist
+     */
+    int checkExistNewRule();
 }

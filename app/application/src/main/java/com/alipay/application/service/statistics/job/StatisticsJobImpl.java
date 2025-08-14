@@ -82,6 +82,8 @@ public class StatisticsJobImpl implements StatisticsJob {
 
     @Override
     public void dailyRiskManagementStatistics() {
+        // Set the number of cloud accounts per batch
+        final int BATCH_SIZE = 100;
         CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder().build();
         List<CloudAccountPO> cloudAccountPOS = cloudAccountMapper.findList(cloudAccountDTO);
         Map<Long, List<CloudAccountPO>> collect = cloudAccountPOS.stream()
@@ -90,19 +92,32 @@ public class StatisticsJobImpl implements StatisticsJob {
         String date = DateUtil.dateToString(new Date());
         for (Long tenantId : collect.keySet()) {
             List<CloudAccountPO> cloudAccountPOList = collect.get(tenantId);
-            List<String> cloudAccoutIdList = cloudAccountPOList.stream().map(CloudAccountPO::getCloudAccountId)
+            List<String> allCloudAccountIds = cloudAccountPOList.stream()
+                    .map(CloudAccountPO::getCloudAccountId)
                     .toList();
 
-            int handleCount = ruleScanResultMapper
-                    .findCount(RuleScanResultDTO.builder().cloudAccountIdList(cloudAccoutIdList)
-                            .statusList(Arrays.asList(RiskStatusManager.RiskStatus.REPAIRED.name(),
-                                    RiskStatusManager.RiskStatus.IGNORED.name()))
-                            .build());
-            int notHandleCount = ruleScanResultMapper
-                    .findCount(RuleScanResultDTO.builder().cloudAccountIdList(cloudAccoutIdList)
-                            .status(RiskStatusManager.RiskStatus.UNREPAIRED.name()).build());
+            int totalHandleCount = 0;
+            int totalNotHandleCount = 0;
 
-            saveDailyRiskManagementData(date, tenantId, handleCount, notHandleCount);
+            // Process cloud accounts in batches
+            for (int i = 0; i < allCloudAccountIds.size(); i += BATCH_SIZE) {
+                int end = Math.min(i + BATCH_SIZE, allCloudAccountIds.size());
+                List<String> batchCloudAccountIds = allCloudAccountIds.subList(i, end);
+
+                int handleCount = ruleScanResultMapper
+                        .findCount(RuleScanResultDTO.builder().cloudAccountIdList(batchCloudAccountIds)
+                                .statusList(Arrays.asList(RiskStatusManager.RiskStatus.REPAIRED.name(),
+                                        RiskStatusManager.RiskStatus.IGNORED.name()))
+                                .build());
+                int notHandleCount = ruleScanResultMapper
+                        .findCount(RuleScanResultDTO.builder().cloudAccountIdList(batchCloudAccountIds)
+                                .status(RiskStatusManager.RiskStatus.UNREPAIRED.name()).build());
+
+                totalHandleCount += handleCount;
+                totalNotHandleCount += notHandleCount;
+            }
+
+            saveDailyRiskManagementData(date, tenantId, totalHandleCount, totalNotHandleCount);
         }
 
         TenantPO tenantPO = tenantMapper.findByTenantName(TenantConstants.GLOBAL_TENANT);
@@ -110,7 +125,7 @@ public class StatisticsJobImpl implements StatisticsJob {
             return;
         }
 
-        // 查询全局租户数据
+        // Query global tenant data
         int handleCount = ruleScanResultMapper.findCount(
                 RuleScanResultDTO.builder().statusList(Arrays.asList(RiskStatusManager.RiskStatus.REPAIRED.name(),
                         RiskStatusManager.RiskStatus.IGNORED.name())).build());
@@ -289,11 +304,11 @@ public class StatisticsJobImpl implements StatisticsJob {
      */
     @Override
     public void statisticsAll() {
-        // 每日风险已处理、未处理统计
         try {
+            // 每日风险已处理、未处理统计
             dailyRiskManagementStatistics();
-            // 按租户、资产类型统计风险数量、资产数量
 
+            // 按租户、资产类型统计风险数量、资产数量
             resourceRiskCountStatistics();
 
             // 统计历史数据每天的风险数量、资产数量

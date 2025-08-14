@@ -37,8 +37,6 @@ import com.alipay.dao.dto.ResourceDTO;
 import com.alipay.dao.po.ResourcePO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -58,8 +56,6 @@ import java.util.List;
 @RequestMapping("/api/resource")
 @Validated
 public class ResourceController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceController.class);
 
     @Resource
     private IQueryResource iQueryResource;

@@ -17,20 +17,21 @@
 package com.alipay.api.web.system;
 
 import com.alipay.api.config.filter.annotation.aop.AdminPermissionLimit;
+import com.alipay.api.config.filter.annotation.aop.AuthenticateToken;
 import com.alipay.api.web.system.request.UserLoginRequest;
 import com.alipay.application.service.system.UserService;
+import com.alipay.application.service.system.domain.enums.RoleNameType;
 import com.alipay.application.share.request.admin.*;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.system.UserVO;
 import com.alipay.common.enums.Status;
 import com.alipay.common.exception.UserNoLoginException;
-import com.alipay.application.service.system.domain.enums.RoleNameType;
+import com.alipay.dao.context.UserInfoContext;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,9 +46,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user")
 @Validated
+@Slf4j
 public class UserController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
     @Resource
     private UserService userService;
@@ -58,7 +59,7 @@ public class UserController {
             return new ApiResponse<>(result);
         }
 
-        String sign = userService.login(request.getUserId(), request.getPassword());
+        String sign = userService.login(request.getUserId(), request.getPassword(), request.getInviteCode());
         return new ApiResponse<>(sign);
     }
 
@@ -66,6 +67,25 @@ public class UserController {
     @PostMapping("/createUser")
     public ApiResponse<String> createUser(@RequestBody CreateUserRequest request) {
         userService.create(request.getUserId(), request.getUsername(), request.getPassword(), request.getRoleName(), request.getTenantIds());
+        return ApiResponse.SUCCESS;
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<String> register(@RequestBody @Validated RegisterRequest request, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        userService.register(request.getUserId(), request.getUsername(), request.getPassword(), request.getEmail(), request.getCode());
+        return ApiResponse.SUCCESS;
+    }
+
+    @AuthenticateToken
+    @PostMapping("/joinTenant")
+    public ApiResponse<String> joinTenant(@RequestBody @Validated JoinTenantRequest request, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        userService.joinTenant(request.getInviteCode(), UserInfoContext.getCurrentUser().getUserId());
         return ApiResponse.SUCCESS;
     }
 
@@ -106,7 +126,6 @@ public class UserController {
     @PostMapping("/changeUserStatus")
     public ApiResponse<String> changeUserStatus(@Validated @RequestBody ChangeUserStatusRequest request,
                                                 BindingResult error) {
-        LOGGER.info("{}", request);
         if (error.hasErrors()) {
             return new ApiResponse<>(error);
         }

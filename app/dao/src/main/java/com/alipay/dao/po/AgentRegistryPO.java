@@ -50,4 +50,6 @@ public class AgentRegistryPO {
 
     private String onceToken;
 
+    private String healthStatus;
+
 }

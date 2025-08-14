@@ -94,13 +94,31 @@ export async function requestCommentInformation(
   );
 }
 
-/** Comment on risk information: POST /api/risk/commentInformation */
+/** List rule statistics interface: POST /api/risk/listRuleStatistics */
 export async function listRuleStatistics(
   body?: API.RiskInfo,
   options?: { [key: string]: any },
 ) {
   return request<API.Result_T_>(
     `${BASE_URL}/api/risk/listRuleStatistics`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
+/** List cloud account statistics interface: POST /api/risk/listCloudAccountStatistics */
+export async function listCloudAccountStatistics(
+  body?: API.RiskInfo,
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_T_>(
+    `${BASE_URL}/api/risk/listCloudAccountStatistics`,
     {
       method: 'POST',
       headers: {

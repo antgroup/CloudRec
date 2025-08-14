@@ -37,9 +37,8 @@ import jakarta.annotation.Resource;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -61,10 +60,9 @@ import java.util.regex.Pattern;
  *@create 2024/10/23 17:14
  */
 
+@Slf4j
 @Service
 public class Notify {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Notify.class);
 
     public static final int MAX_PUSH_DATA_COUNT = 30;
 
@@ -94,17 +92,17 @@ public class Notify {
         RuleScanResultPO ruleScanResultPO = data.get(0);
         CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(ruleScanResultPO.getCloudAccountId());
         if (cloudAccountPO == null) {
-            LOGGER.error("Cloud Account {} no longer exists", ruleScanResultPO.getCloudAccountId());
+            log.error("Cloud Account {} no longer exists", ruleScanResultPO.getCloudAccountId());
             return;
         }
         PlatformPO platformPO = platformMapper.findByPlatform(cloudAccountPO.getPlatform());
         if (platformPO == null) {
-            LOGGER.error("Cloud Platform {} no longer exists", cloudAccountPO.getPlatform());
+            log.error("Cloud Platform {} no longer exists", cloudAccountPO.getPlatform());
             return;
         }
         RulePO rulePO = ruleMapper.selectByPrimaryKey(ruleScanResultPO.getRuleId());
         if (rulePO == null) {
-            LOGGER.error("Rule {} no longer exists", ruleScanResultPO.getRuleId());
+            log.error("Rule {} no longer exists", ruleScanResultPO.getRuleId());
             return;
         }
 
@@ -159,7 +157,7 @@ public class Notify {
         if (StringUtils.isEmpty(jsonString)) {
             return null;
         }
-        LOGGER.info("parseTemplate contextTemplate: {}, jsonString: {}", contextTemplate, jsonString);
+        log.info("parseTemplate contextTemplate: {}, jsonString: {}", contextTemplate, jsonString);
         Object document = Configuration.defaultConfiguration().jsonProvider().parse(jsonString);
 
         String result = contextTemplate;
@@ -172,7 +170,7 @@ public class Notify {
             try {
                 object = JsonPath.read(document, key);
             } catch (PathNotFoundException e) {
-                LOGGER.error("No path found: {}", key);
+                log.error("No path found: {}", key);
             }
             String value = object != null ? object.toString() : "N/A";
             result = result.replace("{" + key + "}", value);
@@ -220,11 +218,11 @@ public class Notify {
                     while ((responseLine = br.readLine()) != null) {
                         response.append(responseLine.trim());
                     }
-                    LOGGER.info("Interface callback response: {}", response);
+                    log.info("Interface callback response: {}", response);
                 }
 
             } catch (Exception e) {
-                LOGGER.error("Interface callback failed", e);
+                log.error("Interface callback failed", e);
             }
         }
     }
@@ -258,7 +256,7 @@ public class Notify {
         }
 
         if (result.isEmpty()) {
-            LOGGER.info("ruleId {} cloudAccountId {} The rule scan result is empty and execution is skipped.", filterParam.getRuleId(),
+            log.info("ruleId {} cloudAccountId {} The rule scan result is empty and execution is skipped.", filterParam.getRuleId(),
                     filterParam.getCloudAccountId());
         }
 

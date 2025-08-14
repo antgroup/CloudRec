@@ -16,7 +16,6 @@
  */
 package com.alipay.api.web.rule;
 
-import com.alipay.api.config.filter.annotation.aop.AdminPermissionLimit;
 import com.alipay.api.config.filter.annotation.aop.AuthenticateToken;
 import com.alipay.application.service.rule.WhitedRuleService;
 import com.alipay.application.share.request.rule.*;
@@ -82,16 +81,16 @@ public class WhitedRuleController {
     /**
      * 查询白名单列表
      *
-     * @param requestDTO
+     * @param request
      * @return
      * @throws IOException
      */
     @AuthenticateToken
     @PostMapping("/list")
-    public ApiResponse<ListVO<WhitedRuleConfigVO>> list(@RequestBody QueryWhitedRuleRequestDTO requestDTO) throws IOException {
-        QueryWhitedRuleDTO queryWhitedRuleDTO = new QueryWhitedRuleDTO();
-        BeanUtils.copyProperties(requestDTO, queryWhitedRuleDTO);
-        ListVO<WhitedRuleConfigVO> listVO = whitedRuleService.getList(queryWhitedRuleDTO);
+    public ApiResponse<ListVO<WhitedRuleConfigVO>> list(@RequestBody QueryWhitedRuleRequest request) throws IOException {
+        QueryWhitedRuleDTO dto = QueryWhitedRuleDTO.builder().build();
+        BeanUtils.copyProperties(request, dto);
+        ListVO<WhitedRuleConfigVO> listVO = whitedRuleService.getList(dto);
         return new ApiResponse<>(listVO);
     }
 
@@ -101,11 +100,10 @@ public class WhitedRuleController {
      *
      * @param id
      * @return
-     * @throws IOException
      */
     @AuthenticateToken
     @GetMapping("/{id}")
-    public ApiResponse<WhitedRuleConfigVO> detail(@PathVariable Long id) throws IOException {
+    public ApiResponse<WhitedRuleConfigVO> detail(@PathVariable Long id) {
         WhitedRuleConfigVO whitedRuleConfigVO = whitedRuleService.getById(id);
         return new ApiResponse<>(whitedRuleConfigVO);
     }
@@ -118,7 +116,6 @@ public class WhitedRuleController {
      */
     @AuthenticateToken
     @PostMapping("/delete/{id}")
-    @AdminPermissionLimit
     public ApiResponse<String> delete(@PathVariable Long id) {
         whitedRuleService.deleteById(id);
         return ApiResponse.SUCCESS;
@@ -133,7 +130,6 @@ public class WhitedRuleController {
      */
     @AuthenticateToken
     @PostMapping("/changeStatus")
-    @AdminPermissionLimit
     public ApiResponse<String> changeStatus(@RequestBody SaveWhitedRuleRequestDTO requestDTO) {
         whitedRuleService.changeStatus(requestDTO.getId(), requestDTO.getEnable());
         return ApiResponse.SUCCESS;
@@ -147,7 +143,6 @@ public class WhitedRuleController {
      */
     @AuthenticateToken
     @PostMapping("/grabLock/{id}")
-    @AdminPermissionLimit
     public ApiResponse<String> grabLock(@PathVariable Long id) {
         whitedRuleService.grabLock(id);
         return ApiResponse.SUCCESS;
@@ -176,7 +171,6 @@ public class WhitedRuleController {
 
     @AuthenticateToken
     @PostMapping("/testRun")
-    @AdminPermissionLimit
     public ApiResponse<TestRunWhitedRuleResultDTO> testRun(@RequestBody TestRunWhitedRuleRequestDTO dto) {
         TestRunWhitedRuleResultDTO resultDTO = whitedRuleService.testRun(dto);
         return new ApiResponse<>(resultDTO);
@@ -191,7 +185,6 @@ public class WhitedRuleController {
      */
     @AuthenticateToken
     @PostMapping("/queryWhitedContentByRisk/{riskId}")
-    @AdminPermissionLimit
     public ApiResponse<SaveWhitedRuleRequestDTO> queryWhitedContentByRisk(@PathVariable Long riskId) throws IOException {
         SaveWhitedRuleRequestDTO saveWhitedRuleRequestDTO = whitedRuleService.queryWhitedContentByRisk(riskId);
         return new ApiResponse<>(saveWhitedRuleRequestDTO);

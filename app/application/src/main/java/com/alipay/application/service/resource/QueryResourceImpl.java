@@ -39,7 +39,10 @@ import com.alipay.common.utils.ListUtils;
 import com.alipay.dao.context.UserInfoContext;
 import com.alipay.dao.context.UserInfoDTO;
 import com.alipay.dao.dto.*;
-import com.alipay.dao.mapper.*;
+import com.alipay.dao.mapper.CloudResourceInstanceMapper;
+import com.alipay.dao.mapper.CloudResourceRiskCountStatisticsMapper;
+import com.alipay.dao.mapper.ResourceMapper;
+import com.alipay.dao.mapper.RuleScanResultMapper;
 import com.alipay.dao.po.CloudResourceInstancePO;
 import com.alipay.dao.po.CloudResourceRiskCountStatisticsPO;
 import com.alipay.dao.po.DbCachePO;
@@ -48,6 +51,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -70,13 +74,7 @@ public class QueryResourceImpl implements IQueryResource {
     private ResourceMapper resourceMapper;
 
     @Resource
-    private TenantMapper tenantMapper;
-
-    @Resource
     private CloudAccount cloudAccount;
-
-    @Resource
-    private CloudAccountMapper cloudAccountMapper;
 
     @Resource
     private CloudResourceInstanceMapper cloudResourceInstanceMapper;
@@ -135,7 +133,7 @@ public class QueryResourceImpl implements IQueryResource {
     }
 
     @Override
-    public List<CloudResourceInstancePO> queryByCond(String platform, String resourceType, String cloudAccountId, Integer limit) {
+    public List<CloudResourceInstancePO> queryByCondX(String platform, String resourceType, String cloudAccountId, String resourceId, Integer limit) {
         if (limit == null || limit == 0) {
             return List.of();
         }
@@ -143,7 +141,8 @@ public class QueryResourceImpl implements IQueryResource {
                 .platform(platform)
                 .resourceType(resourceType)
                 .cloudAccountId(cloudAccountId)
-                .offset(1)
+                .resourceIdEq(resourceId)
+                .offset(0)
                 .size(limit)
                 .build();
         return cloudResourceInstanceMapper.findByCond(request);
@@ -176,11 +175,6 @@ public class QueryResourceImpl implements IQueryResource {
     @Override
     public long queryResourceCount(String cloudAccountId) {
         return cloudResourceInstanceMapper.findCountByCloudAccountId(cloudAccountId);
-    }
-
-    @Override
-    public void removeResource(String cloudAccountId) {
-        cloudResourceInstanceMapper.deleteByCloudAccountId(cloudAccountId);
     }
 
     @Override
@@ -297,9 +291,19 @@ public class QueryResourceImpl implements IQueryResource {
     public ApiResponse<Object> queryResourceExampleData(QueryResourceExampleDataRequest request) {
         CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder().build();
         cloudAccountDTO.setPlatform(request.getPlatform());
-        CloudResourceInstancePO cloudResourceInstancePO = cloudResourceInstanceMapper.findExampleLimit1(request.getPlatform(), request.getResourceType().get(1));
+        CloudResourceInstancePO cloudResourceInstancePO = null;
+        if (Strings.isNotBlank(request.getResourceId())) {
+            cloudResourceInstancePO = cloudResourceInstanceMapper.findByResourceId(request.getPlatform(), request.getResourceType().get(1), request.getResourceId());
+
+        } else {
+            cloudResourceInstancePO = cloudResourceInstanceMapper.findExampleLimit1(request.getPlatform(), request.getResourceType().get(1));
+        }
+        if (cloudResourceInstancePO == null){
+            throw new BizException("No sample data yet");
+        }
+
         if (request.getLinkedDataList() != null && !request.getLinkedDataList().isEmpty()) {
-            List<CloudResourceInstancePO> cloudResourceInstanceList = queryByCond(request.getPlatform(), request.getResourceType().get(1), cloudResourceInstancePO.getCloudAccountId(), 1);
+            List<CloudResourceInstancePO> cloudResourceInstanceList = queryByCondX(request.getPlatform(), request.getResourceType().get(1), cloudResourceInstancePO.getCloudAccountId(), request.getResourceId(), 1);
             cloudResourceInstanceList = ResourceMergerTask.mergeJsonWithTimeOut(request.getLinkedDataList(), cloudResourceInstanceList, cloudResourceInstancePO.getCloudAccountId());
 
             Map<Long, Integer> scoreMap = new HashMap<>();

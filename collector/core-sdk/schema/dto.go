@@ -16,8 +16,8 @@
 package schema
 
 import (
-	"github.com/core-sdk/constant"
 	"encoding/json"
+	"github.com/core-sdk/constant"
 )
 
 type res struct {
@@ -26,13 +26,20 @@ type res struct {
 	Content interface{} `json:"content"`
 }
 
+type HealthStatus struct {
+	CPUUsage    string `json:"cpuUsage"`
+	MemoryUsage string `json:"memoryUsage"`
+	DiskUsage   string `json:"diskUsage"`
+}
+
 type Registry struct {
-	Platform           string   `json:"platform"`
-	RegistryValue      string   `json:"registryValue"`
-	CloudAccountIdList []string `json:"CloudAccountIdList"`
-	Cron               string   `json:"cron"`
-	AgentName          string   `json:"agentName"`
-	SecretKey          string   `json:"secretKey"`
+	Platform           string       `json:"platform"`
+	RegistryValue      string       `json:"registryValue"`
+	CloudAccountIdList []string     `json:"CloudAccountIdList"`
+	Cron               string       `json:"cron"`
+	AgentName          string       `json:"agentName"`
+	SecretKey          string       `json:"secretKey"`
+	HealthStatus       HealthStatus `json:"healthStatus"`
 }
 
 type RegistryResponse struct {
@@ -41,10 +48,11 @@ type RegistryResponse struct {
 }
 
 type AccountParam struct {
-	Platform      string   `json:"platform"`
-	Sites         []string `json:"sites"`
-	RegistryValue string   `json:"registryValue"`
-	TaskIds       []int64  `json:"taskIds"`
+	Platform              string   `json:"platform"`
+	Sites                 []string `json:"sites"`
+	RegistryValue         string   `json:"registryValue"`
+	TaskIds               []int64  `json:"taskIds"`
+	FreeCloudAccountCount int      `json:"freeCloudAccountCount,omitempty"`
 }
 
 type SupportResourceTypeListRequest struct {
@@ -80,4 +88,16 @@ func ReturnGeneral() []byte {
 
 	str, _ := json.Marshal(data)
 	return str
+}
+
+type CollectRecordInfo struct {
+	CollectRecordId  int64                    `json:"collectRecordId"`
+	EnableCollection bool                     `json:"enableCollection"`
+	CloudAccountId   string                   `json:"cloudAccountId"`
+	Platform         string                   `json:"platform"`
+	StartTime        string                   `json:"startTime"`
+	EndTime          string                   `json:"endTime"`
+	ErrorMessage     string                   `json:"errorMessage"`
+	Message          string                   `json:"message"`
+	Events           []map[string]interface{} `json:"events"`
 }

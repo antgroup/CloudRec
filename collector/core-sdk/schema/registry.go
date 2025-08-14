@@ -16,11 +16,11 @@
 package schema
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
 	"io"
 	"io/ioutil"
 	"time"
@@ -61,6 +61,9 @@ func (c *Client) RegistryCycle(registry Registry) {
 func (c *Client) RegistryOnce(registry Registry) (resp *RegistryResponse, err error) {
 	t := time.NewTimer(time.Second * 0)
 	defer t.Stop()
+
+	registry.HealthStatus = GetSystemHealth()
+
 	param, err := json.Marshal(registry)
 	if err != nil {
 		log.GetWLogger().Error(fmt.Sprintf("The actuator failed to register %s", err.Error()))

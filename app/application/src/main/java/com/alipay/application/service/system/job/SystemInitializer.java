@@ -102,10 +102,10 @@ public class SystemInitializer {
             initRuleService.initRuleType();
 
             // Initialize rule
-//            if (StringUtils.isNotBlank(rulePath)) {
-//                log.info("find rule path: {}, will init system default rules", rulePath);
-//                initRuleService.loadRuleFromLocalFile();
-//            }
+            if (StringUtils.isNotBlank(rulePath)) {
+                log.info("find rule path: {}, will init system default rules", rulePath);
+                initRuleService.loadRuleFromLocalFile();
+            }
         } catch (Exception e) {
             log.error("init system error", e);
         }
@@ -133,6 +133,9 @@ public class SystemInitializer {
         if (user == null) {
             User defaultUser = User.createDefaultUser();
             userRepository.save(defaultUser);
+        }else {
+            User.initDefaultUser(user);
+            userRepository.save(user);
         }
 
         user = userRepository.find(User.DEFAULT_USER_ID);

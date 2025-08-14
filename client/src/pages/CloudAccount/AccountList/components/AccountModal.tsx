@@ -1,207 +1,111 @@
-import I_KNOW from '@/assets/images/I_KNOW.png';
-import ConditionTag from '@/components/Common/ConditionTag';
+import { Modal, Form, Row, Col, Divider, Typography, Flex, ConfigProvider } from 'antd';
+import { useIntl } from 'umi';
+import styles from './index.less';
 import Disposition from '@/components/Disposition';
-import { JSON_EDITOR_LIST } from '@/pages/CloudAccount/AccountList/components/EditModalForm';
-import { cloudAccountDetailById } from '@/services/account/AccountController';
-import { queryGroupTypeList } from '@/services/resource/ResourceController';
+import ConditionTag from '@/components/Common/ConditionTag';
 import { IValueType } from '@/utils/const';
-import {
-  obtainPlatformIcon,
-  obtainResourceTypeTextFromValue,
-} from '@/utils/shared';
-import { useIntl, useModel, useRequest } from '@umijs/max';
-import {
-  Button,
-  Col,
-  ConfigProvider,
-  Divider,
-  Flex,
-  Form,
-  Modal,
-  Row,
-  Typography,
-} from 'antd';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import styles from '../../index.less';
+import { JSON_EDITOR_LIST } from '../config/platformConfig';
+
 const { Text } = Typography;
 
-interface IAccountModalProps {
-  accountModalVisible: boolean;
-  setAccountModalVisible: Dispatch<SetStateAction<boolean>>;
-  accountModalInfo: Record<string, any>;
+interface AccountModalProps {
+  accountInfo: any;
+  visible: boolean;
+  onCancel: () => void;
+  tenantListAll: IValueType[];
+  resourceTypeList: IValueType[];
 }
 
-// Cloud account details
-const AccountModal: React.FC<IAccountModalProps> = (props) => {
-  // Global Props
-  const { platformList } = useModel('rule');
-  const { tenantListAll } = useModel('tenant');
-  // Intl API
+const AccountModal: React.FC<AccountModalProps> = ({
+  accountInfo,
+  visible,
+  onCancel,
+  tenantListAll,
+  resourceTypeList,
+}) => {
   const intl = useIntl();
-  // Component List
-  const { accountModalVisible, accountModalInfo, setAccountModalVisible } =
-    props;
-  // ResourceTypeList
-  const [resourceTypeList, setResourceTypeList] = useState([]);
+  const [form] = Form.useForm();
 
-  // According to the cloud platform, obtain a list of resource types
-  const { run: requestResourceTypeList, loading: resourceTypeListLoading } =
-    useRequest(
-      (value: string) => {
-        return queryGroupTypeList({ platformList: [value] });
-      },
-      {
-        manual: true,
-        formatResult: (result) => {
-          const { content } = result;
-          setResourceTypeList((content as any) || []);
-          return content;
-        },
-      },
-    );
-
-  // Cloud Account Detail
-  const {
-    data: accountInfo,
-    run: requestCloudAccountDetailById,
-    loading: cloudAccountDetailLoading,
-  }: any = useRequest(
-    (id) => {
-      return cloudAccountDetailById({ id });
-    },
-    {
-      manual: true,
-      formatResult: (r: any) => {
-        return r.content || {};
-      },
-    },
-  );
-
-  const onClickCloseDrawerForm = (): void => {
-    setAccountModalVisible(false);
-  };
-
-  useEffect((): void => {
-    if (accountModalVisible) {
-      if (accountModalInfo?.platform) {
-        requestResourceTypeList(accountModalInfo?.platform);
-      }
-      if (accountModalInfo?.id) {
-        requestCloudAccountDetailById(accountModalInfo.id);
-      }
-    }
-  }, [accountModalVisible, accountModalInfo]);
+  const minHeight = JSON_EDITOR_LIST?.includes(accountInfo?.platform)
+    ? 600
+    : 500;
 
   return (
     <Modal
-      title={<img src={I_KNOW} alt="I_KNOW" className={styles['iKnow']} />}
-      width={600}
-      destroyOnClose
-      open={accountModalVisible}
-      closable={true}
-      onOk={onClickCloseDrawerForm}
-      onCancel={onClickCloseDrawerForm}
-      loading={resourceTypeListLoading || cloudAccountDetailLoading}
-      styles={{
-        body: {
-          minHeight: JSON_EDITOR_LIST?.includes(accountInfo?.platform)
-            ? 384
-            : 416,
-          paddingLeft: 36,
-          paddingRight: 36,
-        },
-      }}
-      footer={
-        <Button
-          type={'primary'}
-          onClick={onClickCloseDrawerForm}
-          style={{ padding: '6px 52px' }}
-        >
+      title={
+        <div style={{ fontSize: 16, fontWeight: 500 }}>
           {intl.formatMessage({
-            id: 'cloudAccount.extend.title.iKnow',
+            id: 'cloudAccount.extend.title.accountInfo',
           })}
-        </Button>
+        </div>
       }
-      wrapClassName={styles['accountModal']}
+      open={visible}
+      onCancel={onCancel}
+      footer={null}
+      width={800}
+      style={{ minHeight }}
+      destroyOnClose
     >
-      <Divider
-        style={{
-          margin: '18px 0 14px 0',
-          borderColor: '#457aff',
-          opacity: 0.25,
-        }}
-      />
       <ConfigProvider
         theme={{
           components: {
             Form: {
-              itemMarginBottom: 8,
-              labelColor: 'rgba(131, 131, 131, 1)',
-              labelColonMarginInlineEnd: 24,
+              labelColor: 'rgba(74, 74, 74, 1)',
+              colorTextHeading: 'rgba(74, 74, 74, 1)',
             },
           },
         }}
       >
-        <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
-          <Form.Item
-            label={intl.formatMessage({
-              id: 'cloudAccount.extend.title.account.id',
-            })}
-          >
-            <Text style={{ color: '#457aff', fontWeight: 'bold' }}>
-              {accountInfo?.cloudAccountId || '-'}
-            </Text>
-          </Form.Item>
-
-          <Form.Item
-            label={intl.formatMessage({
-              id: 'cloudAccount.extend.title.account.alias',
-            })}
-          >
-            <Text copyable style={{ color: 'rgba(74, 74, 74, 1)' }}>
-              {accountInfo?.alias || '-'}
-            </Text>
-          </Form.Item>
-
-          {!JSON_EDITOR_LIST?.includes(accountInfo?.platform) && (
-            <Form.Item label={'AK'}>
-              <Text style={{ color: 'rgba(74, 74, 74, 1)' }}>
-                {accountInfo?.ak || '-'}
-              </Text>
-            </Form.Item>
-          )}
-
-          <Form.Item
-            label={intl.formatMessage({
-              id: 'cloudAccount.extend.title.cloud.platform',
-            })}
-          >
-            <Flex>
-              <span style={{ marginRight: 12 }}>
-                {obtainPlatformIcon(accountInfo?.platform, platformList) || '-'}
-              </span>
-            </Flex>
-          </Form.Item>
-
-          <Row className={styles['basicInfoRow']}>
-            <Col span={12} className={styles['basicLeftRow']}>
+        <Form form={form} layout="vertical">
+          <Row>
+            <Col span={12}>
               <Row style={{ height: 44 }}>
                 <span className={styles['leftInfoLabel']}>
                   {intl.formatMessage({
-                    id: 'cloudAccount.extend.title.asset.type',
+                    id: 'cloudAccount.extend.title.accountId',
+                  })}
+                  &nbsp;:
+                </span>
+                <Disposition
+                  style={{ paddingTop: 11, color: '#457aff' }}
+                  text={accountInfo?.cloudAccountId || '-'}
+                  rows={1}
+                  maxWidth={100}
+                />
+              </Row>
+              <Row style={{ height: 44 }}>
+                <span className={styles['leftInfoLabel']}>
+                  {intl.formatMessage({
+                    id: 'cloudAccount.extend.title.alias',
+                  })}
+                  &nbsp;:
+                </span>
+                <Disposition
+                  style={{ paddingTop: 11, color: '#457aff' }}
+                  text={accountInfo?.alias || '-'}
+                  rows={1}
+                  maxWidth={100}
+                />
+              </Row>
+              <Row style={{ height: 44 }}>
+                <span className={styles['leftInfoLabel']}>
+                  {intl.formatMessage({
+                    id: 'cloudAccount.extend.title.platform',
                   })}
                   &nbsp;:
                 </span>
                 <Disposition
                   style={{ paddingTop: 11, color: '#457aff' }}
                   text={
-                    accountInfo?.resourceTypeListForWeb
-                      ?.map((item: any[]) => {
-                        return obtainResourceTypeTextFromValue(
-                          resourceTypeList,
-                          item,
-                        );
-                      })
+                    resourceTypeList
+                      ?.filter((item: IValueType): boolean =>
+                        item.value === accountInfo?.platform,
+                      )
+                      ?.map((item: IValueType): string =>
+                        intl.formatMessage({
+                          id: item.label,
+                        }),
+                      )
                       ?.toString() || '-'
                   }
                   rows={1}

@@ -22,8 +22,7 @@ import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.dto.SubscriptionDTO;
 import com.alipay.dao.po.*;
 import com.alipay.application.service.common.enums.SubscriptionType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -36,10 +35,9 @@ import java.util.List;
  *@create 2024/9/26 18:15
  */
 
+@Slf4j
 @Component
 public class RealTimeNotify extends Notify {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RealTimeNotify.class);
 
     public void execute(Long ruleId, String cloudAccountId, Long version) {
         RulePO rulePO = ruleMapper.selectByPrimaryKey(ruleId);
@@ -83,7 +81,7 @@ public class RealTimeNotify extends Notify {
             // Query risk and filter results
             List<RuleScanResultPO> ruleScanResultPOList = filterList(data, FilterParam.buildParam(rulePO, cloudAccountPO), subscriptionPO.getRuleConfigJson());
             if (ruleScanResultPOList.isEmpty()) {
-                LOGGER.info("ruleId {} cloudAccountId {} The rule scan result is empty and execution is skipped.", rulePO.getId(),
+                log.info("ruleId {} cloudAccountId {} The rule scan result is empty and execution is skipped.", rulePO.getId(),
                         cloudAccountPO.getCloudAccountId());
                 continue;
             }

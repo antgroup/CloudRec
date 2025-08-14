@@ -35,7 +35,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -199,15 +198,17 @@ public class RuleRepositoryImpl implements RuleRepository {
     public void saveOrgRule(RuleAgg ruleAgg) {
         // Update rule metadata information
         RulePO rulePO = ruleConverter.toPo(ruleAgg);
-        if (Strings.isEmpty(ruleAgg.getRuleCode())) {
+        if (ruleAgg.getId() == null) {
             ruleMapper.insertSelective(rulePO);
-        }
-        if (Strings.isNotEmpty(ruleAgg.getRuleCode())) {
+        } else {
             RulePO existRule = ruleMapper.findOne(ruleAgg.getRuleCode());
             if (existRule != null) {
                 rulePO.setId(existRule.getId());
                 rulePO.setGmtModified(new Date());
                 ruleMapper.updateByPrimaryKeySelective(rulePO);
+            } else {
+                // When RuleCode is not empty,But not exist in database, still should insert
+                ruleMapper.insertSelective(rulePO);
             }
         }
 
@@ -350,7 +351,7 @@ public class RuleRepositoryImpl implements RuleRepository {
         try {
             return loadAndRelation(localPath);
         } catch (Exception e) {
-            log.error("Failed to load local rules: {}", e.getMessage());
+            log.error("Failed to load local rules: {}", e.getMessage(), e);
             return List.of();
         }
     }
@@ -389,4 +390,22 @@ public class RuleRepositoryImpl implements RuleRepository {
         return ruleAggs;
     }
 
+    /**
+     * Is there a new rule
+     *
+     * @return true: there is a new rule, false: no new rule
+     */
+    @Override
+    public int existNewRule() {
+        int newRuleCount = 0;
+        List<RuleAgg> ruleList = findRuleListFromGitHub();
+        for (RuleAgg rule : ruleList) {
+            RulePO existRule = ruleMapper.findOne(rule.getRuleCode());
+            if (existRule == null) {
+                newRuleCount++;
+            }
+        }
+
+        return newRuleCount;
+    }
 }

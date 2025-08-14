@@ -32,8 +32,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,10 +48,9 @@ import java.util.Map;
  *@version 1.0
  *@create 2024/8/12 09:31
  */
+@Slf4j
 @Service
 public class ResourceDetailConfigServiceImpl implements ResourceDetailConfigService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceDetailConfigServiceImpl.class);
 
     @Resource
     private ResourceDetailConfigMapper resourceDetailConfigMapper;
@@ -143,7 +141,7 @@ public class ResourceDetailConfigServiceImpl implements ResourceDetailConfigServ
                 String value = JSON.toJSONString(read);
                 vo.setValue(value);
             } catch (Exception e) {
-                LOGGER.info("jsonpath error:{}", po.getPath());
+                log.warn("jsonpath error:{}", po.getPath(), e);
                 vo.setValue(e.getMessage());
             }
             networkList.add(vo);

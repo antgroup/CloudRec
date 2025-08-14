@@ -50,7 +50,7 @@ func GetCloudCenterResource() schema.Resource {
 func GetSasInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).Sas
 
-	machineTypes := []string{"ecs", "cloud_product"}
+	machineTypes := []string{"ecs"}
 	for _, machineType := range machineTypes {
 		var page int32 = 1
 		var count = 0

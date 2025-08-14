@@ -72,6 +72,11 @@ public class Registry {
      */
     private List<String> sites;
 
+    /**
+     * 健康状态
+     */
+    private HealthStatus healthStatus;
+
     @Getter
     @Setter
     public static class RegistryResponse {
@@ -85,5 +90,14 @@ public class Registry {
          * collector 状态
          */
         private String status;
+    }
+
+
+    @Getter
+    @Setter
+    public static class HealthStatus {
+        private String cpuUsage;
+        private String memoryUsage;
+        private String diskUsage;
     }
 }

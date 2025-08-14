@@ -92,6 +92,12 @@ public class AgentRegistryVO {
      */
     private String username;
 
+    /**
+     * 健康状态：CPU、内存、磁盘
+     *
+     */
+    private String healthStatus;
+
     public static AgentRegistryVO build(AgentRegistryPO agentRegistryPO) {
         if (agentRegistryPO == null) {
             return null;

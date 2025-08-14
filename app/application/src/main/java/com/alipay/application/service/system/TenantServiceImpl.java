@@ -16,34 +16,35 @@
  */
 package com.alipay.application.service.system;
 
+import com.alipay.application.service.system.domain.Tenant;
+import com.alipay.application.service.system.domain.User;
+import com.alipay.application.service.system.domain.enums.RoleNameType;
+import com.alipay.application.service.system.domain.enums.Status;
+import com.alipay.application.service.system.domain.repo.TenantRepository;
+import com.alipay.application.service.system.domain.repo.UserRepository;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.system.TenantVO;
 import com.alipay.application.share.vo.system.UserVO;
+import com.alipay.application.share.vo.user.InvitationCodeVO;
 import com.alipay.common.constant.TenantConstants;
 import com.alipay.common.exception.BizException;
 import com.alipay.common.exception.TenantEditException;
+import com.alipay.dao.context.UserInfoContext;
 import com.alipay.dao.dto.TenantDTO;
+import com.alipay.dao.mapper.InviteCodeMapper;
 import com.alipay.dao.mapper.TenantMapper;
-import com.alipay.dao.mapper.UserMapper;
+import com.alipay.dao.po.InviteCodePO;
 import com.alipay.dao.po.TenantPO;
 import com.alipay.dao.po.UserPO;
-import com.alipay.application.service.system.domain.Tenant;
-import com.alipay.application.service.system.domain.User;
-import com.alipay.application.service.system.domain.enums.Status;
-import com.alipay.application.service.system.domain.repo.TenantRepository;
-import com.alipay.application.service.system.domain.repo.UserRepository;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /*
@@ -54,10 +55,9 @@ import java.util.stream.Collectors;
  *@create 2024/6/13 17:44
  */
 
+@Slf4j
 @Service
 public class TenantServiceImpl implements TenantService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TenantServiceImpl.class);
 
     @Resource
     private TenantRepository tenantRepository;
@@ -69,7 +69,7 @@ public class TenantServiceImpl implements TenantService {
     private UserRepository userRepository;
 
     @Resource
-    private UserMapper userMapper;
+    private InviteCodeMapper inviteCodeMapper;
 
     @Override
     public ListVO<TenantVO> findList(TenantDTO tenantDTO) {
@@ -79,7 +79,8 @@ public class TenantServiceImpl implements TenantService {
             return listVO;
         }
 
-        if (tenantDTO.getPageLimit() !=null && tenantDTO.getPageLimit()) {
+        if (tenantDTO.getPageLimit() != null && tenantDTO.getPageLimit()) {
+            // 只返回当前用户加入的租户列表
             tenantDTO.setOffset();
             List<TenantPO> list = tenantMapper.findList(tenantDTO);
             List<TenantVO> collect = list.stream().map(TenantVO::toVO).sorted(tenantComparator()).collect(Collectors.toList());
@@ -95,6 +96,26 @@ public class TenantServiceImpl implements TenantService {
             listVO.setData(collect);
         }
         return listVO;
+    }
+
+    @Override
+    public List<TenantVO> findListV2(String userId) {
+        User user = userRepository.find(userId);
+        if (user == null) {
+            return List.of();
+        }
+
+        if (Objects.equals(user.getRoleName(), RoleNameType.admin)) {
+            List<TenantPO> list = tenantMapper.findAll();
+            return list.stream().map(TenantVO::toVO).sorted(tenantComparator()).toList();
+        } else {
+            List<TenantPO> list = tenantMapper.findListByUserId(userId);
+            if (CollectionUtils.isEmpty(list)) {
+                return List.of();
+            }
+
+            return list.stream().map(TenantVO::toVO).sorted(tenantComparator()).toList();
+        }
     }
 
     @Override
@@ -139,7 +160,7 @@ public class TenantServiceImpl implements TenantService {
         }
 
         tenantDTO.setOffset();
-        List<UserPO> list = userMapper.findMemberList(tenantDTO);
+        List<UserPO> list = tenantMapper.findMemberList(tenantDTO);
         List<UserVO> collect = list.stream().map(UserVO::toVo).toList();
         listVO.setTotal(count);
         listVO.setData(collect);
@@ -157,9 +178,38 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public ApiResponse<String> removeUser(Long uid, Long tenantId) {
-        tenantRepository.remove(uid, tenantId);
+    public ApiResponse<String> removeUser(String userId, Long tenantId) {
+        User user = userRepository.find(userId);
+        if (user == null) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "User does not exist:" + userId);
+        }
+
+        if (!permissionCheck(UserInfoContext.getCurrentUser().getUserId(), tenantId)) {
+            throw new BizException("No permission");
+        }
+        tenantRepository.remove(user.getId(), tenantId);
         return ApiResponse.SUCCESS;
+    }
+
+
+    /**
+     * 权限校验,租户管理员或者平台管理员可以操作
+     * @param userId 用户id
+     * @param tenantId 租户id
+     * @return true:有权限，false:无权限
+     */
+    private boolean permissionCheck(String userId, Long tenantId) {
+        boolean isTenantAdmin = tenantRepository.isTenantAdmin(UserInfoContext.getCurrentUser().getUserId(), tenantId);
+        if (isTenantAdmin) {
+            return true;
+        }
+
+        User user = userRepository.find(userId);
+        if (RoleNameType.admin.equals(user.getRoleName())) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -244,17 +294,17 @@ public class TenantServiceImpl implements TenantService {
 
         List<Tenant> tenantList = new ArrayList<>();
         //check before tenant&user
-        if(StringUtils.isNotBlank(tenantIds)){
+        if (StringUtils.isNotBlank(tenantIds)) {
             //check before tenant_user
             List<TenantPO> tenantPOList = tenantMapper.findListByUserId(user.getUserId());
-            for (TenantPO tenantPO : tenantPOList){
-                tenantRepository.remove(Long.valueOf(user.getId()), tenantPO.getId());
+            for (TenantPO tenantPO : tenantPOList) {
+                tenantRepository.remove(user.getId(), tenantPO.getId());
             }
 
             for (String tenantIdStr : StringUtils.split(tenantIds, ",")) {
                 Long tenantId = Long.valueOf(tenantIdStr);
                 Tenant tenant = tenantRepository.find(tenantId);
-                if(Objects.nonNull(tenant)){
+                if (Objects.nonNull(tenant)) {
                     tenantRepository.join(user.getId(), tenantId);
                     tenantList.add(tenant);
                 }
@@ -262,15 +312,78 @@ public class TenantServiceImpl implements TenantService {
         }
 
         //若没有符合的租户，默认设置default租户
-        if(CollectionUtils.isEmpty(tenantList)){
+        if (CollectionUtils.isEmpty(tenantList)) {
             joinDefaultTenant(userId);
             Tenant tenant = tenantRepository.find(TenantConstants.DEFAULT_TENANT);
             tenantList.add(tenant);
-        }else {
+        } else {
             //更新user携带租户
             user.setTenantId(tenantList.get(0).getId());
             userRepository.save(user);
         }
         return tenantList;
+    }
+
+    @Override
+    public void changeUserTenantRole(String roleName, Long tenantId, String userId) {
+        User user = userRepository.find(userId);
+        if (user == null) {
+            throw new BizException("User does not exist:" + userId);
+        }
+
+        Tenant tenant = tenantRepository.find(tenantId);
+        if (tenant == null) {
+            throw new BizException("Tenant does not exist:" + tenantId);
+        }
+
+        int count = tenantRepository.exist(userId, tenantId);
+        if (count == 0) {
+            throw new BizException("The user has not joined the tenant:" + tenantId);
+        }
+
+        boolean permissionCheck = permissionCheck(UserInfoContext.getCurrentUser().getUserId(), tenantId);
+        if (!permissionCheck) {
+            throw new BizException("No permission");
+        }
+
+        tenantRepository.changeUserTenantRole(roleName, tenantId, userId);
+    }
+
+    @Override
+    public String createInviteCode(Long tenantId) {
+        String code = UUID.randomUUID().toString();
+
+        InviteCodePO inviteCodePO = new InviteCodePO();
+        inviteCodePO.setCode(code);
+        inviteCodePO.setTenantId(tenantId);
+        inviteCodePO.setInviter(UserInfoContext.getCurrentUser().getUserId());
+        inviteCodeMapper.insertSelective(inviteCodePO);
+
+        return code;
+    }
+
+    @Override
+    public InvitationCodeVO checkInviteCode(String inviteCode) {
+        InviteCodePO inviteCodePO = inviteCodeMapper.findOne(inviteCode);
+        if (Objects.isNull(inviteCodePO)) {
+            throw new BizException("Invite code not found");
+        }
+
+        if (Strings.isNotBlank(inviteCodePO.getUserId())) {
+            throw new BizException("Invite code has been used");
+        }
+
+        InvitationCodeVO vo = InvitationCodeVO.toVO(inviteCodePO);
+        TenantPO tenantPO = tenantMapper.selectByPrimaryKey(inviteCodePO.getTenantId());
+        if (Objects.isNull(tenantPO)) {
+            throw new BizException("Tenant not found");
+        }
+        vo.setTenantName(tenantPO.getTenantName());
+
+        if (Strings.isNotEmpty(inviteCodePO.getInviter())) {
+            User user = userRepository.find(inviteCodePO.getInviter());
+            vo.setInviter(user != null ? user.getUsername() : "");
+        }
+        return vo;
     }
 }

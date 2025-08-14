@@ -25,16 +25,25 @@ import com.alipay.application.service.account.cloud.baidu.BaiduCredential;
 import com.alipay.application.service.account.cloud.gcp.GcpCredential;
 import com.alipay.application.service.account.cloud.hws.HwsCredential;
 import com.alipay.application.service.account.cloud.hwsprivate.HwsPrivateCredential;
-import com.alipay.application.service.account.cloud.tencent.TencentCredential;
 import com.alipay.application.service.account.cloud.ksyun.KsyunCredential;
+import com.alipay.application.service.account.cloud.tencent.TencentCredential;
+import com.alipay.application.service.common.utils.SpringUtils;
 import com.alipay.common.constant.MarkConstants;
 import com.alipay.common.enums.PlatformType;
+import com.alipay.dao.mapper.ResourceMapper;
+import com.alipay.dao.po.ResourcePO;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import software.amazon.awssdk.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /*
  *@title PlatformUtils
@@ -45,6 +54,8 @@ import java.util.Map;
  */
 @Slf4j
 public class PlatformUtils {
+
+    private static final ResourceMapper resourceMapper = SpringUtils.getBean(ResourceMapper.class);
 
     /**
      * Obtain account platform related parameters
@@ -103,12 +114,14 @@ public class PlatformUtils {
                     map.put("vpcEndpoint", hwsPrivateCredential.getVpcEndpoint());
                     map.put("obsEndpoint", hwsPrivateCredential.getObsEndpoint());
                     break;
-//                case PlatformType.Enum.My_Cloud_Provider:
-//                    [3] ADD_NEW_CLOUD : To adapt the logic of parsing authentication information, you need to add a class corresponding to the cloud platform authentication information
+
                 case PlatformType.Enum.KINGSOFT_CLOUD:
                     KsyunCredential ksyunCredential = new Gson().fromJson(credentialsJson, KsyunCredential.class);
                     map.put("ak", ksyunCredential.getAk());
                     map.put("sk", ksyunCredential.getSk());
+                    break;
+                //  case PlatformType.Enum.My_Cloud_Provider:
+                // [3] ADD_NEW_CLOUD : To adapt the logic of parsing authentication information, you need to add a class corresponding to the cloud platform authentication information
                 default:
                     throw new IllegalStateException("Unexpected value: " + platform);
             }
@@ -160,5 +173,30 @@ public class PlatformUtils {
         if (credentialsJson.contains(MarkConstants.mark)) {
             throw new IllegalArgumentException("please enter the correct key");
         }
+    }
+
+    public static Cache<String, List<String>> cache() {
+        return CacheBuilder.newBuilder()
+                .maximumSize(10)
+                .expireAfterWrite(60, TimeUnit.MINUTES)
+                .build();
+    }
+
+    public static List<String> getResourceType(String platform) {
+        // find from cache
+        List<String> resourceTypeList = cache().getIfPresent(platform);
+        if (resourceTypeList != null) {
+            return resourceTypeList;
+        }
+
+        List<ResourcePO> list = resourceMapper.findByPlatform(platform);
+        if (CollectionUtils.isEmpty(list)){
+            log.info("getResourceType is empty, platform: {}", platform);
+            cache().put(platform, new ArrayList<>());
+            return new ArrayList<>();
+        }
+        List<String> typeList = list.stream().map(ResourcePO::getResourceType).toList();
+        cache().put(platform, typeList);
+        return typeList;
     }
 }

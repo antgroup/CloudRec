@@ -34,7 +34,7 @@ func GetEipAddressesResource() schema.Resource {
 		Desc:               `https://api.aliyun.com/product/Ens`,
 		ResourceDetailFunc: ListEipAddressesResource,
 		RowField: schema.RowField{
-			ResourceId:   "$.EipAddress.InstanceId",
+			ResourceId:   "$.EipAddress.IpAddress",
 			ResourceName: "$.EipAddress.Name",
 			Address:      "$.EipAddress.IpAddress",
 		},

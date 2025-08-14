@@ -5,6 +5,7 @@ import com.alipay.dao.dto.IQueryResourceDTO;
 import com.alipay.dao.mapper.CloudResourceInstanceMapper;
 import com.alipay.dao.po.CloudResourceInstancePO;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -18,6 +19,7 @@ import java.util.List;
  *@version 1.0
  *@create 2025/6/26 22:19
  */
+@Slf4j
 @Service
 public class DelResourceServiceImpl implements DelResourceService {
 
@@ -35,6 +37,7 @@ public class DelResourceServiceImpl implements DelResourceService {
         int totalUpdated = 0;
         final int size = 1000;
         Long scrollId = 0L;
+
         while (true) {
             IQueryResourceDTO request = IQueryResourceDTO.builder()
                     .cloudAccountId(cloudAccountId)
@@ -52,8 +55,24 @@ public class DelResourceServiceImpl implements DelResourceService {
                     break;
                 }
                 scrollId = cloudResourceInstancePOS.get(cloudResourceInstancePOS.size() - 1).getId();
+                log.info("preDeleteByCloudAccountId, cloudAccountId:{}, scrollId:{}, effectCount:{}", cloudAccountId, scrollId, effectCount);
             }
         }
         return totalUpdated;
+    }
+
+
+    @Override
+    public void removeResource(String cloudAccountId) {
+        try {
+            while (true) {
+                int i = cloudResourceInstanceMapper.deleteByCloudAccountId(cloudAccountId);
+                if (i == 0) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            log.error("{} Failed to delete the resource", cloudAccountId, e);
+        }
     }
 }

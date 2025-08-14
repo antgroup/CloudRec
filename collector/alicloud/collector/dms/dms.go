@@ -18,7 +18,6 @@ package dms
 import (
 	"context"
 	dms "github.com/alibabacloud-go/dms-enterprise-20181101/client"
-	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -29,7 +28,7 @@ import (
 func GetDMSResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:       collector.DMS,
-		ResourceTypeName:   "DMS",
+		ResourceTypeName:   collector.DMS,
 		ResourceGroupType:  constant.DATABASE,
 		Desc:               "https://api.aliyun.com/product/dms-enterprise",
 		ResourceDetailFunc: GetInstanceDetail,
@@ -53,6 +52,10 @@ func GetDMSResource() schema.Resource {
 			"eu-west-1",
 			"me-east-1",
 		},
+		RowField: schema.RowField{
+			ResourceId:   "$.Tenant.Tid",
+			ResourceName: "$.Tenant.TenantName",
+		},
 		Dimension: schema.Regional,
 	}
 }
@@ -60,60 +63,94 @@ func GetDMSResource() schema.Resource {
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).DMS
 
-	resp := describeInstance(ctx, cli)
-	if resp == nil || len(resp.Instance) == 0 {
-		log.CtxLogger(ctx).Warn("DescribeInstance nil")
+	request := &dms.ListUserTenantsRequest{}
+	result, err := cli.ListUserTenants(request)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("ListUserTenants error", zap.Error(err))
 		return nil
 	}
 
-	res <- Detail{
-		User:         describeUser(ctx, cli),
-		Instance:     resp,
-		SecurityRule: describeStandardGroup(ctx, cli),
+	for _, t := range result.Body.TenantList {
+		res <- Detail{
+			Tenant:        t,
+			Users:         describeUser(ctx, cli, t.Tid),
+			Instances:     describeInstance(ctx, cli, t.Tid),
+			SecurityRules: describeStandardGroup(ctx, cli, t.Tid),
+		}
 	}
+
 	return nil
 }
 
 type Detail struct {
-	User         *dms.ListUsersResponseBodyUserList
-	Instance     *dms.ListInstancesResponseBodyInstanceList
-	SecurityRule []*dms.ListStandardGroupsResponseBodyStandardGroupList
+	// Tenant information
+	Tenant *dms.ListUserTenantsResponseBodyTenantList
+	// User information
+	Users *dms.ListUsersResponseBodyUserList
+	// Instance information
+	Instances []*dms.ListInstancesResponseBodyInstanceListInstance
+	// Security rule set information
+	SecurityRules []*dms.ListStandardGroupsResponseBodyStandardGroupList
 }
 
 // Get user information
-func describeUser(ctx context.Context, cli *dms.Client) *dms.ListUsersResponseBodyUserList {
-	listUsersRequest := &dms.ListUsersRequest{}
-	runtime := &util.RuntimeOptions{}
+func describeUser(ctx context.Context, cli *dms.Client, tid *int64) *dms.ListUsersResponseBodyUserList {
+	listUsersRequest := &dms.ListUsersRequest{
+		Tid: tid,
+	}
 
-	result, err := cli.ListUsersWithOptions(listUsersRequest, runtime)
+	result, err := cli.ListUsers(listUsersRequest)
 	if err != nil {
-		log.CtxLogger(ctx).Warn("ListUsersWithOptions error", zap.Error(err))
+		log.CtxLogger(ctx).Warn("ListUsers error", zap.Error(err))
 		return nil
 	}
 	return result.Body.UserList
 }
 
 // Get instance information
-func describeInstance(ctx context.Context, cli *dms.Client) *dms.ListInstancesResponseBodyInstanceList {
-	listInstancesRequest := &dms.ListInstancesRequest{}
-	runtime := &util.RuntimeOptions{}
+func describeInstance(ctx context.Context, cli *dms.Client, tid *int64) []*dms.ListInstancesResponseBodyInstanceListInstance {
+	pageNumber := int32(1)
+	pageSize := int32(100)
+	var result []*dms.ListInstancesResponseBodyInstanceListInstance
 
-	result, err := cli.ListInstancesWithOptions(listInstancesRequest, runtime)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("ListInstancesWithOptions error", zap.Error(err))
-		return nil
+	for {
+		listInstancesRequest := &dms.ListInstancesRequest{
+			Tid:        tid,
+			PageNumber: &pageNumber,
+			PageSize:   &pageSize,
+		}
+
+		resp, err := cli.ListInstances(listInstancesRequest)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("ListInstances error", zap.Error(err))
+			return nil
+		}
+
+		if resp.Body.InstanceList == nil || len(resp.Body.InstanceList.Instance) == 0 {
+			break
+		}
+
+		result = append(result, resp.Body.InstanceList.Instance...)
+
+		if resp.Body.TotalCount == nil || int64(len(result)) >= *resp.Body.TotalCount {
+			break
+		}
+
+		pageNumber++
 	}
-	return result.Body.InstanceList
+
+	return result
 }
 
 // Get security rule set information
-func describeStandardGroup(ctx context.Context, cli *dms.Client) []*dms.ListStandardGroupsResponseBodyStandardGroupList {
-	listStandardGroupsRequest := &dms.ListStandardGroupsRequest{}
-	runtime := &util.RuntimeOptions{}
+func describeStandardGroup(ctx context.Context, cli *dms.Client, tid *int64) []*dms.ListStandardGroupsResponseBodyStandardGroupList {
+	listStandardGroupsRequest := &dms.ListStandardGroupsRequest{
+		Tid: tid,
+	}
 
-	result, err := cli.ListStandardGroupsWithOptions(listStandardGroupsRequest, runtime)
+	result, err := cli.ListStandardGroups(listStandardGroupsRequest)
 	if err != nil {
-		log.CtxLogger(ctx).Warn("ListStandardGroupsWithOptions error", zap.Error(err))
+		log.CtxLogger(ctx).Warn("ListStandardGroups error", zap.Error(err))
 		return nil
 	}
 	return result.Body.StandardGroupList

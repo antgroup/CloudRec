@@ -49,15 +49,6 @@ public class SyncDataJob {
     private RuleGroupMapper ruleGroupMapper;
 
     @Resource
-    private ResourceMapper resourceMapper;
-
-    @Resource
-    private RuleScanResultMapper ruleScanResultMapper;
-
-    @Resource
-    private CloudResourceInstanceMapper cloudResourceInstanceMapper;
-
-    @Resource
     private List<DataProducer> dataProducers;
 
     public void syncCloudDataHandler() {

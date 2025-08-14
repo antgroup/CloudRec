@@ -22,20 +22,17 @@ import com.alipay.api.web.system.request.QueryTenantListRequest;
 import com.alipay.application.service.system.TenantService;
 import com.alipay.application.service.system.domain.Tenant;
 import com.alipay.application.service.system.domain.enums.Status;
-import com.alipay.application.share.request.admin.ChangeTenantRequest;
-import com.alipay.application.share.request.admin.JoinUserRequest;
-import com.alipay.application.share.request.admin.QueryMemberRequest;
-import com.alipay.application.share.request.admin.SaveTenantRequest;
+import com.alipay.application.share.request.admin.*;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.system.TenantVO;
 import com.alipay.application.share.vo.system.UserVO;
+import com.alipay.application.share.vo.user.InvitationCodeVO;
 import com.alipay.dao.context.UserInfoContext;
 import com.alipay.dao.context.UserInfoDTO;
 import com.alipay.dao.dto.TenantDTO;
 import jakarta.annotation.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -55,11 +52,6 @@ import java.util.List;
 @Validated
 public class TenantController {
 
-    /**
-     * logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(TenantController.class);
-
     @Resource
     private TenantService tenantService;
 
@@ -77,6 +69,16 @@ public class TenantController {
         BeanUtils.copyProperties(request, tenantDTO);
         ListVO<TenantVO> listVO = tenantService.findList(tenantDTO);
         return new ApiResponse<>(listVO);
+    }
+
+    /**
+     * Get a list of tenants
+     */
+    @AuthenticateToken
+    @PostMapping("/queryTenantListV2")
+    public ApiResponse<List<TenantVO>> findListV2(HttpServletRequest request) {
+        List<TenantVO> list = tenantService.findListV2(UserInfoContext.getCurrentUser().getUserId());
+        return new ApiResponse<>(list);
     }
 
     @GetMapping("/queryAllTenantList")
@@ -125,7 +127,6 @@ public class TenantController {
      *
      * @param request request
      */
-    @AdminPermissionLimit
     @PostMapping("/joinUser")
     public ApiResponse<String> joinUser(@Validated @RequestBody JoinUserRequest request, BindingResult error) {
         if (error.hasErrors()) {
@@ -139,13 +140,14 @@ public class TenantController {
     /**
      * Remove members
      *
-     * @param uid      User table primary key ID
-     * @param tenantId Tenant table primary key ID
      */
-    @AdminPermissionLimit
+    @AuthenticateToken
     @DeleteMapping("/removeUser")
-    public ApiResponse<String> removeUser(@RequestParam(name = "userId") Long uid, @RequestParam Long tenantId) {
-        return tenantService.removeUser(uid, tenantId);
+    public ApiResponse<String> removeUser(@RequestBody @Validated RemoveUserRequest request, BindingResult error) {
+        if (error.hasErrors()) {
+            return new ApiResponse<>(error);
+        }
+        return tenantService.removeUser(request.getUserId(), request.getTenantId());
     }
 
     /**
@@ -160,6 +162,20 @@ public class TenantController {
         return tenantService.changeTenant(UserInfoContext.getCurrentUser().getUserId(), changeTenantRequest.getTenantId());
     }
 
+
+    /**
+     * change tenant user role
+     */
+    @PostMapping("/changeUserTenantRole")
+    @AuthenticateToken
+    public ApiResponse<String> changeUserTenantRole(@Validated @RequestBody ChangeUserTenantRoleRequest request, BindingResult error) {
+        if (error.hasErrors()) {
+            return new ApiResponse<>(error);
+        }
+        tenantService.changeUserTenantRole(request.getRoleName(), request.getTenantId(), request.getUserId());
+        return ApiResponse.SUCCESS;
+    }
+
     /**
      * Query the list of tenants that the current user has joined
      */
@@ -170,4 +186,29 @@ public class TenantController {
         return tenantService.listAddedTenants(currentUser.getUserId());
     }
 
+    /**
+     * Create an inviteCode
+     *
+     * @return inviteCode
+     */
+    @PostMapping("/createInviteCode")
+    @AuthenticateToken
+    public ApiResponse<String> createInviteCode(@Validated @RequestBody CreateInviteCodeRequest request, BindingResult error) {
+        if (error.hasErrors()) {
+            return new ApiResponse<>(error);
+        }
+        String inviteCode = tenantService.createInviteCode(request.getCurrentTenantId());
+        return new ApiResponse<>(ApiResponse.SUCCESS_CODE, inviteCode, ApiResponse.SUCCESS.getMsg());
+    }
+
+    /**
+     * check inviteCode
+     */
+    @PostMapping("/checkInviteCode")
+    public ApiResponse<InvitationCodeVO> checkInviteCode(@Validated @RequestBody CheckInviteCodeRequest request, BindingResult error) {
+        if (error.hasErrors()) {
+            return new ApiResponse<>(error);
+        }
+        return new ApiResponse<>(tenantService.checkInviteCode(request.getInviteCode()));
+    }
 }

@@ -26,7 +26,6 @@ package com.alipay.application.service.rule;
 import com.alipay.application.service.rule.domain.RuleGroup;
 import com.alipay.application.service.rule.domain.repo.RuleGroupConverter;
 import com.alipay.application.service.rule.domain.repo.RuleGroupRepository;
-import com.alipay.application.service.rule.exposed.GroupJoinService;
 import com.alipay.application.share.request.rule.RuleGroupRequest;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
@@ -64,9 +63,6 @@ public class RuleGroupServiceImpl implements RuleGroupService {
     private RuleGroupRepository ruleGroupRepository;
     @Resource
     private RuleGroupConverter ruleGroupConverter;
-    @Resource
-    private GroupJoinService groupJoinService;
-
 
     @Transactional(rollbackFor = Exception.class)
     @Override

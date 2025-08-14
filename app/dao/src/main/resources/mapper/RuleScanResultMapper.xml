@@ -285,15 +285,53 @@
     </select>
 
 
+  <select id="listRuleStatistics" resultType="com.alipay.dao.dto.RuleStatisticsDTO">
+      SELECT
+      rsr.rule_id AS ruleId,r.rule_name AS ruleName,count(rsr.id) as count,r.rule_desc AS ruleDesc,r.risk_level AS
+      riskLevel,r.rule_code AS ruleCode
+      FROM rule_scan_result rsr
+      INNER JOIN rule r on r.id = rsr.rule_id AND r.status = "valid"
+      INNER JOIN ( SELECT DISTINCT rule_code FROM tenant_rule ) tr on tr.rule_code = r.rule_code
+      <include refid="findListWhere"/>
+      GROUP BY r.id
+      HAVING count > 0
+      ORDER BY count DESC
+  </select>
+
+  <select id="listCloudAccountStatistics" resultType="com.alipay.dao.dto.CloudAccountStatisticsDTO">
+      SELECT
+      rsr.cloud_account_id AS cloudAccountId,count(rsr.id) as count,ca.alias AS alias
+      FROM rule_scan_result rsr
+      INNER JOIN rule r on r.id = rsr.rule_id AND r.status = "valid"
+      INNER JOIN ( SELECT DISTINCT rule_code FROM tenant_rule ) tr on tr.rule_code = r.rule_code
+      INNER JOIN cloud_account ca on ca.cloud_account_id = rsr.cloud_account_id
+      <include refid="findListWhere"/>
+      GROUP BY rsr.cloud_account_id
+      HAVING count > 0
+      ORDER BY count DESC
+  </select>
+
+    <select id="listResourceTypeStatistics" resultType="com.alipay.dao.dto.ResourceTypeStatisticsDTO">
+        SELECT
+        rsr.resource_type AS resourceType,count(rsr.id) as count
+        FROM rule_scan_result rsr
+        INNER JOIN rule r on r.id = rsr.rule_id AND r.status = "valid"
+        INNER JOIN ( SELECT DISTINCT rule_code FROM tenant_rule ) tr on tr.rule_code = r.rule_code
+        <include refid="findListWhere"/>
+        GROUP BY rsr.resouce_type
+        HAVING count > 0
+        ORDER BY count DESC
+    </select>
+    
     <select id="findCount" resultType="java.lang.Integer">
         SELECT COUNT(*)
-        FROM rule_scan_result rsr INNER JOIN rule r on r.id = rsr.rule_id
+        FROM rule_scan_result rsr INNER JOIN rule r on r.id = rsr.rule_id AND r.status = "valid"
         <include refid="findListWhere"></include>
     </select>
     <select id="findList" resultMap="ResultMapWithBLOBs">
         SELECT
         rsr.*
-        FROM rule_scan_result rsr INNER JOIN rule r on r.id = rsr.rule_id
+        FROM rule_scan_result rsr INNER JOIN rule r on r.id = rsr.rule_id AND r.status = "valid"
         <include refid="findListWhere"></include>
         ORDER BY rsr.id DESC
         <include refid="com.alipay.dao.mapper.RuleMapper.getListLimit"></include>
@@ -391,12 +429,15 @@
 
     <sql id="findListWhere">
         <where>
-            r.status = "valid"
+            1=1
             <if test="cloudAccountIdList != null and cloudAccountIdList.size() > 0">
                 AND rsr.cloud_account_id IN
                 <foreach collection="cloudAccountIdList" item="cloudAccountId" open="(" separator="," close=")">
                     #{cloudAccountId}
                 </foreach>
+            </if>
+            <if test="cloudAccountId != null and cloudAccountId != ''">
+                AND rsr.cloud_account_id = #{cloudAccountId}
             </if>
             <if test="ruleId != null">
                 AND rsr.rule_id = #{ruleId,jdbcType=BIGINT}
@@ -514,7 +555,7 @@
     <delete id="deleteByCloudAccountId">
         DELETE
         FROM rule_scan_result
-        WHERE cloud_account_id = #{cloudAccountId}
+        WHERE cloud_account_id = #{cloudAccountId} LIMIT 10000
     </delete>
     <delete id="cancelIgnoreRisk">
         UPDATE rule_scan_result
@@ -535,6 +576,13 @@
           AND resource_type = #{resourceType} LIMIT 1000
     </delete>
 
+    <delete id="deleteByRuleIdAndTenantId">
+        DELETE
+        FROM rule_scan_result
+        WHERE rule_id = #{ruleId}
+          AND tenant_id = #{tenantId}
+    </delete>
+
     <select id="findListWithScrollId" resultMap="ResultMapWithBLOBs">
         SELECT
         <include refid="Base_Column_List"></include>
@@ -548,6 +596,12 @@
             </if>
             <if test="status != null and status != ''">
                 AND status = #{status}
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                AND status IN
+                <foreach collection="statusList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="tenantId != null">
                 AND tenant_id = #{tenantId}
@@ -605,16 +659,6 @@
 
     </update>
 
-    <select id="listRuleStatistics" resultType="com.alipay.dao.dto.RuleStatisticsDTO">
-        SELECT
-        rsr.rule_id AS ruleId,r.rule_name AS ruleName,count(rsr.id) as count,r.rule_desc AS ruleDesc,r.risk_level AS
-        riskLevel
-        FROM rule_scan_result rsr INNER JOIN rule r on r.id = rsr.rule_id
-        <include refid="findListWhere"/>
-        GROUP BY r.id
-        HAVING count > 0
-        ORDER BY count DESC
-    </select>
     <select id="findBaseInfoWithScrollId" resultMap="ResultMapWithBLOBs">
         SELECT
         id, gmt_create, gmt_modified, rule_id, cloud_account_id, resource_id, resource_name,
@@ -659,5 +703,6 @@
         ORDER BY id ASC
         limit #{limit}
     </select>
+
 
 </mapper>

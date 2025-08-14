@@ -47,4 +47,18 @@ public interface TenantRepository {
     void join(Long uid, Long tenantId);
 
     void remove(Long uid, Long tenantId);
+
+    boolean isSelected(Long tenantId, String ruleCode);
+
+    boolean isDefaultRule(String ruleCode);
+
+    Tenant findGlobalTenant();
+
+    void removeSelectedRule(Long tenantId, String ruleCode);
+
+    List<String> findSelectTenantList(String ruleCode);
+
+    boolean isTenantAdmin(String userId, Long tenantId);
+
+    void changeUserTenantRole(String roleName, Long tenantId, String userId);
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2] - 2025-08-12
+- Improve the timeliness of asset collection in the case of multiple accounts
+- Collection of abnormal logs and manual cloud account-triggered collection tasks
+- Optimized frontend interaction and display for better user experience
+- Other bug fixes
+
 ## [0.1] - 2025-05-01
 - Project initialization, foundational features launched, establishing the platform architecture.
 - Cloud Account Management: Supports creation and query of cloud accounts, enabling unified management in multi-cloud environments, enhancing account security and traceability.

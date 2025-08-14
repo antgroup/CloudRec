@@ -18,7 +18,6 @@ package com.alipay.application.service.risk;
 
 import com.alipay.common.enums.Action;
 import com.alipay.common.enums.LogType;
-import com.alipay.common.exception.BizException;
 import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.mapper.OperationLogMapper;
 import com.alipay.dao.mapper.RuleScanResultMapper;
@@ -132,7 +131,6 @@ public class RiskStatusManager {
     public void unrepairedToIgnored(Long id, String operator, String ignoreReasonType, String ignoreReason) {
         RiskStatus riskStatus = getRiskStatus(id);
         if (riskStatus != RiskStatus.UNREPAIRED) {
-            log.info("The current risk state is not an unrepaired state, id: {}", id);
             return;
         }
 
@@ -155,7 +153,6 @@ public class RiskStatusManager {
     public void ignoredToUnrepaired(Long id, String operator) {
         RiskStatus riskStatus = getRiskStatus(id);
         if (riskStatus != RiskStatus.IGNORED) {
-            log.info("The current risk state is not an ignored state, id: {}", id);
             return;
         }
 
@@ -190,7 +187,6 @@ public class RiskStatusManager {
     public RiskStatus getRiskStatus(Long id) {
         RuleScanResultPO ruleScanResultPO = ruleScanResultMapper.selectByPrimaryKey(id);
         if (ruleScanResultPO == null) {
-            log.info("The current risk state is not a valid id, id: {}", id);
             return null;
         }
 

@@ -22,14 +22,13 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
+@Slf4j
 public class TokenUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TokenUtil.class);
 
     private static final long EXPIRE_TIME = 24L * 60 * 60 * 1000 * 31 * 12;
 
@@ -44,7 +43,7 @@ public class TokenUtil {
             token = JWT.create().withIssuer("auth0").withClaim("username", username).withClaim("userId", userId)
                     .withExpiresAt(expiresAt).sign(Algorithm.HMAC256(SecretKeyUtil.JWT_SECRET_KEY_ENCRYPT_VALUE));
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            log.error(e.getMessage());
         }
         return token;
     }
@@ -60,7 +59,7 @@ public class TokenUtil {
                     .withClaim("roleName", roleName).withExpiresAt(expiresAt)
                     .sign(Algorithm.HMAC256(SecretKeyUtil.JWT_SECRET_KEY_ENCRYPT_VALUE));
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            log.error(e.getMessage());
         }
         return token;
     }

@@ -10,10 +10,11 @@
         <result column="registry_value" jdbcType="VARCHAR" property="registryValue"/>
         <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
         <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="collect_record_info" jdbcType="TIMESTAMP" property="collectRecordInfo"/>
     </resultMap>
     <sql id="Base_Column_List">
         id
-        , gmt_create, gmt_modified, platform, cloud_account_id,registry_value, start_time, end_time
+        , gmt_create, gmt_modified, platform, cloud_account_id,registry_value, start_time, end_time, collect_record_info
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
@@ -21,7 +22,7 @@
         from collector_record
         where id = #{id,jdbcType=BIGINT}
     </select>
-    <select id="findLastOne" resultType="com.alipay.dao.po.CollectorRecordPO">
+    <select id="findLastOne" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM collector_record WHERE cloud_account_id = #{cloudAccountId,jdbcType=VARCHAR}
@@ -61,6 +62,9 @@
             <if test="endTime != null">
                 end_time,
             </if>
+            <if test="collectRecordInfo != null">
+                collect_record_info,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -87,6 +91,9 @@
             <if test="endTime != null">
                 #{endTime,jdbcType=TIMESTAMP},
             </if>
+            <if test="collectRecordInfo != null">
+                #{collectRecordInfo,jdbcType=VARCHAR},
+            </if>
         </trim>
     </insert>
     <update id="updateByPrimaryKeySelective" parameterType="com.alipay.dao.po.CollectorRecordPO">
@@ -112,6 +119,9 @@
             </if>
             <if test="endTime != null">
                 end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="collectRecordInfo != null">
+                collect_record_info = #{collectRecordInfo,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=BIGINT}

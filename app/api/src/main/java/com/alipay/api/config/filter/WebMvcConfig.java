@@ -47,17 +47,25 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private LocaleChangeInterceptor localeChangeInterceptor;
     @Resource
     private LangContextInterceptor langContextInterceptor;
+    @Resource
+    private OpenApiInterceptor openApiInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 添加国际化拦截器
         registry.addInterceptor(localeChangeInterceptor);
+        // 添加语言上下文拦截器
         registry.addInterceptor(langContextInterceptor);
+        // 添加OpenApi拦截器，用于检测@OpenApi注解
+        registry.addInterceptor(openApiInterceptor).addPathPatterns("/api/**");
+        // 添加权限拦截器，但OpenApi拦截器已经处理过的请求将被放行
         registry.addInterceptor(permissionInterceptor).addPathPatterns("/api/**")
                 .excludePathPatterns("/api/agent/**")
                 .excludePathPatterns("/api/user/queryUserInfo")
                 .excludePathPatterns("/api/user/login")
-                .excludePathPatterns("/api/open/v1/**")
-                .excludePathPatterns("/api/cloudAccount/acceptCloudAccount");
+                .excludePathPatterns("/api/user/register")
+                .excludePathPatterns("/api/tenant/checkInviteCode")
+                .excludePathPatterns("/api/open/v1/**");
     }
 
     @Override

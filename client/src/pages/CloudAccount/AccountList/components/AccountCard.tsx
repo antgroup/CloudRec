@@ -43,6 +43,7 @@ const AccountCard = (props: IAccountCard) => {
     accountStatus,
     tenantName,
     resourceCount,
+    riskCount,
     lastScanTime,
     collectorStatus,
     gmtCreate,
@@ -197,22 +198,41 @@ const AccountCard = (props: IAccountCard) => {
                 id: 'cloudAccount.extend.title.asset.number',
               })}
             </div>
-            <Disposition
-              text={resourceCount}
-              maxWidth={81}
-              rows={1}
-              style={{
-                color: '#457AFF',
-                fontSize: 13,
-              }}
-              link={true}
-              onClickCallBackFunc={() =>
-                history.push(
-                  `/assetManagement/assetList?platform=${platform}&cloudAccountId=${cloudAccountId}`,
-                )
-              }
-              placement={'topLeft'}
-            />
+            <Flex align="center" gap={8}>
+              <Disposition
+                text={resourceCount}
+                maxWidth={70}
+                rows={1}
+                style={{
+                  color: '#457AFF',
+                  fontSize: 12,
+                }}
+                link={true}
+                onClickCallBackFunc={() =>
+                  history.push(
+                    `/assetManagement/assetList?platform=${platform}&cloudAccountId=${cloudAccountId}`,
+                  )
+                }
+                placement={'topLeft'}
+              />
+              <Divider type="vertical" style={{ margin: 0, height: 12 }} />
+              <Disposition
+                text={riskCount}
+                maxWidth={70}
+                rows={1}
+                style={{
+                  color: '#ff4d4f',
+                  fontSize: 12,
+                }}
+                link={true}
+                onClickCallBackFunc={() =>
+                  history.push(
+                    `/riskManagement/riskList?platform=${platform}&cloudAccountId=${cloudAccountId}`,
+                  )
+                }
+                placement={'topLeft'}
+              />
+            </Flex>
           </Col>
           <Col span={14} className={styles['propertyWrap']}>
             <div className={styles['propertyName']}>

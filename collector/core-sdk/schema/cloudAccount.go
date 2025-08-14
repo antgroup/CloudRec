@@ -16,10 +16,10 @@
 package schema
 
 import (
+	"encoding/json"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/utils"
-	"encoding/json"
 	"go.uber.org/zap"
 )
 
@@ -35,7 +35,12 @@ type CloudAccount struct {
 
 	CollectRecordId int64
 
+	CollectRecordInfo CollectRecordInfo
+
 	TaskId int64
+
+	// proxy configuration,json format,such as: {"host":"127.0.0.1","port":"8080","username":"admin","password":"admin"}
+	ProxyConfig string
 
 	// common cloud account auth info
 	CommonCloudAccountAuthParam CommonCloudAccountAuthParam
@@ -61,6 +66,8 @@ type CommonCloudAccountAuthParam struct {
 }
 
 type CloudAccountParam struct {
+	CollectRecordInfo CollectRecordInfo
+
 	// cloud account id
 	CloudAccountId string
 
@@ -69,6 +76,9 @@ type CloudAccountParam struct {
 
 	// such as: "EC2", "ECS", "RDS"...
 	ResourceType string
+
+	// proxy configuration,json format,such as:schema://user:password@host:port
+	ProxyConfig string
 
 	// common cloud account auth info
 	CommonCloudAccountParam CommonCloudAccountAuthParam
@@ -127,9 +137,11 @@ type HwsPrivateCloudAccountAuthParam struct {
 // Get cloud account operation parameters, compatible with multi-cloud
 func getCloudAccountParam(cloudAccount CloudAccount, region string, resourceType string) (CloudAccountParam, error) {
 	cloudAccountParam := CloudAccountParam{
-		CloudAccountId: cloudAccount.CloudAccountId,
-		Platform:       cloudAccount.Platform,
-		ResourceType:   resourceType,
+		CloudAccountId:    cloudAccount.CloudAccountId,
+		Platform:          cloudAccount.Platform,
+		ResourceType:      resourceType,
+		ProxyConfig:       cloudAccount.ProxyConfig,
+		CollectRecordInfo: cloudAccount.CollectRecordInfo,
 	}
 
 	switch cloudAccount.Platform {

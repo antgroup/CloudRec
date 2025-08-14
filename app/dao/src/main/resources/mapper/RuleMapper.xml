@@ -298,22 +298,6 @@
         FROM rule
     </select>
 
-    <!--    暂时保留观察-->
-    <!--    <select id="findSortList" resultMap="ResultMapWithBLOBs">-->
-    <!--        SELECT-->
-    <!--        r.*,r.risk_count as riskCount-->
-    <!--        from rule r INNER JOIN rule_group_rel rgr ON r.id = rgr.rule_id INNER JOIN rule_group rg ON rgr.rule_group_id =-->
-    <!--        rg.id-->
-    <!--        <include refid="getLitWhere"></include>-->
-    <!--        GROUP BY r.id-->
-    <!--        <if test="sortParam!= null and sortParam != ''">-->
-    <!--            ORDER BY ${sortParam} ${sortType}-->
-    <!--        </if>-->
-    <!--        <if test=" sortParam == null or sortParam == ''">-->
-    <!--            ORDER BY r.id DESC-->
-    <!--        </if>-->
-    <!--        <include refid="getListLimit"></include>-->
-    <!--    </select>-->
     <select id="findSortList" resultMap="ResultMapWithBLOBsV2">
         SELECT
         r.*,
@@ -334,27 +318,6 @@
         </if>
         <include refid="getListLimit"></include>
     </select>
-    <!--    暂时保留观察-->
-    <!--    <select id="findSortListByTenant" resultMap="ResultMapWithBLOBs">-->
-    <!--        SELECT-->
-    <!--        r.*,-->
-    <!--        count(distinct rsr.id) AS riskCount-->
-    <!--        from rule r INNER JOIN rule_group_rel rgr ON r.id = rgr.rule_id INNER JOIN rule_group rg ON rgr.rule_group_id =-->
-    <!--        rg.id-->
-    <!--        LEFT JOIN rule_scan_result rsr ON r.id = rsr.rule_id AND rsr.status = "UNREPAIRED"-->
-    <!--        <if test="tenantId != null">-->
-    <!--            and rsr.tenant_id = #{tenantId}-->
-    <!--        </if>-->
-    <!--        <include refid="getLitWhere"></include>-->
-    <!--        GROUP BY r.id-->
-    <!--        <if test="sortParam!= null and sortParam != ''">-->
-    <!--            ORDER BY ${sortParam} ${sortType}-->
-    <!--        </if>-->
-    <!--        <if test=" sortParam == null or sortParam == ''">-->
-    <!--            ORDER BY r.id DESC-->
-    <!--        </if>-->
-    <!--        <include refid="getListLimit"></include>-->
-    <!--    </select>-->
 
     <select id="findOne" resultMap="ResultMapWithBLOBs">
         SELECT

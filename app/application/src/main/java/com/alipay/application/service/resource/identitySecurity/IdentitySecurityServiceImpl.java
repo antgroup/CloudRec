@@ -55,7 +55,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class IdentitySecurityServiceImpl implements IdentitySecurityService {
-
     @Resource
     private IdentitySecurityMapper identitySecurityMapper;
     @Resource
@@ -66,6 +65,7 @@ public class IdentitySecurityServiceImpl implements IdentitySecurityService {
     private CloudResourceInstanceMapper cloudResourceInstanceMapper;
     @Resource
     private RuleTypeMapper ruleTypeMapper;
+
     @Resource
     private DbCacheUtil dbCacheUtil;
 
@@ -185,49 +185,6 @@ public class IdentitySecurityServiceImpl implements IdentitySecurityService {
         return res;
     }
 
-    @Override
-    public List<IdentityCardVO> queryIdentityCardList(QueryIdentityCardRequest request) {
-
-        //默认需要缓存
-        String key = CacheUtil.buildKey(dbCacheKey, UserInfoContext.getCurrentUser().getUserTenantId(), String.join(",", request.getPlatformList()), request.getPage(), request.getSize());
-        DbCachePO dbCachePO = dbCacheUtil.get(key);
-        if (dbCachePO != null) {
-            List<IdentityCardVO> list = JSON.parseObject(dbCachePO.getValue(), new TypeReference<>() {
-            });
-            return list;
-        }
-
-        RuleTypePO ruleTypePO = ruleTypeMapper.findByTypeName(RuleType.identity_security.getRuleType());
-        RuleDTO ruleDTO = RuleDTO.builder().build();
-        BeanUtils.copyProperties(request, ruleDTO);
-        ruleDTO.setRuleTypeIdList(Arrays.asList(ruleTypePO.getId()));
-        ruleDTO.setStatus(Status.valid.name());
-        ruleDTO.setResourceTypeList(IdentitySecurityConfig.getResourceTypeByPlatformList(request.getPlatformList()));
-        ruleDTO.setSize(100);
-        List<RulePO> list = ruleMapper.findSortList(ruleDTO);
-
-        IdentitySecurityDTO identitySecurityDTO = new IdentitySecurityDTO();
-        identitySecurityDTO.setPlatformList(request.getPlatformList());
-        List<IdentitySecurityPO> identitySecurityPOS = Optional.ofNullable(identitySecurityMapper.queryRuIdsList(identitySecurityDTO)).orElse(Collections.emptyList());
-        Map<String, List<IdentitySecurityPO>> ruleIdToCloudUserMap = identitySecurityPOS.stream().collect(Collectors.groupingBy(IdentitySecurityPO::getRuleIds));
-
-        List<IdentityCardVO> identityCardVOList = new ArrayList<>();
-        for (RulePO rulePO : list){
-            IdentityCardVO identityCardVO = new IdentityCardVO();
-            identityCardVO.setRuleId(rulePO.getId());
-            identityCardVO.setRuleCode(rulePO.getRuleCode());
-            identityCardVO.setRuleName(rulePO.getRuleName());
-            identityCardVO.setPlatform(rulePO.getPlatform());
-            identityCardVO.setRiskLevel(rulePO.getRiskLevel());
-            identityCardVO.setUserCount(getCloudUserCount(rulePO, ruleIdToCloudUserMap));
-            identityCardVOList.add(identityCardVO);
-        }
-        if(dbCachePO == null){
-            dbCacheUtil.put(key, identityCardVOList);
-        }
-        return identityCardVOList;
-    }
-
 
     @Override
     public List<IdentityCardVO> queryIdentityCardListWithRulds(QueryIdentityCardRequest request) {
@@ -235,18 +192,18 @@ public class IdentitySecurityServiceImpl implements IdentitySecurityService {
         String key = CacheUtil.buildKey(dbCacheKey, UserInfoContext.getCurrentUser().getUserTenantId(), String.join(",", request.getPlatformList()), request.getPage(), request.getSize());
         DbCachePO dbCachePO = dbCacheUtil.get(key);
         if (dbCachePO != null) {
-            List<IdentityCardVO> list = JSON.parseObject(dbCachePO.getValue(), new TypeReference<>() {
+            return JSON.parseObject(dbCachePO.getValue(), new TypeReference<>() {
             });
-            return list;
         }
         RuleTypePO ruleTypePO = ruleTypeMapper.findByTypeName(RuleType.identity_security.getRuleType());
         RuleDTO ruleDTO = RuleDTO.builder().build();
         BeanUtils.copyProperties(request, ruleDTO);
-        ruleDTO.setRuleTypeIdList(Arrays.asList(ruleTypePO.getId()));
+        ruleDTO.setRuleTypeIdList(Collections.singletonList(ruleTypePO.getId()));
         ruleDTO.setStatus(Status.valid.name());
         ruleDTO.setResourceTypeList(IdentitySecurityConfig.getResourceTypeByPlatformList(request.getPlatformList()));
         ruleDTO.setSize(100);
         List<RulePO> list = ruleMapper.findSortList(ruleDTO);
+
 
         List<IdentityCardVO> identityCardVOList = new ArrayList<>();
         for (RulePO rulePO : list){
@@ -266,9 +223,8 @@ public class IdentitySecurityServiceImpl implements IdentitySecurityService {
             identityCardVO.setUserCount(identitySecurityMapper.countRuId(identitySecurityDTO));
             identityCardVOList.add(identityCardVO);
         }
-        if(dbCachePO == null){
-            dbCacheUtil.put(key, identityCardVOList);
-        }
+
+        dbCacheUtil.put(key, identityCardVOList);
         return identityCardVOList;
     }
 

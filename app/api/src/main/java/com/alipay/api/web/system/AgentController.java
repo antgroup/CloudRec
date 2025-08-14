@@ -28,8 +28,6 @@ import com.alipay.application.share.vo.collector.AgentRegistryVO;
 import com.alipay.application.share.vo.collector.OnceTokenVO;
 import com.alipay.dao.dto.AgentRegistryDTO;
 import jakarta.annotation.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -48,11 +46,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/agentApi")
 public class AgentController {
-
-    /**
-     * logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgentController.class);
 
     @Resource
     private AgentService agentService;

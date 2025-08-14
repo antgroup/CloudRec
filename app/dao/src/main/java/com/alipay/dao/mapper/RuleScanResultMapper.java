@@ -124,4 +124,9 @@ public interface RuleScanResultMapper {
 
     List<RuleStatisticsDTO> listRuleStatistics(RuleScanResultDTO dto);
 
+    int deleteByRuleIdAndTenantId(@Param("ruleId") Long ruleId,@Param("tenantId") Long tenantId);
+
+    List<CloudAccountStatisticsDTO> listCloudAccountStatistics(RuleScanResultDTO dto);
+
+    List<ResourceTypeStatisticsDTO> listResourceTypeStatistics(RuleScanResultDTO dto);
 }

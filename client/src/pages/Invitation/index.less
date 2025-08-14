@@ -1,0 +1,176 @@
+.invitation {
+  height: 100vh;
+
+  :global {
+    .ant-pro-grid-content {
+      height: 100%;
+      .ant-pro-grid-content-children {
+        height: 100%;
+      }
+    }
+    .ant-pro-form-login-page {
+      .ant-pro-form-login-page {
+        .ant-pro-form-login-page-notice {
+          flex: unset;
+        }
+        .ant-pro-form-login-page-container {
+          .ant-pro-form-login-page-header {
+            display: unset;
+            .ant-pro-form-login-page-logo {
+              display: block;
+              margin: 0 auto;
+              > img {
+                width: 44px;
+                height: 44px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.invitationContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.invitationCard {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 32px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loadingText {
+  font-size: 16px;
+  color: #666;
+}
+
+.errorContainer {
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 48px;
+  color: #ff4d4f;
+  margin-bottom: 16px;
+}
+
+.errorTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.errorMessage {
+  font-size: 14px;
+  color: #666;
+}
+
+.autoJoinContainer {
+  text-align: center;
+}
+
+.successIcon {
+  font-size: 48px;
+  color: #52c41a;
+  margin-bottom: 16px;
+}
+
+.autoJoinTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.autoJoinMessage {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.registerForm {
+  .ant-form-item {
+    margin-bottom: 20px;
+  }
+  
+  .ant-input {
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    
+    &:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+  }
+  
+  .ant-btn {
+    height: 44px;
+    border-radius: 8px;
+    font-weight: 500;
+    
+    &.ant-btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      
+      &:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      }
+    }
+  }
+}
+
+.formTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .invitationCard {
+    padding: 24px;
+    margin: 16px;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+}

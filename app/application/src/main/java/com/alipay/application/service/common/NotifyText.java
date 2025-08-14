@@ -24,14 +24,13 @@ import com.dingtalk.api.response.OapiRobotSendResponse;
 import com.taobao.api.ApiException;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -46,9 +45,8 @@ import java.util.List;
  */
 @Getter
 @Setter
+@Slf4j
 public class NotifyText {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotifyText.class);
 
     /**
      * 规则名称
@@ -353,18 +351,18 @@ public class NotifyText {
     }
 
     public static void notify(String type, String url, String title, String text) {
-        LOGGER.info("开始告警 title: {} type: {}", title, type);
+        log.info("Start alerting title: {} type: {}", title, type);
         if (SubscriptionType.Action.dingGroup.name().equals(type)) {
-            LOGGER.info("开始钉钉群告警 notifyText: {}", text);
+            log.info("Start DingTalk Group Alert notifyText: {}", text);
             sendDingMessage(url, title, text);
         }
 
         if (SubscriptionType.Action.wechat.name().equals(type)) {
             text = text.replaceAll("---------------------------------------------", "");
-            LOGGER.info("开始企业微信群告警 notifyText: {}", text);
+            log.info("Start an alert from the WeChat group of enterprises notifyText: {}", text);
             sendWeChatMessage(url, text);
         }
-        LOGGER.info("完成告警 title: {} type: {}", title, type);
+        log.info("Complete the alarm title: {} type: {}", title, type);
     }
 
     /**
@@ -385,13 +383,13 @@ public class NotifyText {
             request.setAt(at);
             OapiRobotSendResponse response = client.execute(request);
             if (!response.isSuccess()) {
-                LOGGER.error("钉钉告警发送结果:{}", response.getErrmsg());
+                log.error("DingTalk alarm sending result:{}", response.getErrmsg());
             } else {
-                LOGGER.info("钉钉告警发送成功:{}", response.getMessage());
+                log.info("DingTalk alarm was sent successfully:{}", response.getMessage());
             }
 
         } catch (ApiException e) {
-            LOGGER.error("钉钉告警发送异常:{}", e.getMessage());
+            log.error("DingTalk alarm sending exception:{}", e.getMessage(), e);
         }
     }
 
@@ -415,11 +413,11 @@ public class NotifyText {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    LOGGER.info("企业微信告警发送结果:{}", line);
+                    log.info("Enterprise WeChat alert sending results:{}", line);
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("企业微信告警发送失败", e);
+            log.error("Enterprise WeChat alert send failed", e);
         }
     }
 }

@@ -9,7 +9,7 @@ import {
 } from '@ant-design/pro-components';
 import { useIntl, useModel } from '@umijs/max';
 import { Form, FormInstance, message } from 'antd';
-import { cloneDeep, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect } from 'react';
 
 interface IEditFormProps {
@@ -21,8 +21,7 @@ interface IEditFormProps {
 
 // New | Edit User
 const EditModalForm: React.FC<IEditFormProps> = (props) => {
-  // Global Props
-  const { tenantListAll } = useModel('tenant');
+
   // Message Instance
   const [messageApi, contextHolder] = message.useMessage();
   // Form Instance
@@ -34,14 +33,12 @@ const EditModalForm: React.FC<IEditFormProps> = (props) => {
     props;
   // Submit Form
   const onClickFishEditForm = async (formData: any): Promise<void> => {
-    const { password, tenantIdList, ...reset } = formData;
+    const { password, ...reset } = formData;
     const postBody = {
       ...reset,
       status: userInfo?.status || 'valid',
     };
     if (userInfo.id) postBody.id = userInfo?.id;
-    if (!isEmpty(tenantIdList))
-      postBody.tenantIds = cloneDeep(tenantIdList).toString();
     if (!isEmpty(password)) postBody.password = password;
     const func = userInfo.id ? updateUser : createUser;
     const res: API.Result_String_ = await func(postBody);
@@ -62,16 +59,8 @@ const EditModalForm: React.FC<IEditFormProps> = (props) => {
 
   useEffect((): void => {
     if (editFormVisible && !isEmpty(userInfo)) {
-      let tenantIdList;
-      if (!isEmpty(userInfo?.tenantIds)) {
-        tenantIdList = userInfo?.tenantIds
-          ?.split(',')
-          ?.map((item: string | number) => Number(item));
-      }
       form.setFieldsValue({
         ...userInfo,
-        // @ts-ignore
-        tenantIdList,
       });
     }
   }, [editFormVisible, userInfo]);
@@ -153,12 +142,7 @@ const EditModalForm: React.FC<IEditFormProps> = (props) => {
           rules={[{ required: true }]}
         />
 
-        <ProFormSelect
-          name={'tenantIdList'}
-          label={intl.formatMessage({ id: 'user.extend.text.tenant' })}
-          options={tenantListAll}
-          mode={'multiple'}
-        />
+
 
         <ProFormRadio.Group
           name="roleName"

@@ -16,7 +16,6 @@
  */
 package com.alipay.api.web.rule;
 
-import com.alipay.api.config.filter.annotation.aop.AdminPermissionLimit;
 import com.alipay.api.config.filter.annotation.aop.AuthenticateToken;
 import com.alipay.application.service.rule.GlobalVariableConfigService;
 import com.alipay.application.share.request.admin.ListGlobalVariableConfigRequest;
@@ -50,7 +49,6 @@ public class GlobalVariableConfigController {
      */
     @PostMapping("/saveGlobalVariableConfig")
     @AuthenticateToken
-    @AdminPermissionLimit
     public ApiResponse<String> saveGlobalVariableConfig(@Validated @RequestBody SaveGlobalVariableConfigRequest req, BindingResult error) {
         if (error.hasErrors()) {
             return new ApiResponse<>(error);
@@ -72,7 +70,6 @@ public class GlobalVariableConfigController {
      */
     @DeleteMapping("/deleteGlobalVariableConfig")
     @AuthenticateToken
-    @AdminPermissionLimit
     public ApiResponse<String> deleteGlobalVariableConfig(@RequestParam Long id) {
         globalVariableConfigService.deleteGlobalVariableConfig(id);
         return ApiResponse.SUCCESS;

@@ -16,109 +16,164 @@
 package iam
 
 import (
-	"github.com/core-sdk/log"
 	"context"
-	"encoding/json"
-	"go.uber.org/zap"
-	"net/url"
-
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/cloudrec/aws/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
+	"go.uber.org/zap"
+	"sync"
 )
 
 // GetRoleResource returns a Role Resource
 func GetRoleResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:       collector.Role,
-		ResourceTypeName:   "IAM Role",
+		ResourceTypeName:   "Role",
 		ResourceGroupType:  constant.IDENTITY,
-		Desc:               `https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html`,
+		Desc:               `https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListRoles.html`,
 		ResourceDetailFunc: GetRoleDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.Role.RoleId",
+			ResourceId:   "$.Role.Arn",
 			ResourceName: "$.Role.RoleName",
 		},
-		Regions:   []string{"ap-northeast-1", "cn-north-1"},
-		Dimension: schema.Regional,
+		Dimension: schema.Global,
 	}
 }
 
+// RoleDetail aggregates all information for a single IAM role.
 type RoleDetail struct {
-
-	// The Role includes authorization details
-	Role types.RoleDetail
-
-	// Trusted entities
-	TrustedEntities map[string]interface{}
+	Role             types.Role
+	AttachedPolicies []types.AttachedPolicy
+	InlinePolicies   []string
+	Tags             []types.Tag
 }
 
+// GetRoleDetail fetches the details for all IAM roles.
 func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).IAM
 
-	roleDetails, err := describeRoleDetails(ctx, client)
+	roles, err := listRoles(ctx, client)
 	if err != nil {
+		log.CtxLogger(ctx).Error("failed to list roles", zap.Error(err))
 		return err
 	}
 
-	for _, roleDetail := range roleDetails {
-		res <- roleDetail
+	const numWorkers = 10 // A reasonable number of concurrent workers. Consider making this configurable.
+	jobs := make(chan types.Role, len(roles))
+
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for r := range jobs {
+				res <- describeRoleDetail(ctx, client, r)
+			}
+		}()
 	}
+
+	for _, role := range roles {
+		jobs <- role
+	}
+	close(jobs)
+
+	wg.Wait()
+
 	return nil
 }
 
-func describeRoleDetails(ctx context.Context, c *iam.Client) (roleDetails []RoleDetail, err error) {
+// describeRoleDetail fetches all details for a single role.
+func describeRoleDetail(ctx context.Context, client *iam.Client, role types.Role) RoleDetail {
+	var wg sync.WaitGroup
+	var attachedPolicies []types.AttachedPolicy
+	var inlinePolicies []string
+	var tags []types.Tag
 
-	roles, err := getRoleAuthorizationDetails(ctx, c)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("getRoleAuthorizationDetails error", zap.Error(err))
-		return nil, err
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+		attachedPolicies, _ = listAttachedRolePolicies(ctx, client, role.RoleName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		inlinePolicies, _ = listRolePolicies(ctx, client, role.RoleName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		tags, _ = listRoleTags(ctx, client, role.RoleName)
+	}()
+
+	wg.Wait()
+
+	return RoleDetail{
+		Role:             role,
+		AttachedPolicies: attachedPolicies,
+		InlinePolicies:   inlinePolicies,
+		Tags:             tags,
 	}
-	for _, role := range roles {
-		roleDetails = append(roleDetails, RoleDetail{
-			Role:            role,
-			TrustedEntities: decodeTrustedEntities(role.AssumeRolePolicyDocument),
-		})
-	}
-	return roleDetails, nil
 }
 
-func decodeTrustedEntities(assumeRolePolicyDocument *string) (trustedEntities map[string]interface{}) {
-	decodedDocument, err := url.QueryUnescape(*assumeRolePolicyDocument)
-	if err != nil {
-		return nil
-	}
-
-	err = json.Unmarshal([]byte(decodedDocument), &trustedEntities)
-	if err != nil {
-		return nil
-	}
-	return trustedEntities
-}
-
-func getRoleAuthorizationDetails(ctx context.Context, c *iam.Client) (roleDetailList []types.RoleDetail, err error) {
-	input := &iam.GetAccountAuthorizationDetailsInput{
-		Filter: []types.EntityType{
-			types.EntityTypeRole,
-		},
-	}
-	out, err := c.GetAccountAuthorizationDetails(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("GetAccountAuthorizationDetails error", zap.Error(err))
-		return nil, err
-	}
-	roleDetailList = append(roleDetailList, out.RoleDetailList...)
-	for out.IsTruncated {
-		input.Marker = out.Marker
-		out, err = c.GetAccountAuthorizationDetails(ctx, input)
+// listRoles retrieves all IAM roles.
+func listRoles(ctx context.Context, c *iam.Client) ([]types.Role, error) {
+	var roles []types.Role
+	paginator := iam.NewListRolesPaginator(c, &iam.ListRolesInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("GetAccountAuthorizationDetails error", zap.Error(err))
 			return nil, err
 		}
-		roleDetailList = append(roleDetailList, out.RoleDetailList...)
+		roles = append(roles, page.Roles...)
 	}
+	return roles, nil
+}
 
-	return roleDetailList, err
+// listAttachedRolePolicies retrieves all managed policies attached to a role.
+func listAttachedRolePolicies(ctx context.Context, c *iam.Client, roleName *string) ([]types.AttachedPolicy, error) {
+	var policies []types.AttachedPolicy
+	paginator := iam.NewListAttachedRolePoliciesPaginator(c, &iam.ListAttachedRolePoliciesInput{RoleName: roleName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list attached role policies", zap.String("role", *roleName), zap.Error(err))
+			return nil, err
+		}
+		policies = append(policies, page.AttachedPolicies...)
+	}
+	return policies, nil
+}
+
+// listRolePolicies retrieves all inline policy names for a role.
+func listRolePolicies(ctx context.Context, c *iam.Client, roleName *string) ([]string, error) {
+	var policies []string
+	paginator := iam.NewListRolePoliciesPaginator(c, &iam.ListRolePoliciesInput{RoleName: roleName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list role inline policies", zap.String("role", *roleName), zap.Error(err))
+			return nil, err
+		}
+		policies = append(policies, page.PolicyNames...)
+	}
+	return policies, nil
+}
+
+// listRoleTags retrieves all tags for a role.
+func listRoleTags(ctx context.Context, c *iam.Client, roleName *string) ([]types.Tag, error) {
+	var tags []types.Tag
+	paginator := iam.NewListRoleTagsPaginator(c, &iam.ListRoleTagsInput{RoleName: roleName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list role tags", zap.String("role", *roleName), zap.Error(err))
+			return nil, err
+		}
+		tags = append(tags, page.Tags...)
+	}
+	return tags, nil
 }

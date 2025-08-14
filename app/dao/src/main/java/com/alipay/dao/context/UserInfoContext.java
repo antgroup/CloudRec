@@ -17,6 +17,8 @@
 package com.alipay.dao.context;
 
 
+import java.util.Objects;
+
 /*
  *@title UserInfoContext
  *@description
@@ -33,7 +35,9 @@ public class UserInfoContext {
     }
 
     public static UserInfoDTO getCurrentUser() {
-        return CURRENT_USER.get();
+        UserInfoDTO userInfoDTO = CURRENT_USER.get();
+        // return default user
+        return Objects.requireNonNullElseGet(userInfoDTO, UserInfoDTO::new);
     }
 
     public static void clear() {

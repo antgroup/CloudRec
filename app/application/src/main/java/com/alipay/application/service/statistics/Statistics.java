@@ -162,7 +162,8 @@ public class Statistics {
     }
 
     public List<HomePlatformResourceDataVO> getPlatformResourceData(Long tenantId) {
-        String key = CacheUtil.buildKey("index::get_platform_resource_data", tenantId);
+        Locale locale = LocaleContextHolder.getLocale();
+        String key = CacheUtil.buildKey("index::get_platform_resource_data", tenantId, locale.getLanguage());
         DbCachePO dbCachePO = dbCacheUtil.get(key);
         if (dbCachePO != null) {
             return JSON.parseArray(dbCachePO.getValue(), HomePlatformResourceDataVO.class);

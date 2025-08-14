@@ -31,11 +31,10 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JsonPathUtils {
-    private static final Logger log = LoggerFactory.getLogger(JsonPathUtils.class);
 
     // 配置 Fastjson 作为 JSON 解析器（提升性能）
     private static final Configuration JACKSON_CONFIG = Configuration.builder()
@@ -45,7 +44,8 @@ public class JsonPathUtils {
 
     /**
      * 从 JSON 字符串中提取值（自动推断类型）
-     * @param json JSON 字符串
+     *
+     * @param json     JSON 字符串
      * @param jsonPath JSONPath 表达式
      * @return 原始对象（需自行处理类型转换）
      */
@@ -63,9 +63,10 @@ public class JsonPathUtils {
 
     /**
      * 安全提取并转换为指定类型
-     * @param json JSON 字符串
+     *
+     * @param json     JSON 字符串
      * @param jsonPath JSONPath 表达式
-     * @param clazz 目标类型
+     * @param clazz    目标类型
      * @return 转换后的对象，失败时返回 null
      */
     public static <T> T getValue(String json, String jsonPath, Class<T> clazz) {

@@ -16,10 +16,12 @@
  */
 package com.alipay.application.share.vo.system;
 
+import com.alipay.application.service.system.domain.enums.RoleNameType;
 import com.alipay.dao.po.UserPO;
 import com.alipay.application.service.system.domain.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
@@ -60,9 +62,14 @@ public class UserVO {
     private String tenantName;
 
     /**
-     * 角色名
+     * Platform administrator or platform user
      */
     private String roleName;
+
+    /**
+     * The user's currently selected tenant role name
+     */
+    private String selectTenantRoleName;
 
     /**
      * token
@@ -101,6 +108,9 @@ public class UserVO {
 
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
+        if (Strings.isBlank(userVO.getRoleName())){
+            userVO.setRoleName(RoleNameType.user.name());
+        }
         return userVO;
     }
 }

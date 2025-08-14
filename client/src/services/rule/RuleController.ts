@@ -112,12 +112,12 @@ export async function saveRule(
   });
 }
 
-/** Rule detection interface: POST /api/rule/scanByRule */
+/** Rule detection interface: POST /api/rule/scanRule */
 export async function scanByRule(
   body?: API.RuleProjectInfo,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_String_>(`${BASE_URL}/api/rule/scanByRule`, {
+  return request<API.Result_String_>(`${BASE_URL}/api/rule/scanRule`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -267,6 +267,23 @@ export async function queryAllRuleList(
   options?: { [key: string]: any },
 ) {
   return request<API.Result>(`${BASE_URL}/api/rule/queryAllRuleList`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/** Query all tenant selected rule list interface: GET /api/rule/queryAllTenantSelectRuleList */
+export async function queryAllTenantSelectRuleList(
+  params?: { [key: string]: any },
+  options?: { [key: string]: any },
+) {
+  return request<API.Result>(`${BASE_URL}/api/rule/queryAllTenantSelectRuleList`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -481,6 +498,106 @@ export async function loadRuleFromGithub(
   options?: { [key: string]: any },
 ) {
   return request<API.Result_String_>(`${BASE_URL}/api/rule/loadRuleFromGithub`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+// checkExistNewRule
+export async function checkExistNewRule() {
+  return request<API.Result_Number_>(`${BASE_URL}/api/rule/checkExistNewRule`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/** 查询租户自选规则列表: POST /api/rule/queryEffectRuleList */
+export async function queryEffectRuleList(
+  body?: API.ListRuleRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_T_>(`${BASE_URL}/api/rule/queryEffectRuleList`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 租户添加自选规则: POST /api/rule/addTenantSelectRule */
+export async function addTenantSelectRule(
+  body?: API.AddTenantSelectRuleRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/rule/addTenantSelectRule`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 租户移出自选规则: POST /api/rule/removeTenantSelectRule */
+export async function removeTenantSelectRule(
+  body?: API.DeleteTenantSelectRuleRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/rule/deleteTenantSelectRule`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 批量检测规则: POST /api/rule/scanRuleList */
+export async function scanRuleList(
+  body?: { idList: number[] },
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/rule/scanRuleList`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 批量移出自选规则: POST /api/rule/batchDeleteTenantSelectRule */
+export async function batchDeleteTenantSelectRule(
+  body?: { ruleCodeList: string[] },
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/rule/batchDeleteTenantSelectRule`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 批量添加自选规则: POST /api/rule/batchAddTenantSelectRule */
+export async function batchAddTenantSelectRule(
+  body?: { ruleCodeList: string[] },
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/rule/batchAddTenantSelectRule`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

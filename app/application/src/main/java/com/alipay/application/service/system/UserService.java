@@ -42,7 +42,7 @@ public interface UserService {
     UserVO queryUserInfo(String token) throws Exception;
 
 
-    String login(String userId, String password);
+    String login(String userId, String password, String code);
 
 
     void create(String userId, String username, String password, String roleName, String tenantIds);
@@ -55,4 +55,8 @@ public interface UserService {
 
 
     void changePassword(String userId, String newPassword, String oldPassword);
+
+    void register(String userId, String username, String password, String email, String code);
+
+    void joinTenant(String inviteCode, String userId);
 }

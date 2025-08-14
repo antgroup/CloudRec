@@ -16,11 +16,11 @@
 package schema
 
 import (
+	"errors"
+	"fmt"
 	"github.com/core-sdk/config"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/utils"
-	"errors"
-	"fmt"
 )
 
 type Executor struct {
@@ -35,6 +35,8 @@ type Executor struct {
 	registered bool
 
 	cloudRecLogger *CloudRecLogger
+
+	accountQueue *AccountQueue
 }
 
 func RunExecutor(platform *Platform) (err error) {
@@ -67,6 +69,9 @@ func RunExecutor(platform *Platform) (err error) {
 			SecretKey:     key,
 		},
 	}
+
+	// Initialize account queue with max size of 50
+	e.accountQueue = NewAccountQueue(50, &e)
 
 	err = e.Register()
 	if err != nil && len(platform.DefaultCloudAccounts) == 0 {

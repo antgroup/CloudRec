@@ -231,3 +231,37 @@ export async function remarkAccessKey(
     },
   );
 }
+
+/** register POST /api/user/register */
+export async function register(
+  body?: API.UserInfo,
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/user/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: {
+      ...body,
+    },
+    ...(options || {}),
+  });
+}
+
+/** Join tenant with invite code POST /api/user/joinTenant */
+export async function joinTenant(
+  body?: { inviteCode: string },
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_String_>(`${BASE_URL}/api/user/joinTenant`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: {
+      ...body,
+    },
+    ...(options || {}),
+  });
+}

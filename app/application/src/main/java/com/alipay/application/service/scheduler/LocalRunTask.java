@@ -114,7 +114,7 @@ public class LocalRunTask {
      * 初始化采集状态
      */
     @Synchronized
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "0 0 0/1 * * ?")
     public void initCloudAccountCollectStatus_local() {
         boolean runStatus = Boolean.TRUE;
         String msg = null;

@@ -15,15 +15,14 @@
 
 package main
 
-//
-//import (
-//	"github.com/core-sdk/log"
-//	"github.com/core-sdk/schema"
-//	"github.com/cloudrec/alicloud/platform"
-//)
-//
-//func main() {
-//	if err := schema.RunExecutor(platform.GetPlatformConfigTest()); err != nil {
-//		log.GetWLogger().Error(err.Error())
-//	}
-//}
+import (
+	"github.com/cloudrec/alicloud/platform"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
+)
+
+func main() {
+	if err := schema.RunExecutor(platform.GetPlatformConfigTest()); err != nil {
+		log.GetWLogger().Error(err.Error())
+	}
+}

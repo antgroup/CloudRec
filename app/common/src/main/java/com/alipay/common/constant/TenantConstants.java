@@ -17,6 +17,9 @@
 package com.alipay.common.constant;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 /*
  *@title TenantConstants
  *@description
@@ -40,4 +43,7 @@ public class TenantConstants {
      * 默认租户描述
      */
     public static final String DEFAULT_TENANT_DESC = "默认租户";
+
+
+    public static final List<String> SYSTEN_DEFAULT_TENANT_LIST = Arrays.asList(DEFAULT_TENANT, GLOBAL_TENANT);
 }

@@ -13,5 +13,5 @@ neverLogin if {
 }
 
 noAccessKey if {
-    input.ExistAccessKey != true
+    input.ExistActiveAccessKey != true
 }

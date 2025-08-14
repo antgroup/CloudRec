@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import com.alibaba.fastjson.JSON;
 
 import java.util.List;
 
@@ -81,7 +82,7 @@ public class RuleScanContext {
         opaRepository.createOrUpdatePolicy(ruleAgg.getRegoPath(), ruleAgg.getRegoPolicy());
         if (CollectionUtils.isNotEmpty(ruleAgg.getGlobalVariables())) {
             for (GlobalVariable globalVariable : ruleAgg.getGlobalVariables()) {
-                opaRepository.upsertData(globalVariable.getPath(), globalVariable.getData());
+                opaRepository.upsertData(globalVariable.getPath(), JSON.parse(globalVariable.getData()));
             }
         }
     }

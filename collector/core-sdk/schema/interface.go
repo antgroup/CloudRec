@@ -18,6 +18,10 @@ package schema
 type ServiceInterface interface {
 	InitServices(param CloudAccountParam) error
 	Clone() ServiceInterface
+	// AssessCollectionTrigger determines whether asset collection should be performed for the cloud account
+	// Returns CollectRecordInfo containing collection decision and metadata
+	// This can be used to skip collection when credentials are invalid or no changes occurred
+	AssessCollectionTrigger(param CloudAccountParam) CollectRecordInfo
 }
 
 type PlatformInterface interface {

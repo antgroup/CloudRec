@@ -5,13 +5,13 @@ go 1.23.0
 replace github.com/core-sdk => ../core-sdk
 
 require (
-	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.48
+	github.com/core-sdk v0.0.0-00010101000000-000000000000
 )
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

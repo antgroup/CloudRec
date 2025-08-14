@@ -16,14 +16,14 @@
 package fc
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"fmt"
 	fc20230330 "github.com/alibabacloud-go/fc-20230330/v4/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 

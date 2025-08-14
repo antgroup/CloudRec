@@ -16,14 +16,14 @@
 package waf
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	waf_openapi20211001 "github.com/alibabacloud-go/waf-openapi-20211001/v4/client"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 

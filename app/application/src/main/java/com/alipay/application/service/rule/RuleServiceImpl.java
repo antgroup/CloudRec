@@ -27,8 +27,10 @@ import com.alibaba.fastjson.TypeReference;
 import com.alipay.application.service.common.utils.CacheUtil;
 import com.alipay.application.service.common.utils.DbCacheUtil;
 import com.alipay.application.service.rule.domain.repo.RuleGroupRepository;
+import com.alipay.application.service.rule.enums.EffectRuleType;
 import com.alipay.application.service.rule.enums.RuleType;
 import com.alipay.application.service.rule.exposed.GroupJoinService;
+import com.alipay.application.service.system.domain.repo.TenantRepository;
 import com.alipay.application.share.request.base.IdRequest;
 import com.alipay.application.share.request.rule.ChangeStatusRequest;
 import com.alipay.application.share.request.rule.ListRuleRequest;
@@ -56,6 +58,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -63,6 +67,10 @@ public class RuleServiceImpl implements RuleService {
 
     @Resource
     private RuleMapper ruleMapper;
+    @Resource
+    private TenantRuleMapper tenantRuleMapper;
+    @Resource
+    private TenantRepository tenantRepository;
     @Resource
     private GroupJoinService groupJoinService;
     @Resource
@@ -82,7 +90,8 @@ public class RuleServiceImpl implements RuleService {
     @Resource
     private DbCacheUtil dbCacheUtil;
 
-    public static final String cacheKey = "rule::query_rule_list";
+    public static final String ruleMarketCacheKey = "rule::query_rule_list";
+    public static final String tenantSelectRuleCacheKey = "rule::query_tenant_select_rule_list";
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -152,7 +161,7 @@ public class RuleServiceImpl implements RuleService {
             }
         }
 
-        dbCacheUtil.clear(cacheKey);
+        dbCacheUtil.clear(ruleMarketCacheKey);
 
         return new ApiResponse<>(String.valueOf(rulePO.getId()));
     }
@@ -161,7 +170,7 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public ApiResponse<ListVO<RuleVO>> queryRuleList(ListRuleRequest request) {
         boolean needCache = false;
-        String key = CacheUtil.buildKey(cacheKey, UserInfoContext.getCurrentUser().getUserTenantId(), request.getPage(), request.getSize(),
+        String key = CacheUtil.buildKey(ruleMarketCacheKey, UserInfoContext.getCurrentUser().getUserTenantId(), request.getPage(), request.getSize(),
                 request.getSortParam(), request.getSortType());
         if (ListUtils.isEmpty(request.getPlatformList())
                 && ListUtils.isEmpty(request.getRuleTypeIdList())
@@ -205,12 +214,122 @@ public class RuleServiceImpl implements RuleService {
         return new ApiResponse<>(listVO);
     }
 
+    /**
+     * Query effective rule list for tenant with memory-based pagination
+     * This method uses memory pagination to ensure accurate tenant-specific risk statistics
+     * 
+     * @param request the list rule request containing filter parameters
+     * @return ListVO containing rule data with proper tenant-specific caching
+     */
+    @Override
+    public ListVO<RuleVO> queryEffectRuleList(ListRuleRequest request) {
+        boolean needCache = false;
+        String key = CacheUtil.buildKey(tenantSelectRuleCacheKey, UserInfoContext.getCurrentUser().getUserTenantId(), request.getPage(), request.getSize(), request.getEffectRuleType(),
+                request.getSortParam(), request.getSortType());
+        if (ListUtils.isEmpty(request.getPlatformList())
+                && ListUtils.isEmpty(request.getRuleTypeIdList())
+                && ListUtils.isEmpty(request.getResourceTypeList())
+                && StringUtils.isEmpty(request.getStatus())
+                && ListUtils.isEmpty(request.getRuleCodeList())
+                && ListUtils.isEmpty(request.getRiskLevelList())
+                && ListUtils.isEmpty(request.getRuleGroupIdList())) {
+            needCache = true;
+            DbCachePO dbCachePO = dbCacheUtil.get(key);
+            if (dbCachePO != null) {
+                return JSON.parseObject(dbCachePO.getValue(), new TypeReference<>() {
+                });
+            }
+        }
+
+        RuleDTO ruleDTO = RuleDTO.builder().build();
+        BeanUtils.copyProperties(request, ruleDTO);
+        ruleDTO.setResourceTypeList(ListUtils.setList(request.getResourceTypeList()));
+        ruleDTO.setRuleTypeIdList(ListUtils.setList(request.getRuleTypeIdList()));
+
+
+        if (EffectRuleType.ALL.getCode().equals(request.getEffectRuleType())) {
+            ruleDTO.setTenantIdList(Stream.of(tenantRepository.findGlobalTenant().getId(), UserInfoContext.getCurrentUser().getUserTenantId()).distinct().toList());
+        } else if (EffectRuleType.SELECTED.getCode().equals(request.getEffectRuleType())) {
+            ruleDTO.setTenantIdList(Collections.singletonList(UserInfoContext.getCurrentUser().getUserTenantId()));
+        } else if (EffectRuleType.DEFAULT.getCode().equals(request.getEffectRuleType())) {
+            ruleDTO.setTenantIdList(Collections.singletonList(tenantRepository.findGlobalTenant().getId()));
+        }
+
+        ListVO<RuleVO> listVO = new ListVO<>();
+        
+        // Query all data without pagination for memory-based pagination
+        List<RulePO> allRules = tenantRuleMapper.findAllSortList(ruleDTO);
+        
+        if (allRules.isEmpty()) {
+            return listVO;
+        }
+
+        // Application layer processing: add risk statistics for current tenant
+        Long currentTenantId = UserInfoContext.getCurrentUser().getUserTenantId();
+        List<RulePO> processedRules = allRules.stream()
+                .peek(rule -> {
+                    // Set risk statistics count for current tenant
+                    Integer riskCount = tenantRuleMapper.findRiskCountByRuleAndTenant(rule.getId(), currentTenantId);
+                    rule.setRiskCount(riskCount != null ? riskCount : 0);
+                })
+                .collect(Collectors.toList());
+
+        // Application layer sorting
+        if ("lastScanTime".equals(request.getSortParam())) {
+            processedRules.sort((r1, r2) -> {
+                Date date1 = r1.getLastScanTime();
+                Date date2 = r2.getLastScanTime();
+                if (date1 == null && date2 == null) return 0;
+                if (date1 == null) return "ASC".equalsIgnoreCase(request.getSortType()) ? -1 : 1;
+                if (date2 == null) return "ASC".equalsIgnoreCase(request.getSortType()) ? 1 : -1;
+                return "ASC".equalsIgnoreCase(request.getSortType()) ? date1.compareTo(date2) : date2.compareTo(date1);
+            });
+        } else if ("riskCount".equals(request.getSortParam())) {
+            processedRules.sort((r1, r2) -> {
+                if ("ASC".equalsIgnoreCase(request.getSortType())) {
+                    return Integer.compare(r1.getRiskCount() != null ? r1.getRiskCount() : 0, r2.getRiskCount() != null ? r2.getRiskCount() : 0);
+                } else {
+                    return Integer.compare(r2.getRiskCount() != null ? r2.getRiskCount() : 0, r1.getRiskCount() != null ? r1.getRiskCount() : 0);
+                }
+            });
+        } else {
+            // Default sort by risk count DESC
+            processedRules.sort((r1, r2) -> Integer.compare(r2.getRiskCount() != null ? r2.getRiskCount() : 0, r1.getRiskCount() != null ? r1.getRiskCount() : 0));
+        }
+
+        // Memory-based pagination using utility method
+        ListUtils.PaginationResult<RulePO> paginationResult = ListUtils.paginate(processedRules, request.getPage(), request.getSize());
+        List<RulePO> pagedRules = paginationResult.getData();
+        List<RuleVO> collect = pagedRules.stream().map(RuleVO::buildEasy).toList();
+        
+        listVO.setTotal(paginationResult.getTotal());
+        listVO.setData(collect);
+
+        if (needCache) {
+            dbCacheUtil.put(key, listVO);
+        }
+
+        return listVO;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ApiResponse<String> deleteRule(Long id) {
+        RulePO rulePO = ruleMapper.selectByPrimaryKey(id);
+        if (rulePO == null) {
+            return new ApiResponse<>(ApiResponse.FAIL.getCode(), "The rules do not exist");
+        }
+
+        List<TenantRulePO> list = tenantRuleMapper.findByCode(rulePO.getRuleCode());
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<String> tenantNameList = list.stream().map(po -> tenantRepository.find(po.getTenantId()).getTenantName()).toList();
+            return new ApiResponse<>(ApiResponse.FAIL.getCode(), "Rules are selected with tenants: " + String.join(",", tenantNameList));
+        }
+
+        tenantRuleMapper.deleteByRuleCode(rulePO.getRuleCode());
         ruleMapper.deleteByPrimaryKey(id);
         ruleScanResultMapper.deleteByRuleId(id);
-        dbCacheUtil.clear(cacheKey);
+        dbCacheUtil.clear(ruleMarketCacheKey);
         return ApiResponse.SUCCESS;
     }
 
@@ -218,7 +337,7 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public ApiResponse<String> changeRuleStatus(ChangeStatusRequest changeRuleStatusRequest) {
         ruleMapper.updateStatus(changeRuleStatusRequest.getId(), changeRuleStatusRequest.getStatus());
-        dbCacheUtil.clear(cacheKey);
+        dbCacheUtil.clear(ruleMarketCacheKey);
         return ApiResponse.SUCCESS;
     }
 
@@ -266,7 +385,7 @@ public class RuleServiceImpl implements RuleService {
             ruleTypeRelMapper.insertSelective(ruleTypeRelPO);
         }
 
-        dbCacheUtil.clear(cacheKey);
+        dbCacheUtil.clear(ruleMarketCacheKey);
         return ApiResponse.SUCCESS;
     }
 
@@ -291,7 +410,7 @@ public class RuleServiceImpl implements RuleService {
 
         Locale locale = LocaleContextHolder.getLocale();
         if (!locale.getLanguage().equals(Locale.CHINA.getLanguage())) {
-            for (RuleTypeVO ruleTypeVO : list){
+            for (RuleTypeVO ruleTypeVO : list) {
                 ruleTypeVO.setTypeName(RuleType.getByRuleTypeEn(ruleTypeVO.getTypeName()));
             }
         }
@@ -368,4 +487,136 @@ public class RuleServiceImpl implements RuleService {
             return ruleVO;
         }).toList();
     }
+
+    @Override
+    public synchronized ApiResponse<String> addTenantSelectRule(String ruleCode) {
+        RulePO rulePO = ruleMapper.findOne(ruleCode);
+        if (rulePO == null) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The rules do not exist");
+        }
+
+        if (Status.invalid.name().equals(rulePO.getStatus())) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The rules are not enabled");
+        }
+
+        boolean isTenantAdmin = tenantRepository.isTenantAdmin(UserInfoContext.getCurrentUser().getUserId(), UserInfoContext.getCurrentUser().getUserTenantId());
+        if (!isTenantAdmin) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "You are not the tenant administrator");
+        }
+
+        Long tenantId = UserInfoContext.getCurrentUser().getUserTenantId();
+        TenantRulePO tenantRulePO = tenantRuleMapper.findOne(tenantId, ruleCode);
+        if (tenantRulePO != null) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The rules have been added to the optional list");
+        }
+
+        tenantRulePO = new TenantRulePO();
+        tenantRulePO.setTenantId(tenantId);
+        tenantRulePO.setRuleCode(ruleCode);
+        tenantRuleMapper.insertSelective(tenantRulePO);
+
+        log.info("user:{}, addTenantSelectRule, ruleCode:{}", UserInfoContext.getCurrentUser(), ruleCode);
+
+        dbCacheUtil.clear(tenantSelectRuleCacheKey);
+        dbCacheUtil.clear(ruleMarketCacheKey);
+
+        return ApiResponse.SUCCESS;
+    }
+
+    @Override
+    public ApiResponse<String> deleteTenantSelectRule(String ruleCode) {
+        Long tenantId = UserInfoContext.getCurrentUser().getUserTenantId();
+        TenantRulePO tenantRulePO = tenantRuleMapper.findOne(tenantId, ruleCode);
+        if (tenantRulePO == null) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The rules do not exist");
+        }
+
+        if (!tenantId.equals(tenantRulePO.getTenantId())) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The rules do not belong to the current tenant");
+        }
+
+        boolean isTenantAdmin = tenantRepository.isTenantAdmin(UserInfoContext.getCurrentUser().getUserId(), tenantId);
+        if (!isTenantAdmin) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "You are not the tenant administrator");
+        }
+
+
+        tenantRepository.removeSelectedRule(tenantId, ruleCode);
+        log.info("user:{}, deleteTenantSelectRule, ruleCode:{}", UserInfoContext.getCurrentUser(), ruleCode);
+
+        dbCacheUtil.clear(tenantSelectRuleCacheKey);
+        dbCacheUtil.clear(ruleMarketCacheKey);
+
+        return ApiResponse.SUCCESS;
+    }
+
+    @Override
+    public ApiResponse<String> batchDeleteTenantSelectRule(List<String> ruleCodeList) {
+        for (String ruleCode : ruleCodeList) {
+            deleteTenantSelectRule(ruleCode);
+        }
+
+        return ApiResponse.SUCCESS;
+    }
+
+    @Override
+    public ApiResponse<String> batchAddTenantSelectRule(List<String> ruleCodeList) {
+        for (String ruleCode : ruleCodeList) {
+            addTenantSelectRule(ruleCode);
+        }
+
+        return ApiResponse.SUCCESS;
+    }
+
+    /**
+     * Query all tenant selected rule list with deduplication by rule code
+     * This method combines tenant-specific rules and global default rules,
+     * removes duplicates based on rule code, and filters only valid rules
+     * Optimized to avoid duplicate queries when current tenant is global tenant
+     *
+     * @return List of RuleVO containing unique valid rules
+     */
+    @Override
+    public List<RuleVO> queryAllTenantSelectRuleList() {
+        Long currentTenantId = UserInfoContext.getCurrentUser().getUserTenantId();
+        Long globalTenantId = tenantRepository.findGlobalTenant().getId();
+
+        // Use LinkedHashMap to maintain insertion order and deduplicate by ruleCode
+        Map<String, RulePO> ruleMap = new LinkedHashMap<>();
+
+        // Check if current tenant is global tenant to avoid duplicate queries
+        if (currentTenantId.equals(globalTenantId)) {
+            // Current tenant is global tenant, only query once
+            List<RulePO> globalRuleList = tenantRuleMapper.findAllList(globalTenantId);
+            globalRuleList.stream()
+                    .filter(rule -> Status.valid.name().equals(rule.getStatus()))
+                    .forEach(rule -> ruleMap.put(rule.getRuleCode(), rule));
+        } else {
+            // Current tenant is not global tenant, query both tenant and global rules
+            List<RulePO> tenantSelectList = tenantRuleMapper.findAllList(currentTenantId);
+            List<RulePO> defaultRuleList = tenantRuleMapper.findAllList(globalTenantId);
+
+            // Add tenant rules first (higher priority)
+            tenantSelectList.stream()
+                    .filter(rule -> Status.valid.name().equals(rule.getStatus()))
+                    .forEach(rule -> ruleMap.put(rule.getRuleCode(), rule));
+
+            // Add default rules only if not already present
+            defaultRuleList.stream()
+                    .filter(rule -> Status.valid.name().equals(rule.getStatus()))
+                    .forEach(rule -> ruleMap.putIfAbsent(rule.getRuleCode(), rule));
+        }
+
+        // Convert to RuleVO list
+        return ruleMap.values().stream().map(po -> {
+            RuleVO ruleVO = new RuleVO();
+            ruleVO.setRuleCode(po.getRuleCode());
+            ruleVO.setRuleName(po.getRuleName());
+            ruleVO.setPlatform(po.getPlatform());
+            ruleVO.setRuleDesc(po.getRuleDesc());
+            ruleVO.setId(po.getId());
+            return ruleVO;
+        }).toList();
+    }
+
 }

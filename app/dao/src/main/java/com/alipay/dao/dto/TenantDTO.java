@@ -16,7 +16,6 @@
  */
 package com.alipay.dao.dto;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -37,4 +36,5 @@ public class TenantDTO extends PageDTO {
 
     private String status;
 
+    private String userId;
 }

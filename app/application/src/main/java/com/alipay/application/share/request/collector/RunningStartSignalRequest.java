@@ -16,6 +16,7 @@
  */
 package com.alipay.application.share.request.collector;
 
+import com.alipay.application.service.collector.domain.CollectRecordInfo;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,12 +35,6 @@ public class RunningStartSignalRequest {
     @NotEmpty(message = "cloudAccountId cannot be empty")
     private String cloudAccountId;
 
-    @NotEmpty(message = "resourceType cannot be empty")
-    private String resourceType;
+    private CollectRecordInfo collectRecordInfo;
 
-    @NotEmpty(message = "platform cannot be empty")
-    private String platform;
-
-    @NotEmpty(message = "version cannot be empty")
-    private String version;
 }

@@ -17,6 +17,8 @@ package collector
 
 const (
 	ECS                  = "ECS"
+	ECSImage             = "ECS Image"
+	ECSSnapshot          = "ECS Snapshot"
 	Redis                = "Redis"
 	CDN                  = "CDN"
 	ActionTrail          = "ActionTrail"
@@ -34,6 +36,7 @@ const (
 	ALB                  = "ALB"
 	NLB                  = "NLB"
 	VPC                  = "VPC"
+	VpnConnection        = "VPN Connection"
 	EIP                  = "EIP"
 	NAT                  = "NAT"
 	SelectDB             = "SelectDB"
@@ -76,6 +79,16 @@ const (
 	ACKCluster           = "ACK Cluster"
 	DdosCoo              = "DdosCoo"
 	Yundun               = "Yundun"
+	Bastionhost          = "Bastionhost"
 	APIG                 = "APIG"
+	APIGateway           = "API Gateway"
 	ResourceCenter       = "ResourceCenter"
+	DTSInstance          = "DTS Instance"
+	ECIContainerGroup    = "ECI ContainerGroup"
+	ECIImageCache        = "ECI ImageCache"
+	ECPInstance          = "ECP Instance"
+	EfloCluster          = "Eflo Cluster"
+	EfloNode             = "Eflo Node"
+	SWAS                 = "SWAS"
+
 )

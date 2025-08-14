@@ -31,10 +31,17 @@ const TimeOut = 30
 
 type contextKey string
 
+// DefaultCloudAccountMaxConcurrent Default number of concurrent collection tasks
+const DefaultCloudAccountMaxConcurrent = 4
+
 const (
-	CloudAccountId  contextKey = "cloudAccountId"
-	RegionId        contextKey = "regionId"
-	ResourceType    contextKey = "resourceType"
+	StartTime       contextKey = "StartTime"
+	EndTime         contextKey = "EndTime"
+	Duration        contextKey = "Duration"
+	Platform        contextKey = "Platform"
+	CloudAccountId  contextKey = "CloudAccountId"
+	RegionId        contextKey = "RegionId"
+	ResourceType    contextKey = "ResourceType"
 	TraceId         contextKey = "TraceId"
 	CollectRecordId contextKey = "CollectRecordId"
 )

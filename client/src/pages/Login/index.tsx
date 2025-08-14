@@ -1,5 +1,6 @@
 import { DEFAULT_NAME } from '@/constants';
 import { userLogin } from '@/services/user/UserController';
+import SwitchLanguage from '@/components/Layout/SwitchLanguage';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import {
   LoginFormPage,
@@ -9,6 +10,7 @@ import {
 import { useIntl } from '@umijs/max';
 import { Button, message } from 'antd';
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styles from './index.less';
 
 const LoginPage: React.FC = () => {
@@ -16,15 +18,19 @@ const LoginPage: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   // Intl API
   const intl = useIntl();
+  // URL search params
+  const [searchParams] = useSearchParams();
   // Submit Loading
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
   // Click on user login
   const onClickToLogin = async (formData: API.UserInfo): Promise<void> => {
     const { userId, password } = formData;
+    const inviteCode = searchParams.get('code');
     setSubmitLoading(true);
     const r = await userLogin({
       userId,
       password,
+      inviteCode: inviteCode || undefined,
     });
     setSubmitLoading(false);
     if (r.code === 200) {
@@ -49,6 +55,18 @@ const LoginPage: React.FC = () => {
       className={styles['login']}
     >
       {contextHolder}
+      {/* Language switcher positioned at top right */}
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: 1000,
+        background: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: '6px',
+        padding: '4px'
+      }}>
+        <SwitchLanguage />
+      </div>
       <LoginFormPage
         backgroundImageUrl="https://gw.alipayobjects.com/zos/rmsportal/FfdJeJRQWjEeGTpqgBKj.png"
         logo="/favicon-light.ico"

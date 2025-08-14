@@ -18,7 +18,9 @@ package com.alipay.application.service.resource.job;
 
 
 import com.alipay.application.service.common.utils.DbCacheUtil;
+import com.alipay.application.service.resource.DelResourceService;
 import com.alipay.application.service.risk.RiskStatusManager;
+import com.alipay.application.service.risk.domain.repo.RiskRepository;
 import com.alipay.common.enums.ResourceStatus;
 import com.alipay.common.enums.Status;
 import com.alipay.dao.mapper.CloudAccountMapper;
@@ -60,10 +62,12 @@ public class ClearJobImpl implements ClearJob {
 
     @Resource
     private RiskStatusManager riskStatusManager;
-    /**
-     * The asset is deleted if it has not been updated for more than 7 days
-     */
-    private static final int MAX_STORE_DAY = 7;
+
+    @Resource
+    private DelResourceService delResourceService;
+
+    @Resource
+    private RiskRepository riskRepository;
 
     /**
      * The number of assets deleted at a time
@@ -83,8 +87,17 @@ public class ClearJobImpl implements ClearJob {
 
     private void clearExpiredDataByCloudAccount(String cloudAccountId) {
         CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(cloudAccountId);
-        if (cloudAccountPO != null && Objects.equals(Status.running.name(), cloudAccountPO.getCollectorStatus())) {
+        if (cloudAccountPO == null) {
             return;
+        }
+        if (Objects.equals(Status.running.name(), cloudAccountPO.getCollectorStatus())) {
+            return;
+        }
+
+        // Delete the data of the disabled account
+        if (Objects.equals(Status.invalid.name(), cloudAccountPO.getAccountStatus())) {
+            delResourceService.removeResource(cloudAccountPO.getCloudAccountId());
+            riskRepository.remove(cloudAccountPO.getCloudAccountId());
         }
 
         try {
@@ -106,14 +119,6 @@ public class ClearJobImpl implements ClearJob {
                     cloudResourceInstanceMapper.deletedByIdList(idListSub);
                 }
             }
-
-            while (true) {
-                int effectCount = cloudResourceInstanceMapper.deleteByModified(cloudAccountId, MAX_STORE_DAY);
-                if (effectCount == 0) {
-                    break;
-                }
-            }
-
         } catch (Exception e) {
             log.error("clear obsolete data error", e);
         }

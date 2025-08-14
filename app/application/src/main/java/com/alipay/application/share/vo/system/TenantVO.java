@@ -17,6 +17,7 @@
 package com.alipay.application.share.vo.system;
 
 import com.alipay.application.service.common.utils.SpringUtils;
+import com.alipay.common.constant.TenantConstants;
 import com.alipay.dao.po.TenantPO;
 import com.alipay.application.service.system.domain.repo.TenantRepository;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -56,6 +57,9 @@ public class TenantVO {
      */
     private Integer memberCount;
 
+    
+    private Boolean disable;
+
     public static TenantVO toVO(TenantPO tenant) {
         if (tenant == null) {
             return null;
@@ -67,6 +71,13 @@ public class TenantVO {
         TenantRepository tenantRepository = SpringUtils.getBean(TenantRepository.class);
         int count = tenantRepository.memberCount(tenant.getId());
         tenantVO.setMemberCount(count);
+
+        // Set disable flag based on whether tenant is a system default tenant
+        if (TenantConstants.SYSTEN_DEFAULT_TENANT_LIST.contains(tenant.getTenantName())){
+            tenantVO.setDisable(true);
+        } else {
+            tenantVO.setDisable(false);
+        }
 
         return tenantVO;
     }

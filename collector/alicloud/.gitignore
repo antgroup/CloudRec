@@ -1,7 +1,3 @@
 !.gitignore
-route
-task
-*.log
 *.json
-deploy.log
-task.log
+cloudrec_collector_alicloud

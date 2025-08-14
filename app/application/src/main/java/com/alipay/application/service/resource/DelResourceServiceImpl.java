@@ -60,4 +60,19 @@ public class DelResourceServiceImpl implements DelResourceService {
         }
         return totalUpdated;
     }
+
+
+    @Override
+    public void removeResource(String cloudAccountId) {
+        try {
+            while (true) {
+                int i = cloudResourceInstanceMapper.deleteByCloudAccountId(cloudAccountId);
+                if (i == 0) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            log.error("{} Failed to delete the resource", cloudAccountId, e);
+        }
+    }
 }

@@ -33,13 +33,19 @@ import com.alipay.application.share.vo.resource.ResourceGroupTypeVO;
 import com.alipay.application.share.vo.resource.ResourceInstanceVO;
 import com.alipay.application.share.vo.resource.ResourceRiskCountVO;
 import com.alipay.common.constant.TenantConstants;
+import com.alipay.application.service.resource.enums.AggregationType;
 import com.alipay.common.enums.ResourceGroupType;
 import com.alipay.common.exception.BizException;
 import com.alipay.common.utils.ListUtils;
 import com.alipay.dao.context.UserInfoContext;
 import com.alipay.dao.context.UserInfoDTO;
 import com.alipay.dao.dto.*;
-import com.alipay.dao.mapper.*;
+import com.alipay.dao.mapper.CloudAccountMapper;
+import com.alipay.dao.mapper.CloudResourceInstanceMapper;
+import com.alipay.dao.mapper.CloudResourceRiskCountStatisticsMapper;
+import com.alipay.dao.mapper.ResourceMapper;
+import com.alipay.dao.mapper.RuleScanResultMapper;
+import com.alipay.dao.po.CloudAccountPO;
 import com.alipay.dao.po.CloudResourceInstancePO;
 import com.alipay.dao.po.CloudResourceRiskCountStatisticsPO;
 import com.alipay.dao.po.DbCachePO;
@@ -48,6 +54,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -83,6 +90,9 @@ public class QueryResourceImpl implements IQueryResource {
 
     @Resource
     private DbCacheUtil dbCacheUtil;
+
+    @Resource
+    private CloudAccountMapper cloudAccountMapper;
 
     private static final String cacheKey = "risk::query_resource_list";
 
@@ -129,7 +139,7 @@ public class QueryResourceImpl implements IQueryResource {
     }
 
     @Override
-    public List<CloudResourceInstancePO> queryByCond(String platform, String resourceType, String cloudAccountId, Integer limit) {
+    public List<CloudResourceInstancePO> queryByCondX(String platform, String resourceType, String cloudAccountId, String resourceId, Integer limit) {
         if (limit == null || limit == 0) {
             return List.of();
         }
@@ -137,7 +147,8 @@ public class QueryResourceImpl implements IQueryResource {
                 .platform(platform)
                 .resourceType(resourceType)
                 .cloudAccountId(cloudAccountId)
-                .offset(1)
+                .resourceIdEq(resourceId)
+                .offset(0)
                 .size(limit)
                 .build();
         return cloudResourceInstanceMapper.findByCond(request);
@@ -170,11 +181,6 @@ public class QueryResourceImpl implements IQueryResource {
     @Override
     public long queryResourceCount(String cloudAccountId) {
         return cloudResourceInstanceMapper.findCountByCloudAccountId(cloudAccountId);
-    }
-
-    @Override
-    public void removeResource(String cloudAccountId) {
-        cloudResourceInstanceMapper.deleteByCloudAccountId(cloudAccountId);
     }
 
     @Override
@@ -291,9 +297,19 @@ public class QueryResourceImpl implements IQueryResource {
     public ApiResponse<Object> queryResourceExampleData(QueryResourceExampleDataRequest request) {
         CloudAccountDTO cloudAccountDTO = CloudAccountDTO.builder().build();
         cloudAccountDTO.setPlatform(request.getPlatform());
-        CloudResourceInstancePO cloudResourceInstancePO = cloudResourceInstanceMapper.findExampleLimit1(request.getPlatform(), request.getResourceType().get(1));
+        CloudResourceInstancePO cloudResourceInstancePO = null;
+        if (Strings.isNotBlank(request.getResourceId())) {
+            cloudResourceInstancePO = cloudResourceInstanceMapper.findByResourceId(request.getPlatform(), request.getResourceType().get(1), request.getResourceId());
+
+        } else {
+            cloudResourceInstancePO = cloudResourceInstanceMapper.findExampleLimit1(request.getPlatform(), request.getResourceType().get(1));
+        }
+        if (cloudResourceInstancePO == null) {
+            throw new BizException("No sample data yet");
+        }
+
         if (request.getLinkedDataList() != null && !request.getLinkedDataList().isEmpty()) {
-            List<CloudResourceInstancePO> cloudResourceInstanceList = queryByCond(request.getPlatform(), request.getResourceType().get(1), cloudResourceInstancePO.getCloudAccountId(), 1);
+            List<CloudResourceInstancePO> cloudResourceInstanceList = queryByCondX(request.getPlatform(), request.getResourceType().get(1), cloudResourceInstancePO.getCloudAccountId(), request.getResourceId(), 1);
             cloudResourceInstanceList = ResourceMergerTask.mergeJsonWithTimeOut(request.getLinkedDataList(), cloudResourceInstanceList, cloudResourceInstancePO.getCloudAccountId());
 
             Map<Long, Integer> scoreMap = new HashMap<>();
@@ -313,60 +329,95 @@ public class QueryResourceImpl implements IQueryResource {
             return new ApiResponse<>(JSON.parse(collect.get(collect.size() - 1).getInstance()));
         }
 
-        if (cloudResourceInstancePO != null) {
-            return new ApiResponse<>(JSON.parse(cloudResourceInstancePO.getInstance()));
-        }
+        return new ApiResponse<>(JSON.parse(cloudResourceInstancePO.getInstance()));
 
-        throw new BizException("No sample data yet");
     }
 
 
     @Override
     public ApiResponse<ListVO<ResourceAggByInstanceTypeDTO>> queryAggregateAssets(ResourceDTO resourceDTO) {
-        UserInfoDTO currentUser = UserInfoContext.getCurrentUser();
-        Long userTenantId = currentUser.getUserTenantId();
-        boolean needCache = false;
-        String key = CacheUtil.buildKey("queryAggregateAssets", userTenantId, resourceDTO.getPage(), resourceDTO.getSize());
-        if (StringUtils.isEmpty(resourceDTO.getCloudAccountId()) && CollectionUtils.isEmpty(resourceDTO.getPlatformList())
-                && CollectionUtils.isEmpty(resourceDTO.getResourceTypeList()) && StringUtils.isEmpty(resourceDTO.getSearchParam())
-                && StringUtils.isEmpty(resourceDTO.getAddress())) {
-            needCache = true;
-            DbCachePO dbCachePO = dbCacheUtil.get(key);
-            if (dbCachePO != null) {
-                ListVO<ResourceAggByInstanceTypeDTO> listVO = JSON.parseObject(dbCachePO.getValue(), new TypeReference<>() {
-                });
-                return new ApiResponse<>(listVO);
-            }
-        }
-        resourceDTO.setTenantId(currentUser.getTenantId());
+        resourceDTO.setTenantId(UserInfoContext.getCurrentUser().getTenantId());
         resourceDTO.setCloudAccountIdList(cloudAccount.queryCloudAccountIdList(resourceDTO.getCloudAccountId()));
 
         ListVO<ResourceAggByInstanceTypeDTO> listVO = new ListVO<>();
-        int count = cloudResourceInstanceMapper.findAggregateAssetsCount(resourceDTO);
-        if (count == 0) {
-            return new ApiResponse<>(listVO);
+
+        // Determine which aggregation method to use based on aggregationType
+        int count;
+        List<ResourceAggByInstanceTypeDTO> list;
+
+        if (AggregationType.CLOUD_ACCOUNT.getCode().equals(resourceDTO.getAggregationType())) {
+            // Aggregate by cloud account
+            count = cloudResourceInstanceMapper.findAggregateAssetsByCloudAccountCount(resourceDTO);
+            if (count == 0) {
+                return new ApiResponse<>(listVO);
+            }
+            resourceDTO.setOffset();
+            list = cloudResourceInstanceMapper.findAggregateAssetsByCloudAccountList(resourceDTO);
+        } else {
+            // Default: aggregate by resource type
+            count = cloudResourceInstanceMapper.findAggregateAssetsCount(resourceDTO);
+            if (count == 0) {
+                return new ApiResponse<>(listVO);
+            }
+            resourceDTO.setOffset();
+            list = cloudResourceInstanceMapper.findAggregateAssetsList(resourceDTO);
         }
 
-        resourceDTO.setOffset();
-        List<ResourceAggByInstanceTypeDTO> list = cloudResourceInstanceMapper.findAggregateAssetsList(resourceDTO);
-
         list = list.stream().parallel().map(dto -> {
-            // query resource type name
-            ResourcePO resourcePO = resourceMapper.findOne(dto.getPlatform(), dto.getResourceType());
-            if (resourcePO == null) {
-                cloudResourceInstanceMapper.deleteByResourceType(dto.getPlatform(), dto.getResourceType());
-                return null;
-            }
-            dto.setResourceTypeName(resourcePO.getResourceName());
-            List<String> typeFullNameList = new ArrayList<>();
-            typeFullNameList.add(resourcePO.getResourceGroupType());
-            typeFullNameList.add(resourcePO.getResourceType());
-            dto.setTypeFullNameList(List.of(typeFullNameList));
-
+            // query new resource condition
             ResourceDTO queryDTO = new ResourceDTO();
             BeanUtils.copyProperties(resourceDTO, queryDTO);
-            // query new resource
-            queryDTO.setResourceTypeList(List.of(dto.getResourceType()));
+
+            if (AggregationType.CLOUD_ACCOUNT.getCode().equals(resourceDTO.getAggregationType())) {
+                // query cloud account alias
+                CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(dto.getCloudAccountId());
+                if (cloudAccountPO != null) {
+                    dto.setAlias(cloudAccountPO.getAlias());
+                }
+
+                // query risk by cloud account
+                RuleScanResultDTO resultDTO = RuleScanResultDTO.builder()
+                        .cloudAccountIdList(Collections.singletonList(dto.getCloudAccountId()))
+                        .resourceTypeList(resourceDTO.getResourceTypeList())
+                        .resourceIdOrName(resourceDTO.getSearchParam())
+                        .build();
+                RiskCountDTO riskCountDTO = ruleScanResultMapper.findRiskCount(resultDTO);
+                dto.setHighLevelRiskCount(riskCountDTO.getHighLevelRiskCount());
+                dto.setMediumLevelRiskCount(riskCountDTO.getMediumLevelRiskCount());
+                dto.setLowLevelRiskCount(riskCountDTO.getLowLevelRiskCount());
+
+                // query new resource
+                queryDTO.setCloudAccountId(dto.getCloudAccountId());
+            } else {
+                // For resource type aggregation, query resource type name
+                ResourcePO resourcePO = resourceMapper.findOne(dto.getPlatform(), dto.getResourceType());
+                if (resourcePO == null) {
+                    cloudResourceInstanceMapper.deleteByResourceType(dto.getPlatform(), dto.getResourceType());
+                    return null;
+                }
+
+                dto.setResourceTypeName(resourcePO.getResourceName());
+                List<String> typeFullNameList = new ArrayList<>();
+                typeFullNameList.add(resourcePO.getResourceGroupType());
+                typeFullNameList.add(resourcePO.getResourceType());
+                dto.setTypeFullNameList(List.of(typeFullNameList));
+
+                // query risk by resource type
+                CloudResourceRiskCountStatisticsPO cloudResourceRiskCountStatisticsPO = cloudResourceRiskCountStatisticsMapper.findOne(resourcePO.getPlatform(), resourcePO.getResourceType(), UserInfoContext.getCurrentUser().getTenantId());
+                if (cloudResourceRiskCountStatisticsPO != null) {
+                    dto.setHighLevelRiskCount(cloudResourceRiskCountStatisticsPO.getHighLevelRiskCount());
+                    dto.setMediumLevelRiskCount(cloudResourceRiskCountStatisticsPO.getMediumLevelRiskCount());
+                    dto.setLowLevelRiskCount(cloudResourceRiskCountStatisticsPO.getLowLevelRiskCount());
+                } else {
+                    dto.setHighLevelRiskCount(0);
+                    dto.setMediumLevelRiskCount(0);
+                    dto.setLowLevelRiskCount(0);
+                }
+
+                // query new resource
+                queryDTO.setResourceTypeList(List.of(dto.getResourceType()));
+            }
+
             CloudResourceInstancePO cloudResourceInstancePO = cloudResourceInstanceMapper.findLatestOne(queryDTO);
             if (cloudResourceInstancePO != null) {
                 ResourceAggByInstanceTypeDTO.LatestResourceInfo latestResourceInfo = new ResourceAggByInstanceTypeDTO.LatestResourceInfo();
@@ -377,26 +428,11 @@ public class QueryResourceImpl implements IQueryResource {
                 dto.setLatestResourceInfo(latestResourceInfo);
             }
 
-            CloudResourceRiskCountStatisticsPO cloudResourceRiskCountStatisticsPO = cloudResourceRiskCountStatisticsMapper.findOne(resourcePO.getPlatform(), resourcePO.getResourceType(), userTenantId);
-            if (cloudResourceRiskCountStatisticsPO != null) {
-                dto.setHighLevelRiskCount(cloudResourceRiskCountStatisticsPO.getHighLevelRiskCount());
-                dto.setMediumLevelRiskCount(cloudResourceRiskCountStatisticsPO.getMediumLevelRiskCount());
-                dto.setLowLevelRiskCount(cloudResourceRiskCountStatisticsPO.getLowLevelRiskCount());
-            } else {
-                dto.setHighLevelRiskCount(0);
-                dto.setMediumLevelRiskCount(0);
-                dto.setLowLevelRiskCount(0);
-            }
-
             return dto;
         }).filter(Objects::nonNull).toList();
 
         listVO.setData(list);
         listVO.setTotal(count);
-
-        if (needCache) {
-            dbCacheUtil.put(key, listVO);
-        }
 
         return new ApiResponse<>(listVO);
     }

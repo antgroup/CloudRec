@@ -1,6 +1,6 @@
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar } from 'antd';
-import DEFAULT_AVATAR from '@/assets/images/DEFAULT_AVATAR.svg';
+import SMILE_AVATAR from '@/assets/images/SMILE.svg';
 
 interface ILoginAvatar {
   userId: number | null;
@@ -11,9 +11,9 @@ const LoginAvatar = (props: ILoginAvatar) => {
   return (
     <>
       {userId ? (
-        <Avatar src={DEFAULT_AVATAR} />
+        <Avatar size={30} src={SMILE_AVATAR} />
       ) : (
-        <Avatar size={32} icon={<UserOutlined />} />
+        <Avatar size={30} icon={<UserOutlined />} />
       )}
     </>
   );

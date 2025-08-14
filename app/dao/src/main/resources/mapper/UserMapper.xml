@@ -136,22 +136,14 @@
         <include refid="Base_Column_List"></include>
         FROM user WHERE user_id = #{userId,jdbcType=VARCHAR}
     </select>
-    <select id="findMemberCount" resultType="java.lang.Integer">
-        SELECT COUNT(*)
-        FROM user u
-                 INNER JOIN tenant_user tu
-                 INNER JOIN tenant t ON u.id = tu.user_id AND tu.tenant_id = t.id
-        WHERE t.id = #{id}
-    </select>
 
-    <select id="findMemberList" resultMap="BaseResultMap">
-        SELECT
-        u.*
-        FROM user u INNER JOIN tenant_user tu INNER JOIN tenant t ON u.id = tu.user_id AND tu.tenant_id = t.id
-        WHERE t.id = #{id}
-        ORDER BY u.id DESC
-        <include refid="com.alipay.dao.mapper.RuleMapper.getListLimit"></include>
-    </select>
+    <sql id="getListLimit">
+        <if test="offset != null and size != null">
+            LIMIT
+            #{offset},
+            #{size}
+        </if>
+    </sql>
     <select id="findCount" resultType="java.lang.Integer">
         SELECT COUNT(*) FROM user
         <include refid="getListWhere"></include>

@@ -29,4 +29,6 @@ public interface UserRepository {
     User find(String userId);
 
     User findByUserName(String userName);
+
+    void switchTenant(String userId, Long tenantId);
 }

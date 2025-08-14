@@ -4,6 +4,7 @@ import {
   cloudAccountBaseInfoList,
   queryCloudAccountList,
 } from '@/services/account/AccountController';
+import { usePlatformDefaultSelection } from '@/hooks/usePlatformDefaultSelection';
 import { showTotalIntlFunc, valueListAddIcon } from '@/utils/shared';
 import { ProCard } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel, useRequest } from '@umijs/max';
@@ -51,6 +52,8 @@ const AccountList: React.FC = () => {
   const { platformList } = useModel('rule');
   // Form Instance
   const [form] = Form.useForm();
+  // Watch platform list changes
+  const watchedPlatformList = Form.useWatch('platformList', form);
   // Intl API
   const intl = useIntl();
   // Cloud account information
@@ -61,6 +64,8 @@ const AccountList: React.FC = () => {
   const [current, setCurrent] = useState<number>(DEFAULT_PAGE_NUMBER);
   // PageSize
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  // Track if initial load is completed
+  const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
 
   // Cloud account list data
   const {
@@ -116,13 +121,6 @@ const AccountList: React.FC = () => {
     });
   };
 
-  useEffect((): void => {
-    requestCloudAccountList({
-      page: current,
-      size: pageSize,
-    });
-  }, []);
-
   // Cloud account list data
   const {
     data: baseCloudAccountList,
@@ -145,6 +143,58 @@ const AccountList: React.FC = () => {
       },
     },
   );
+
+  // Use custom hook for default platform selection
+  usePlatformDefaultSelection({
+    platformList,
+    form,
+    requestCloudAccountBaseInfoList,
+    platformFieldName: 'platformList'
+  });
+
+  // Initial load effect - runs once after platform hook has had a chance to set defaults
+  useEffect((): (() => void) | void => {
+    if (!initialLoaded) {
+      // Delay initial request to allow platform hook to set defaults
+      const timer = setTimeout(() => {
+        const currentPlatformList = form.getFieldValue('platformList');
+        if (currentPlatformList && currentPlatformList.length > 0) {
+          requestCloudAccountList({
+            page: current,
+            size: pageSize,
+            platformList: currentPlatformList,
+          });
+        } else {
+          requestCloudAccountList({
+            page: current,
+            size: pageSize,
+          });
+        }
+        setInitialLoaded(true);
+      }, 100); // Small delay to ensure hook has executed
+      
+      return () => clearTimeout(timer);
+    }
+  }, [initialLoaded, current, pageSize]);
+
+  // Handle pagination changes (not platform changes, as those are handled by onChange)
+  useEffect((): void => {
+    if (initialLoaded && (current !== DEFAULT_PAGE_NUMBER || pageSize !== DEFAULT_PAGE_SIZE)) {
+      const currentPlatformList = form.getFieldValue('platformList');
+      if (currentPlatformList && currentPlatformList.length > 0) {
+        requestCloudAccountList({
+          page: current,
+          size: pageSize,
+          platformList: currentPlatformList,
+        });
+      } else {
+        requestCloudAccountList({
+          page: current,
+          size: pageSize,
+        });
+      }
+    }
+  }, [current, pageSize, initialLoaded]);
 
   // Cloud account list filtering
   const debounceFetcher = useMemo(() => {
@@ -173,11 +223,21 @@ const AccountList: React.FC = () => {
               >
                 <Checkbox.Group
                   options={valueListAddIcon(platformList)}
-                  onChange={(value) =>
+                  onChange={(value) => {
+                    const selectedPlatforms = (value as string[]) || [];
+                    // Update cloud account base info list for dropdown
                     requestCloudAccountBaseInfoList({
-                      platformList: (value as string[]) || [],
-                    })
-                  }
+                      platformList: selectedPlatforms,
+                    });
+                    // Immediately update main cloud account list when platform changes
+                    requestCloudAccountList({
+                      page: DEFAULT_PAGE_NUMBER,
+                      size: pageSize,
+                      platformList: selectedPlatforms.length > 0 ? selectedPlatforms : undefined,
+                    });
+                    // Reset pagination to first page
+                    setCurrent(DEFAULT_PAGE_NUMBER);
+                  }}
                 />
               </Form.Item>
             </Col>

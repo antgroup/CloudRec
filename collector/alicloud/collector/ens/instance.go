@@ -16,13 +16,13 @@
 package ens
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -63,7 +63,8 @@ func ListInstanceResource(ctx context.Context, service schema.ServiceInterface, 
 		log.CtxLogger(ctx).Error("ListInstanceResource error", zap.Error(err))
 		return err
 	}
-	for describeInstancesResponse.PageSize*describeInstancesResponse.PageNumber <= describeInstancesResponse.TotalCount {
+
+	for {
 		for _, instance := range describeInstancesResponse.Instances.Instance {
 			instanceDetail := InstanceDetail{
 				Instance:       instance,
@@ -72,6 +73,11 @@ func ListInstanceResource(ctx context.Context, service schema.ServiceInterface, 
 
 			res <- instanceDetail
 		}
+
+		if describeInstancesResponse.PageSize*describeInstancesResponse.PageNumber >= describeInstancesResponse.TotalCount {
+			break
+		}
+
 		describeInstancesRequest.PageNumber = requests.NewInteger(describeInstancesResponse.PageNumber + 1)
 		describeInstancesResponse, err = cli.DescribeInstances(describeInstancesRequest)
 		if err != nil {

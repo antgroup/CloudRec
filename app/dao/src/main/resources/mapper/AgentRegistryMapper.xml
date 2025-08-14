@@ -235,7 +235,6 @@
         <include refid="findListWhere"></include>
         GROUP BY agent_name,once_token
         ORDER BY id DESC
-        <include refid="getListLimit"></include>
     </select>
     <select id="findListByOnceToken" resultMap="BaseResultMap">
         SELECT

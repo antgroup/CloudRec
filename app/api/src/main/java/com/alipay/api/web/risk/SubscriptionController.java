@@ -16,7 +16,6 @@
  */
 package com.alipay.api.web.risk;
 
-import com.alipay.api.config.filter.annotation.aop.AdminPermissionLimit;
 import com.alipay.api.config.filter.annotation.aop.AuthenticateToken;
 import com.alipay.application.service.common.enums.SubscriptionType;
 import com.alipay.application.service.risk.SubscriptionService;
@@ -73,7 +72,6 @@ public class SubscriptionController {
      */
     @AuthenticateToken
     @PostMapping("/saveConfig")
-    @AdminPermissionLimit
     public ApiResponse<String> saveConfig(@Validated @RequestBody SubscriptionDTO dto, BindingResult results) {
         if (results.hasErrors()) {
             return ApiResponse.FAIL;

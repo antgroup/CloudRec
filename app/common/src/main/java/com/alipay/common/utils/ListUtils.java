@@ -60,4 +60,85 @@ public class ListUtils {
     public static boolean isNotEmpty(List<?> list) {
         return !isEmpty(list);
     }
+
+    /**
+     * Perform memory-based pagination on a list
+     * 
+     * @param list the source list to paginate
+     * @param page the page number (1-based), defaults to 1 if null
+     * @param size the page size, defaults to 10 if null
+     * @param <T> the type of list elements
+     * @return PaginationResult containing the paginated data and metadata
+     */
+    public static <T> PaginationResult<T> paginate(List<T> list, Integer page, Integer size) {
+        if (list == null) {
+            return new PaginationResult<>(List.of(), 0, 1, 10, 0, 0);
+        }
+
+        int total = list.size();
+        int currentPage = page != null ? page : 1;
+        int pageSize = size != null ? size : 10;
+        
+        // Ensure page is at least 1
+        currentPage = Math.max(1, currentPage);
+        
+        int startIndex = (currentPage - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, total);
+        
+        List<T> pagedData;
+        if (startIndex >= total) {
+            pagedData = List.of();
+        } else {
+            pagedData = list.subList(startIndex, endIndex);
+        }
+        
+        return new PaginationResult<>(pagedData, total, currentPage, pageSize, startIndex, endIndex);
+    }
+
+    /**
+     * Result class for pagination operations
+     * 
+     * @param <T> the type of paginated data
+     */
+    public static class PaginationResult<T> {
+        private final List<T> data;
+        private final int total;
+        private final int page;
+        private final int size;
+        private final int startIndex;
+        private final int endIndex;
+
+        public PaginationResult(List<T> data, int total, int page, int size, int startIndex, int endIndex) {
+            this.data = data;
+            this.total = total;
+            this.page = page;
+            this.size = size;
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+        }
+
+        public List<T> getData() {
+            return data;
+        }
+
+        public int getTotal() {
+            return total;
+        }
+
+        public int getPage() {
+            return page;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public int getStartIndex() {
+            return startIndex;
+        }
+
+        public int getEndIndex() {
+            return endIndex;
+        }
+    }
 }

@@ -17,15 +17,17 @@
 package com.alipay.api.web.system;
 
 import com.alipay.api.config.filter.annotation.aop.AdminPermissionLimit;
+import com.alipay.api.config.filter.annotation.aop.AuthenticateToken;
 import com.alipay.api.web.system.request.UserLoginRequest;
 import com.alipay.application.service.system.UserService;
+import com.alipay.application.service.system.domain.enums.RoleNameType;
 import com.alipay.application.share.request.admin.*;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.system.UserVO;
 import com.alipay.common.enums.Status;
 import com.alipay.common.exception.UserNoLoginException;
-import com.alipay.application.service.system.domain.enums.RoleNameType;
+import com.alipay.dao.context.UserInfoContext;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +59,7 @@ public class UserController {
             return new ApiResponse<>(result);
         }
 
-        String sign = userService.login(request.getUserId(), request.getPassword());
+        String sign = userService.login(request.getUserId(), request.getPassword(), request.getInviteCode());
         return new ApiResponse<>(sign);
     }
 
@@ -65,6 +67,25 @@ public class UserController {
     @PostMapping("/createUser")
     public ApiResponse<String> createUser(@RequestBody CreateUserRequest request) {
         userService.create(request.getUserId(), request.getUsername(), request.getPassword(), request.getRoleName(), request.getTenantIds());
+        return ApiResponse.SUCCESS;
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<String> register(@RequestBody @Validated RegisterRequest request, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        userService.register(request.getUserId(), request.getUsername(), request.getPassword(), request.getEmail(), request.getCode());
+        return ApiResponse.SUCCESS;
+    }
+
+    @AuthenticateToken
+    @PostMapping("/joinTenant")
+    public ApiResponse<String> joinTenant(@RequestBody @Validated JoinTenantRequest request, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ApiResponse<>(result);
+        }
+        userService.joinTenant(request.getInviteCode(), UserInfoContext.getCurrentUser().getUserId());
         return ApiResponse.SUCCESS;
     }
 

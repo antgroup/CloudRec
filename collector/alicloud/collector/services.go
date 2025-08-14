@@ -79,6 +79,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ga"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/live"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/sgw"
@@ -189,6 +190,7 @@ type Services struct {
 	DCDN            *dcdn.Client
 	VOD             *vod.Client
 	SGW             *sgw.Client
+	Live            *live.Client
 }
 
 // Clone creates a new instance of Services with copied configuration
@@ -408,7 +410,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init cen client failed", zap.Error(err))
 		}
-	case CloudAPI, APIGateway:
+	case CloudAPI, APIGateway, APIGatewayApp:
 		s.CloudAPI, err = CreateCloudAPIClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init cloudAPI client failed", zap.Error(err))
@@ -497,6 +499,11 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.DCDN, err = dcdn.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init dcdn client failed", zap.Error(err))
+		}
+	case LiveDomain:
+		s.Live, err = live.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init live client failed", zap.Error(err))
 		}
 	case VODDomain:
 		s.VOD, err = vod.NewClientWithAccessKey(param.Region, param.AK, param.SK)

@@ -56,6 +56,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/ims"
 	"github.com/cloudrec/alicloud/collector/kafka"
 	"github.com/cloudrec/alicloud/collector/kms"
+	"github.com/cloudrec/alicloud/collector/live"
 	"github.com/cloudrec/alicloud/collector/loadbalance/alb"
 	"github.com/cloudrec/alicloud/collector/loadbalance/nlb"
 	"github.com/cloudrec/alicloud/collector/loadbalance/slb"
@@ -211,6 +212,7 @@ func GetPlatformConfig() *schema.Platform {
 			dcdn.GetDCDNIpaDomainResource(),
 			vod.GetVODDomainResource(),
 			sms.GetSMSTemplateResource(),
+			live.GetLiveDomainResource(),
 		},
 
 		Service:        &collector.Services{},

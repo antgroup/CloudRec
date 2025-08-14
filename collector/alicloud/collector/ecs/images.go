@@ -73,6 +73,7 @@ func listImages(ctx context.Context, c *ecs.Client) ([]ecs.Image, error) {
 	req := ecs.CreateDescribeImagesRequest()
 	req.PageSize = requests.NewInteger(constant.DefaultPageSize)
 	req.PageNumber = requests.NewInteger(constant.DefaultPage)
+	req.ImageOwnerAlias = "self"
 
 	count := 0
 	for {

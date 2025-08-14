@@ -28,6 +28,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/cloudapi"
 	"github.com/cloudrec/alicloud/collector/cloudcenter"
 	"github.com/cloudrec/alicloud/collector/cloudfw"
+	"github.com/cloudrec/alicloud/collector/cloudstoragegateway"
 	"github.com/cloudrec/alicloud/collector/db/AnalyticDB/adbmysql"
 	"github.com/cloudrec/alicloud/collector/db/AnalyticDB/adbpostgresql"
 	"github.com/cloudrec/alicloud/collector/db/clickhouse"
@@ -130,6 +131,7 @@ func GetPlatformConfig() *schema.Platform {
 			cloudfw.GetCloudFWConfigResource(),
 			cloudcenter.GetSasConfigResource(),
 			cloudcenter.GetCloudCenterResource(),
+			cloudstoragegateway.GetCloudStorageGatewayResource(),
 			elasticsearch.GetResource(),
 			elasticsearch.GetLogstashResource(),
 			arms.GetTraceAppResource(),
@@ -237,7 +239,7 @@ func GetPlatformConfigTest() *schema.Platform {
 	}
 
 	return schema.GetInstance(schema.PlatformConfig{
-		Name:      string(constant.AlibabaCloud),
+		Name: string(constant.AlibabaCloud),
 		Resources: []schema.Resource{
 			//test.TestBlockResource(),
 			//test.TestAutoExitResource(),

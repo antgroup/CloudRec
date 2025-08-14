@@ -98,4 +98,5 @@ const (
 	DCDNDomain            = "DCDN Domain"
 	VODDomain             = "VOD Domain"
 	SMSTemplate           = "SMS Template"
+	CloudStorageGateway   = "CloudStorageGateway"
 )

@@ -81,6 +81,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/sgw"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/swas-open"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
@@ -187,6 +188,7 @@ type Services struct {
 	GA              *ga.Client
 	DCDN            *dcdn.Client
 	VOD             *vod.Client
+	SGW             *sgw.Client
 }
 
 // Clone creates a new instance of Services with copied configuration
@@ -505,6 +507,11 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.Dysmsapi, err = dysmsapi.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init dysmsapi client failed", zap.Error(err))
+		}
+	case CloudStorageGateway:
+		s.SGW, err = sgw.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init sgw client failed", zap.Error(err))
 		}
 	}
 

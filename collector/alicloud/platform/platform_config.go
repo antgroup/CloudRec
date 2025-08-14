@@ -208,6 +208,7 @@ func GetPlatformConfig() *schema.Platform {
 			eflo.GetNodeResource(),
 			ons.GetInstanceResource(),
 			dcdn.GetDCDNDomainResource(),
+			dcdn.GetDCDNIpaDomainResource(),
 			vod.GetVODDomainResource(),
 			sms.GetSMSTemplateResource(),
 		},

@@ -493,7 +493,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ga client failed", zap.Error(err))
 		}
-	case DCDNDomain:
+	case DCDNDomain, DCDNIpaDomain:
 		s.DCDN, err = dcdn.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init dcdn client failed", zap.Error(err))

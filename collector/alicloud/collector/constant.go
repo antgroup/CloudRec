@@ -100,4 +100,5 @@ const (
 	SMSTemplate                      = "SMS Template"
 	CloudStorageGateway              = "CloudStorageGateway"
 	CloudStorageGatewayStorageBundle = "CloudStorageGateway Storage Bundle"
+	DCDNIpaDomain                    = "DCDN IpaDomain"
 )

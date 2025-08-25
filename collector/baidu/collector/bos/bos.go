@@ -16,13 +16,13 @@
 package bos
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/baidubce/bce-sdk-go/services/bos"
 	"github.com/baidubce/bce-sdk-go/services/bos/api"
 	"github.com/cloudrec/baidu/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -43,8 +43,6 @@ func GetResource() schema.Resource {
 		ResourceGroupType: constant.STORE,
 		Desc:              `https://cloud.baidu.com/product/bos.html`,
 		Regions: []string{
-			"bj.bcebos.com",
-			"gz.bcebos.com",
 			"su.bcebos.com",
 		},
 		ResourceDetailFunc: func(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -54,11 +52,12 @@ func GetResource() schema.Resource {
 				return err
 			} else {
 				for _, b := range resp.Buckets {
+					bosClient := createBosClient(b.Location, client)
 					detail := Detail{
 						Bucket:           b,
-						BucketAcl:        getBucketAcl(ctx, client, b.Name),
-						BucketLogging:    getBucketLogging(ctx, client, b.Name),
-						BucketEncryption: getBucketEncryption(ctx, client, b.Name),
+						BucketAcl:        getBucketAcl(ctx, bosClient, b.Name),
+						BucketLogging:    getBucketLogging(ctx, bosClient, b.Name),
+						BucketEncryption: getBucketEncryption(ctx, bosClient, b.Name),
 					}
 					res <- detail
 				}
@@ -69,8 +68,16 @@ func GetResource() schema.Resource {
 			ResourceId:   "$.Bucket.name",
 			ResourceName: "$.Bucket.name",
 		},
-		Dimension: schema.Regional,
+		Dimension: schema.Global,
 	}
+}
+
+func createBosClient(location string, cli *bos.Client) *bos.Client {
+	bosClient, err := bos.NewClient(cli.Config.Credentials.AccessKeyId, cli.Config.Credentials.SecretAccessKey, location+".bcebos.com")
+	if err != nil {
+		return nil
+	}
+	return bosClient
 }
 
 // 获取存储桶ACL配置

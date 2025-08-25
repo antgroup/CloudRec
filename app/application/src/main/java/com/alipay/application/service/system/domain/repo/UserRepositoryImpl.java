@@ -18,7 +18,10 @@ package com.alipay.application.service.system.domain.repo;
 
 
 import com.alipay.application.service.system.domain.User;
+import com.alipay.application.service.system.domain.enums.RoleNameType;
+import com.alipay.dao.mapper.TenantUserMapper;
 import com.alipay.dao.mapper.UserMapper;
+import com.alipay.dao.po.TenantUserPO;
 import com.alipay.dao.po.UserPO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Repository;
@@ -35,6 +38,9 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private TenantUserMapper tenantUserMapper;
 
     @Resource
     private UserConverter userConverter;
@@ -70,7 +76,10 @@ public class UserRepositoryImpl implements UserRepository {
     public User find(String userId) {
         UserPO userPO = userMapper.findOne(userId);
         if (userPO != null) {
-            return userConverter.toEntity(userPO);
+            User user = userConverter.toEntity(userPO);
+            TenantUserPO tenantUserPO = tenantUserMapper.findOne(user.getId(), user.getTenantId());
+            user.setSelectTenantRoleName(tenantUserPO != null ? tenantUserPO.getRoleName() : RoleNameType.user.name());
+            return user;
         }
         return null;
     }
@@ -82,5 +91,12 @@ public class UserRepositoryImpl implements UserRepository {
             return userConverter.toEntity(userPO);
         }
         return null;
+    }
+
+    @Override
+    public void switchTenant(String userId, Long tenantId) {
+        UserPO userPO = userMapper.findOne(userId);
+        userPO.setTenantId(tenantId);
+        userMapper.updateByPrimaryKeySelective(userPO);
     }
 }

@@ -25,6 +25,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/cas"
 	"github.com/cloudrec/alicloud/collector/cdn"
 	"github.com/cloudrec/alicloud/collector/cen"
+	"github.com/cloudrec/alicloud/collector/cloudapi"
 	"github.com/cloudrec/alicloud/collector/cloudcenter"
 	"github.com/cloudrec/alicloud/collector/cloudfw"
 	"github.com/cloudrec/alicloud/collector/db/AnalyticDB/adbmysql"
@@ -61,6 +62,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/resourcecenter"
 	"github.com/cloudrec/alicloud/collector/rocketmq"
 	"github.com/cloudrec/alicloud/collector/tablestore"
+	"github.com/cloudrec/alicloud/collector/test"
 	"github.com/cloudrec/alicloud/collector/vpc"
 	"github.com/cloudrec/alicloud/collector/vpc/eip"
 	"github.com/cloudrec/alicloud/collector/vpc/nat"
@@ -73,12 +75,12 @@ import (
 func GetPlatformConfig() *schema.Platform {
 	// all region list from https://next.api.aliyun.com/product/Ecs
 	alicloudRegions := []string{
+		"cn-hangzhou",    //华东 1（杭州）
 		"cn-qingdao",     //华北 1（青岛）
 		"cn-beijing",     //华北 2（北京）
 		"cn-zhangjiakou", //华北 3（张家口）
 		"cn-huhehaote",   //华北 5（呼和浩特）
 		"cn-wulanchabu",  //华北6（乌兰察布）
-		"cn-hangzhou",    //华东 1（杭州）
 		"cn-shanghai",    //华东 2（上海）
 		"cn-nanjing",     //华东 5（南京）
 		"cn-shenzhen",    //华南 1（深圳）
@@ -124,6 +126,8 @@ func GetPlatformConfig() *schema.Platform {
 			arms.GetGrafanaWorkspaceResource(),
 			ecs.GetInstanceResource(),
 			ecs.GetSecurityGroupData(),
+			ecs.GetImagesResource(),
+			ecs.GetSnapshotsResource(),
 			vpc.GetVPCResource(),
 			nat.GetNatResource(),
 			oss.GetBucketResource(),
@@ -171,12 +175,19 @@ func GetPlatformConfig() *schema.Platform {
 			ens.GetNetworkResource(),
 			ens.GetNatGatewayResource(),
 			// cloudapi.GetCloudAPIResource(),
+			cloudapi.GetAPIGatewayResource(),
 			kms.GetKMSResource(),
 			ack.GetClusterResource(),
 			mse.GetMSEResource(),
 			tablestore.GetTablestoreResource(),
 			yundun.GetResource(),
+			yundun.GetBastionhostResource(),
 			apig.GetDomainData(),
+			//dts.GetDTSInstanceResource(),
+			//eci.GetECIContainerGroupResource(),
+			//eci.GetECIImageCacheResource(),
+			//swas.GetInstanceResource(),
+			vpc.GetVPNConnectionResource(),
 		},
 
 		Service:        &collector.Services{},
@@ -209,10 +220,10 @@ func GetPlatformConfigTest() *schema.Platform {
 	return schema.GetInstance(schema.PlatformConfig{
 		Name: string(constant.AlibabaCloud),
 		Resources: []schema.Resource{
-			//test.TestBlockResource(),
-			//test.TestAutoExitResource(),
-			//test.TestTimeOutResource(),
-			//test.TestBlockResource2(),
+			test.TestBlockResource(),
+			test.TestAutoExitResource(),
+			test.TestTimeOutResource(),
+			test.TestBlockResource2(),
 		},
 
 		Service:              &collector.Services{},

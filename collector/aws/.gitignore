@@ -1,7 +1,3 @@
 !.gitignore
-task
-*.log
 *.json
-deploy.log
-task.log
-lunar_collector_aws
+cloudrec_collector_aws

@@ -16,13 +16,13 @@
 package ack
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	cs20151215 "github.com/alibabacloud-go/cs-20151215/v5/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -39,6 +39,11 @@ func GetClusterResource() schema.Resource {
 		},
 		Dimension: schema.Global,
 	}
+}
+
+type Detail struct {
+	Cluster            *cs20151215.DescribeClustersV1ResponseBodyClusters
+	AssociatedResource []*cs20151215.DescribeClusterResourcesResponseBody
 }
 
 func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -58,7 +63,8 @@ func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res 
 		count += len(resp.Body.Clusters)
 		for i := 0; i < len(resp.Body.Clusters); i++ {
 			res <- Detail{
-				Cluster: resp.Body.Clusters[i],
+				Cluster:            resp.Body.Clusters[i],
+				AssociatedResource: describeClusterResources(ctx, cli, resp.Body.Clusters[i].ClusterId),
 			}
 		}
 		if count >= int(*resp.Body.PageInfo.TotalCount) || len(resp.Body.Clusters) == 0 {
@@ -70,6 +76,11 @@ func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res 
 	return nil
 }
 
-type Detail struct {
-	Cluster *cs20151215.DescribeClustersV1ResponseBodyClusters
+func describeClusterResources(ctx context.Context, cli *cs20151215.Client, id *string) []*cs20151215.DescribeClusterResourcesResponseBody {
+	out, err := cli.DescribeClusterResources(id, &cs20151215.DescribeClusterResourcesRequest{})
+	if err != nil {
+		log.CtxLogger(ctx).Error("DescribeClusterResources error", zap.Error(err))
+		return nil
+	}
+	return out.Body
 }

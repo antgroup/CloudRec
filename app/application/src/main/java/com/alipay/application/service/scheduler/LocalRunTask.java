@@ -21,6 +21,7 @@ import com.alipay.application.service.collector.AgentService;
 import com.alipay.application.service.resource.job.ClearJob;
 import com.alipay.application.service.risk.job.SubscriptionJobService;
 import com.alipay.application.service.rule.job.ScanService;
+import com.alipay.application.service.statistics.job.ParseCloudResourceDataJob;
 import com.alipay.application.service.statistics.job.StatisticsJob;
 import com.alipay.application.service.statistics.job.SyncDataJob;
 import jakarta.annotation.Resource;
@@ -46,6 +47,9 @@ public class LocalRunTask {
 
     @Resource
     private ClearJob clearJob;
+
+    @Resource
+    private ParseCloudResourceDataJob parseCloudResourceDataJob;
 
     @Resource
     private SyncDataJob syncDataJob;
@@ -114,7 +118,7 @@ public class LocalRunTask {
      * 初始化采集状态
      */
     @Synchronized
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "0 0 0/1 * * ?")
     public void initCloudAccountCollectStatus_local() {
         boolean runStatus = Boolean.TRUE;
         String msg = null;
@@ -226,6 +230,29 @@ public class LocalRunTask {
         } finally {
             //释放锁
             localTaskLocksService.releaseLockTask("scanAllHandler", runStatus, msg);
+        }
+    }
+
+    /**
+     * 定时刷新ram风险数据
+     */
+    @Synchronized
+    @Scheduled(cron = "0 0 0/12 * * ?")
+    public void refreshIAMData_local() {
+        boolean runStatus = Boolean.TRUE;
+        String msg = null;
+        try {
+            log.info("refreshIAMData_local start");
+            localTaskLocksService.lockTask("refreshIAMDataHandler");
+            parseCloudResourceDataJob.refreshIAMData();
+        } catch (Exception e) {
+            log.error("refreshIAMData_local error", e);
+            runStatus = Boolean.FALSE;
+            msg = e.getMessage();
+            throw new RuntimeException(e);
+        } finally {
+            //释放锁
+            localTaskLocksService.releaseLockTask("refreshIAMDataHandler", runStatus, msg);
         }
     }
 

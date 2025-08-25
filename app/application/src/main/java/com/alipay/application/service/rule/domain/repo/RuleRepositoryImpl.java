@@ -206,6 +206,9 @@ public class RuleRepositoryImpl implements RuleRepository {
                 rulePO.setId(existRule.getId());
                 rulePO.setGmtModified(new Date());
                 ruleMapper.updateByPrimaryKeySelective(rulePO);
+            } else {
+                // When RuleCode is not empty,But not exist in database, still should insert
+                ruleMapper.insertSelective(rulePO);
             }
         }
 
@@ -387,4 +390,22 @@ public class RuleRepositoryImpl implements RuleRepository {
         return ruleAggs;
     }
 
+    /**
+     * Is there a new rule
+     *
+     * @return true: there is a new rule, false: no new rule
+     */
+    @Override
+    public int existNewRule() {
+        int newRuleCount = 0;
+        List<RuleAgg> ruleList = findRuleListFromGitHub();
+        for (RuleAgg rule : ruleList) {
+            RulePO existRule = ruleMapper.findOne(rule.getRuleCode());
+            if (existRule == null) {
+                newRuleCount++;
+            }
+        }
+
+        return newRuleCount;
+    }
 }

@@ -1,6 +1,7 @@
 import DISCOVER from '@/assets/images/DISCOVER.svg';
 import SCAN from '@/assets/images/SCAN.svg';
 import Disposition from '@/components/Disposition';
+import NoPermission from '@/components/Common/NoPermission';
 import CheckInform from '@/pages/RiskManagement/components/CheckInform';
 import {
   IgnoreReasonTypeList,
@@ -12,7 +13,7 @@ import { IValueType } from '@/utils/const';
 import { obtainPlatformIcon, obtainRiskStatus } from '@/utils/shared';
 import { ArrowLeftOutlined, ProfileOutlined } from '@ant-design/icons';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
-import { history, useLocation, useModel, useRequest } from '@umijs/max';
+import { history, useLocation, useModel, useRequest, useIntl } from '@umijs/max';
 import {
   Button,
   Card,
@@ -40,6 +41,8 @@ const RiskDetail: React.FC = () => {
   const location = useLocation();
   const queryParameters: URLSearchParams = new URLSearchParams(location.search);
   const [id] = useState(queryParameters.get('id'));
+  // Intl API
+  const intl = useIntl();
   // Global List
   const { platformList } = useModel('rule');
   const { tenantListAll } = useModel('tenant');
@@ -49,6 +52,9 @@ const RiskDetail: React.FC = () => {
   // Asset Details
   const [resourceDrawerVisible, setResourceDrawerVisible] =
     useState<boolean>(false);
+
+  // Error state for no permission
+  const [hasError, setHasError] = useState<boolean>(false);
 
   // Risk detail data
   const {
@@ -62,7 +68,13 @@ const RiskDetail: React.FC = () => {
     {
       manual: true,
       formatResult: (r: any) => {
+        if(r.code === 403){
+          setHasError(true);
+        }
         return r.content || {};
+      },
+      onError: (error: any) => {
+        setHasError(true);
       },
     },
   );
@@ -71,14 +83,33 @@ const RiskDetail: React.FC = () => {
     if (id) requestRiskDetailById(id);
   }, [id]);
 
+  // Show error page when access is denied
+  if (hasError) {
+    return (
+      <PageContainer
+        breadcrumbRender={false}
+        title={
+          <Button type={'link'} size={'small'} onClick={() => history?.back()}>
+            <ArrowLeftOutlined /> {intl.formatMessage({ id: 'common.button.text.return' })}
+          </Button>
+        }
+        className={styles['riskDetailContainer']}
+      >
+        <NoPermission />
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer
       loading={riskDetailLoading}
       breadcrumbRender={false}
       title={
-        <Button type={'link'} size={'small'} onClick={() => history?.back()}>
-          <ArrowLeftOutlined /> 返回
-        </Button>
+        <Flex justify="space-between" align="center" style={{ width: '100%' }}>
+          <Button type={'link'} size={'small'} onClick={() => history?.back()}>
+            <ArrowLeftOutlined /> {intl.formatMessage({ id: 'common.button.text.return' })}
+          </Button>
+        </Flex>
       }
       className={styles['riskDetailContainer']}
     >
@@ -120,7 +151,10 @@ const RiskDetail: React.FC = () => {
                         color: 'rgba(127, 127, 127, 1)',
                       }}
                     >
-                      忽略类型:
+                      {intl.formatMessage({
+                        id: 'risk.module.text.ignore.type',
+                      })}
+                      &nbsp;:&nbsp;
                     </Text>
                     <Tag color="geekblue">
                       {IgnoreReasonTypeList.find(
@@ -138,7 +172,10 @@ const RiskDetail: React.FC = () => {
                         color: 'rgba(127, 127, 127, 1)',
                       }}
                     >
-                      忽略原因:
+                      {intl.formatMessage({
+                        id: 'risk.module.text.ignore.reason',
+                      })}
+                      &nbsp;:&nbsp;
                     </Text>
                     <Disposition
                       rows={1}
@@ -178,7 +215,10 @@ const RiskDetail: React.FC = () => {
                   margin: '0 8px 0 6px',
                 }}
               >
-                最近扫描命中:
+                {intl.formatMessage({
+                  id: 'risk.module.text.recently.scanned.hits',
+                })}
+                &nbsp;:&nbsp;
               </span>
               <span style={{ color: 'rgba(51, 51, 51, 1)' }}>
                 {riskInfo?.gmtModified}
@@ -196,12 +236,39 @@ const RiskDetail: React.FC = () => {
                   margin: '0 8px 0 6px',
                 }}
               >
-                首次发现时间:
+                {intl.formatMessage({
+                  id: 'risk.module.text.first.discovery.time',
+                })}
+                &nbsp;:&nbsp;
               </span>
               <span style={{ color: 'rgba(51, 51, 51, 1)' }}>
                 {riskInfo?.gmtCreate}
               </span>
             </Text>
+          </Flex>
+
+          {/* Cloud Account Information */}
+          <Flex
+            align={'center'}
+            style={{ margin: '10px 0 6px 0' }}
+          >
+            <span
+              style={{
+                marginRight: 8,
+                color: 'rgba(127, 127, 127, 1)',
+              }}
+            >
+              {intl.formatMessage({
+                id: 'common.select.label.cloudAccount',
+              })}
+              &nbsp;:&nbsp;
+            </span>
+            <span style={{ color: 'rgba(51, 51, 51, 1)', marginRight: 16 }}>
+              {riskInfo?.cloudAccountId || '-'}
+            </span>
+            <span style={{ color: 'rgba(127, 127, 127, 1)', marginRight: 16 }}>
+              {riskInfo?.alias || '-'}
+            </span>
           </Flex>
 
           <Flex
@@ -225,7 +292,7 @@ const RiskDetail: React.FC = () => {
                 {riskInfo?.resourceName + ' / ' + riskInfo?.resourceId}
               </span>
 
-              <Tooltip title={'资产详情'}>
+              <Tooltip title={intl.formatMessage({ id: 'asset.extend.text.detail' })}>
                 <span
                   className={styles['iconWrap']}
                   onClick={() => setResourceDrawerVisible(true)}
@@ -254,17 +321,17 @@ const RiskDetail: React.FC = () => {
           }}
         >
           <Form>
-            <Form.Item label={'修复建议'}>
+            <Form.Item label={intl.formatMessage({ id: 'rule.module.text.repair.suggestions' })}>
               <span style={{ color: 'rgb(51, 51, 51)' }}>
                 {riskInfo?.ruleVO?.advice || '-'}
               </span>
             </Form.Item>
-            <Form.Item label={'参考链接'}>
+            <Form.Item label={intl.formatMessage({ id: 'risk.module.text.reference.link' })}>
               <span style={{ color: 'rgb(51, 51, 51)' }}>
                 {riskInfo?.ruleVO?.link || '-'}
               </span>
             </Form.Item>
-            <Form.Item label={'规则描述'}>
+            <Form.Item label={intl.formatMessage({ id: 'rule.module.text.rule.describe' })}>
               <span style={{ color: 'rgb(51, 51, 51)' }}>
                 {riskInfo?.ruleVO?.ruleDesc || '-'}
               </span>

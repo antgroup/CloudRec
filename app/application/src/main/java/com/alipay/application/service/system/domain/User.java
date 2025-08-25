@@ -47,6 +47,11 @@ public class User {
 
     private Date lastLoginTime;
 
+    /**
+     * The user's currently selected tenant role name
+     */
+    private String selectTenantRoleName;
+
     public static final String DEFAULT_USER_ID = "cloudrec";
     private static final String DEFAULT_USER_PASSWORD = "cloudrec";
 
@@ -73,5 +78,15 @@ public class User {
         user.setStatus(Status.valid);
         return user;
     }
+
+    public static User initDefaultUser(User user) {
+        user.setUserId(DEFAULT_USER_ID);
+        user.setUsername(DEFAULT_USER_ID);
+        user.setRoleName(RoleNameType.admin);
+        user.setStatus(Status.valid);
+        return user;
+    }
+
+
 
 }

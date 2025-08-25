@@ -43,6 +43,8 @@ public interface RuleService {
 
     ApiResponse<ListVO<RuleVO>> queryRuleList(ListRuleRequest listRuleRequest);
 
+    ListVO<RuleVO> queryEffectRuleList(ListRuleRequest listRuleRequest);
+
 
     ApiResponse<String> deleteRule(Long id);
 
@@ -67,4 +69,14 @@ public interface RuleService {
     String generateRuleCode(String platform, String resourceType);
 
     List<RuleVO> queryAllRuleList();
+
+    ApiResponse<String> addTenantSelectRule(String ruleCode);
+
+    ApiResponse<String> deleteTenantSelectRule(String ruleCode);
+
+    ApiResponse<String> batchDeleteTenantSelectRule(List<String> ruleCodeList);
+
+    List<RuleVO> queryAllTenantSelectRuleList();
+
+    ApiResponse<String> batchAddTenantSelectRule(List<String> ruleCodeList);
 }

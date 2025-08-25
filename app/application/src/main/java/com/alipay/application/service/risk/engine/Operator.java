@@ -17,6 +17,5 @@
 package com.alipay.application.service.risk.engine;
 
 public enum Operator {
-
-    ANY, ALL, EQ, ALL_IN, ANY_IN;
+    EQ, NE, LIKE, NOT_LIKE, IN, NOT_IN;
 }

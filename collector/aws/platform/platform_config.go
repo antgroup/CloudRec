@@ -16,21 +16,47 @@
 package platform
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 	"github.com/cloudrec/aws/collector"
+	"github.com/cloudrec/aws/collector/accessanalyzer"
+	"github.com/cloudrec/aws/collector/account"
+	"github.com/cloudrec/aws/collector/acm"
+	"github.com/cloudrec/aws/collector/apigateway"
+	"github.com/cloudrec/aws/collector/appstream"
+	"github.com/cloudrec/aws/collector/autoscaling"
+	"github.com/cloudrec/aws/collector/cloudformation"
 	"github.com/cloudrec/aws/collector/cloudfront"
+	"github.com/cloudrec/aws/collector/cloudtrail"
+	"github.com/cloudrec/aws/collector/cloudwatch"
+	"github.com/cloudrec/aws/collector/cognito"
+	"github.com/cloudrec/aws/collector/config"
+	"github.com/cloudrec/aws/collector/dynamodb"
 	"github.com/cloudrec/aws/collector/ec2"
 	"github.com/cloudrec/aws/collector/ecr"
+	"github.com/cloudrec/aws/collector/ecs"
 	"github.com/cloudrec/aws/collector/efs"
+	"github.com/cloudrec/aws/collector/eks"
 	"github.com/cloudrec/aws/collector/elasticache"
 	"github.com/cloudrec/aws/collector/elasticloadbalancing"
+	"github.com/cloudrec/aws/collector/fms"
 	"github.com/cloudrec/aws/collector/fsx"
+	"github.com/cloudrec/aws/collector/guardduty"
 	"github.com/cloudrec/aws/collector/iam"
+	"github.com/cloudrec/aws/collector/inspector2"
+	"github.com/cloudrec/aws/collector/kms"
+	"github.com/cloudrec/aws/collector/lambda"
+	"github.com/cloudrec/aws/collector/macie"
+	"github.com/cloudrec/aws/collector/networkfirewall"
+	"github.com/cloudrec/aws/collector/opensearch"
 	"github.com/cloudrec/aws/collector/rds"
 	"github.com/cloudrec/aws/collector/route53"
 	"github.com/cloudrec/aws/collector/s3"
+	"github.com/cloudrec/aws/collector/secretsmanager"
+	"github.com/cloudrec/aws/collector/securityhub"
+	"github.com/cloudrec/aws/collector/sns"
+	"github.com/cloudrec/aws/collector/sqs"
 	"github.com/cloudrec/aws/collector/wafv2"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {
@@ -44,6 +70,9 @@ func GetPlatformConfig() *schema.Platform {
 			ec2.GetNetworkAclResource(),
 			ec2.GetSecurityGroupResource(),
 			ec2.GetVPCResource(),
+			ec2.GetVpcEndpointServiceResource(),
+			ec2.GetFlowLogResource(),
+			ec2.GetNetworkInterfaceResource(),
 			rds.GetRDSInstanceResource(),
 			elasticloadbalancing.GetELBResource(),
 			elasticloadbalancing.GetCLBResource(),
@@ -60,6 +89,40 @@ func GetPlatformConfig() *schema.Platform {
 			iam.GetRoleResource(),
 			iam.GetGroupResource(),
 			iam.GetAccountSettingsResource(),
+			iam.GetPolicyResource(),
+			kms.GetKeyResource(),
+			config.GetRecorderResource(),
+			guardduty.GetDetectorResource(),
+			cloudtrail.GetTrailResource(),
+			lambda.GetFunctionResource(),
+			autoscaling.GetGroupResource(),
+			ecs.GetClusterResource(),
+			ecs.GetTaskDefinitionResource(),
+			eks.GetClusterResource(),
+			dynamodb.GetTableResource(),
+			cloudformation.GetStackResource(),
+			cloudwatch.GetAlarmResource(),
+			cloudwatch.GetLogGroupResource(),
+			account.GetAccountResource(),
+			appstream.GetFleetResource(),
+			apigateway.GetAPIV2Resource(),
+			acm.GetCertificateResource(),
+			secretsmanager.GetSecretResource(),
+			sns.GetSNSTopicResource(),
+			sqs.GetSQSQueueResource(),
+			accessanalyzer.GetAnalyzerResource(),
+			cognito.GetUserPoolResource(),
+			cognito.GetIdentityPoolResource(),
+			fms.GetPolicyResource(),
+			inspector2.GetFindingResource(),
+			inspector2.GetCoverageResource(),
+			securityhub.GetFindingResource(),
+			macie.GetFindingResource(),
+			macie.GetClassificationJobResource(),
+			macie.GetMacieSessionResource(),
+			networkfirewall.GetFirewallResource(),
+			networkfirewall.GetRuleGroupResource(),
+			opensearch.GetDomainResource(),
 		},
 		Service: &collector.Services{},
 

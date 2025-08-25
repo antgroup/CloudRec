@@ -29,4 +29,4 @@ risk if {
 
 ### For more details please see: https://www.openpolicyagent.org/docs/latest/#example`;
 
-export const CONTEXT_TEMPLATE = `实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。`;
+export const CONTEXT_TEMPLATE = `实例：{$.ResourceId} ，名称：{$.ResourceName} 存在风险。`;

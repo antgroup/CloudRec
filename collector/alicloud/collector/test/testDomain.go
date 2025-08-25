@@ -11,21 +11,21 @@ import (
 	"go.uber.org/zap"
 )
 
-func main() {
-	p := schema.GetInstance(schema.PlatformConfig{
-		Name: string(constant.AlibabaCloud),
-		Resources: []schema.Resource{
-			GetDomainData(),
-		},
-
-		Service:        &collector.Services{},
-		DefaultRegions: []string{"cn-beijing"},
-	})
-
-	if err := schema.RunExecutor(p); err != nil {
-		log.GetWLogger().Error(err.Error())
-	}
-}
+//func main() {
+//	p := schema.GetInstance(schema.PlatformConfig{
+//		Name: string(constant.AlibabaCloud),
+//		Resources: []schema.Resource{
+//			GetDomainData(),
+//		},
+//
+//		Service:        &collector.Services{},
+//		DefaultRegions: []string{"cn-beijing"},
+//	})
+//
+//	if err := schema.RunExecutor(p); err != nil {
+//		log.GetWLogger().Error(err.Error())
+//	}
+//}
 
 func GetDomainData() schema.Resource {
 	return schema.Resource{

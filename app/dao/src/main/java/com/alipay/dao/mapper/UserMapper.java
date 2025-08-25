@@ -16,7 +16,6 @@
  */
 package com.alipay.dao.mapper;
 
-import com.alipay.dao.dto.TenantDTO;
 import com.alipay.dao.dto.UserDTO;
 import com.alipay.dao.po.UserPO;
 import org.apache.ibatis.annotations.Param;
@@ -33,10 +32,6 @@ public interface UserMapper {
     int updateByPrimaryKeySelective(UserPO record);
 
     UserPO findOne(String userId);
-
-    int findMemberCount(TenantDTO tenantDTO);
-
-    List<UserPO> findMemberList(TenantDTO tenantDTO);
 
     int findCount(UserDTO userDTO);
 

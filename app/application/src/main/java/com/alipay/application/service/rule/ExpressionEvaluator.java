@@ -21,7 +21,10 @@ import java.util.Map;
 public class ExpressionEvaluator {
   
     public static boolean evalExpression(String condition, Map<Integer, Boolean> resultsMap) {
-        condition = condition.replaceAll("\\s+", "");
+        // Replace AND/OR keywords with logical operators
+        condition = condition.replaceAll("\\bAND\\b", "&&")
+                           .replaceAll("\\bOR\\b", "||")
+                           .replaceAll("\\s+", "");
         return evaluate(condition, resultsMap);
     }
 
@@ -33,8 +36,8 @@ public class ExpressionEvaluator {
     }
 
     private static EvalResult evaluateExpression(String condition, Map<Integer, Boolean> resultsMap, int index) {
-        boolean currentResult = true;
-        boolean currentLogicalAnd = true;
+        Boolean currentResult = null;
+        String nextOperator = null;
         int i = index;
 
         while (i < condition.length()) {
@@ -42,35 +45,44 @@ public class ExpressionEvaluator {
             if (Character.isDigit(currentChar)) {
                 int num = currentChar - '0';
                 boolean value = resultsMap.getOrDefault(num, false);
-                if (currentLogicalAnd) {
+                
+                if (currentResult == null) {
+                    currentResult = value;
+                } else if ("&&".equals(nextOperator)) {
                     currentResult = currentResult && value;
-                } else {
+                } else if ("||".equals(nextOperator)) {
                     currentResult = currentResult || value;
                 }
+                nextOperator = null;
                 i++;
                 
             } else if (currentChar == '&') {
                 i += 2; // Skip "&&"
-                currentLogicalAnd = true;
+                nextOperator = "&&";
             } else if (currentChar == '|') {
                 i += 2; // Skip "||"
-                currentLogicalAnd = false;
+                nextOperator = "||";
             } else if (currentChar == '(') {
                 EvalResult result = evaluateExpression(condition, resultsMap, i + 1);
-                if (currentLogicalAnd) {
-                    currentResult = currentResult && result.result;
-                } else {
-                    currentResult = currentResult || result.result;
+                boolean value = result.result;
+                
+                if (currentResult == null) {
+                    currentResult = value;
+                } else if ("&&".equals(nextOperator)) {
+                    currentResult = currentResult && value;
+                } else if ("||".equals(nextOperator)) {
+                    currentResult = currentResult || value;
                 }
+                nextOperator = null;
                 i = result.index + 1;
             } else if (currentChar == ')') {
-                return new EvalResult(currentResult, i);
+                return new EvalResult(currentResult != null ? currentResult : false, i);
             } else {
                 throw new IllegalArgumentException("Invalid character in condition: " + currentChar);
             }
         }
 
-        return new EvalResult(currentResult, i);
+        return new EvalResult(currentResult != null ? currentResult : false, i);
     }
 
     private static class EvalResult {

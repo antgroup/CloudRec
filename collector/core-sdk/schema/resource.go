@@ -152,6 +152,16 @@ const (
 	Regional
 )
 
+// ThrottlingConfig contains throttling configuration for a specific resource type
+type ThrottlingConfig struct {
+	// RequestsPerSecond defines the maximum requests per second for this resource type
+	RequestsPerSecond float64 `json:"requests_per_second,omitempty"`
+	// BurstSize defines the maximum burst size for this resource type
+	BurstSize int `json:"burst_size,omitempty"`
+	// Enabled indicates whether throttling is enabled for this resource type
+	Enabled bool `json:"enabled,omitempty"`
+}
+
 // Resource struct defines a type of resource.
 // Resource todo Need to detect parameters
 type Resource struct {
@@ -197,6 +207,10 @@ type Resource struct {
 
 	// Excluded regions, if configured, it will be excluded from the region list
 	ExcludedRegions []string
+
+	// ThrottlingConfig defines throttling configuration for this resource type
+	// If not specified, default throttling settings will be used
+	ThrottlingConfig *ThrottlingConfig `json:"throttling_config,omitempty"`
 }
 
 type RowField struct {

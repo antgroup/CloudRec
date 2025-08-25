@@ -18,7 +18,7 @@ package com.alipay.application.service.rule;
 
 import com.alipay.application.service.rule.impl.WhitedRuleServiceImpl;
 import com.alipay.application.service.rule.job.ScanService;
-import com.alipay.application.share.request.rule.SaveWhitedRuleRequestDTO;
+import com.alipay.application.share.request.rule.SaveWhitedRuleRequest;
 import com.alipay.application.share.request.rule.WhitedRuleConfigDTO;
 import com.alipay.common.enums.WhitedRuleOperatorEnum;
 import com.alipay.common.enums.WhitedRuleTypeEnum;
@@ -57,9 +57,6 @@ public class WhitedRuleServiceTest {
     @Mock
     private RuleMapper ruleMapper;
 
-    @Mock
-    private ScanService scanService;
-
     private UserInfoDTO currentUser;
 
     @Before
@@ -76,7 +73,7 @@ public class WhitedRuleServiceTest {
      */
     @Test
     public void testSave_NewRule() {
-        SaveWhitedRuleRequestDTO dto = new SaveWhitedRuleRequestDTO();
+        SaveWhitedRuleRequest dto = new SaveWhitedRuleRequest();
         dto.setRuleName("testRule");
         dto.setRuleType(WhitedRuleTypeEnum.RULE_ENGINE.name());
         WhitedRuleConfigDTO whitedRuleConfigDTO =  WhitedRuleConfigDTO.builder()
@@ -93,7 +90,7 @@ public class WhitedRuleServiceTest {
         when(whitedRuleConfigMapper.insertSelective(any(WhitedRuleConfigPO.class))).thenReturn(1);
         when(ruleMapper.findOne(anyString())).thenReturn(new RulePO());
 
-        int result = whitedRuleService.save(dto);
+        long result = whitedRuleService.save(dto);
 
         assertEquals(1, result);
     }
@@ -103,7 +100,7 @@ public class WhitedRuleServiceTest {
      */
     @Test
     public void testSave_UpdateRule() {
-        SaveWhitedRuleRequestDTO dto = new SaveWhitedRuleRequestDTO();
+        SaveWhitedRuleRequest dto = new SaveWhitedRuleRequest();
         dto.setId(1L);
         dto.setRuleName("testRule");
         dto.setRuleType(WhitedRuleTypeEnum.RULE_ENGINE.name());
@@ -125,7 +122,7 @@ public class WhitedRuleServiceTest {
         when(whitedRuleConfigMapper.updateByPrimaryKeySelective(any(WhitedRuleConfigPO.class))).thenReturn(1);
         when(ruleMapper.findOne(anyString())).thenReturn(new RulePO());
 
-        int result = whitedRuleService.save(dto);
+        long result = whitedRuleService.save(dto);
 
         assertEquals(1, result);
     }
@@ -135,7 +132,7 @@ public class WhitedRuleServiceTest {
      */
     @Test(expected = RuntimeException.class)
     public void testSave_RuleLockedByOtherUser() {
-        SaveWhitedRuleRequestDTO dto = new SaveWhitedRuleRequestDTO();
+        SaveWhitedRuleRequest dto = new SaveWhitedRuleRequest();
         dto.setId(1L);
         dto.setRuleName("testRule");
         dto.setRuleType(WhitedRuleTypeEnum.RULE_ENGINE.name());
@@ -163,7 +160,7 @@ public class WhitedRuleServiceTest {
      */
     @Test(expected = RuntimeException.class)
     public void testSave_RuleTypeNotExist() {
-        SaveWhitedRuleRequestDTO dto = new SaveWhitedRuleRequestDTO();
+        SaveWhitedRuleRequest dto = new SaveWhitedRuleRequest();
         dto.setRuleName("testRule");
         dto.setRuleType("NON_EXISTENT_TYPE");
         dto.setRuleConfigList(Collections.singletonList(new WhitedRuleConfigDTO()));
@@ -178,7 +175,7 @@ public class WhitedRuleServiceTest {
      */
     @Test(expected = RuntimeException.class)
     public void testSave_UserInfoEmpty() {
-        SaveWhitedRuleRequestDTO dto = new SaveWhitedRuleRequestDTO();
+        SaveWhitedRuleRequest dto = new SaveWhitedRuleRequest();
         dto.setRuleName("testRule");
         dto.setRuleType(WhitedRuleTypeEnum.RULE_ENGINE.name());
         WhitedRuleConfigDTO whitedRuleConfigDTO =  WhitedRuleConfigDTO.builder()

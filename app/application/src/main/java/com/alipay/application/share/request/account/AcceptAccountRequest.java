@@ -40,6 +40,8 @@ public class AcceptAccountRequest {
     @NotEmpty(message = "账号不能为空")
     private String account;
 
+    private String email;
+
     private String owner;
 
     private String nickName;

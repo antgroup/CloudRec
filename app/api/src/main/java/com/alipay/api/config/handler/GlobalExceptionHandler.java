@@ -18,6 +18,8 @@ package com.alipay.api.config.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alipay.application.share.vo.ApiResponse;
+import com.alipay.common.exception.BizException;
+import com.alipay.common.exception.OpenAipNoAuthException;
 import com.alipay.common.exception.UserNoLoginException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,40 +35,29 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /**
-     * 用户未登录异常处理
-     * @param e
-     * @return
-     */
     @ExceptionHandler(UserNoLoginException.class)
     public ApiResponse<String> exceptionHandler(UserNoLoginException e) {
         return new ApiResponse<>(ApiResponse.ACCESS_DENIED, "USER_NOT_LOGIN", e.getMsg());
     }
 
-    /**
-     * 全局异常处理
-     *
-     * @param e
-     * @return
-     */
+    @ExceptionHandler(OpenAipNoAuthException.class)
+    public ApiResponse<String> exceptionHandler(OpenAipNoAuthException e) {
+        log.warn("OpenApi authentication failed: {}", e.getMsg());
+        return new ApiResponse<>(ApiResponse.ACCESS_DENIED, "OPENAPI_AUTH_FAILED", e.getMsg());
+    }
+
+    @ExceptionHandler(BizException.class)
+    public ApiResponse<String> exceptionHandler(BizException e) {
+        log.error("Exception occurred!", e);
+        return new ApiResponse<>(Integer.parseInt(e.getErrorCode().getCode()), e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ApiResponse<String> exceptionHandler(Exception e) {
         log.error("Exception occurred!", e);
-        if (e.getMessage() != null && e.getMessage().contains("java.io.IOException")) {
-            return new ApiResponse<>(ApiResponse.FAIL_CODE, e.getMessage());
-        }
-
-        if (e.getMessage().contains("com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException")) {
-            return new ApiResponse<>(ApiResponse.FAIL_CODE, "SQLSyntaxErrorException");
-        }
         return new ApiResponse<>(ApiResponse.FAIL_CODE, e.getMessage());
     }
 
-    /**
-     * 参数校验异常处理
-     * @param ex
-     * @return
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ApiResponse<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

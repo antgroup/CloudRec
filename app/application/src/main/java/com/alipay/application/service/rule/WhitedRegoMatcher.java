@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -49,7 +48,7 @@ public class WhitedRegoMatcher {
 
     public boolean executeRegoMatch(String regoContent,String whitedRuleConfigId, WhitedScanInputDataDTO whitedScanInputDataDTO){
 
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result;
         if(StringUtils.isEmpty(whitedRuleConfigId)){
             String regoPath = opaRepository.findPackage(regoContent);
             opaRepository.createOrUpdatePolicy(regoPath, regoContent);

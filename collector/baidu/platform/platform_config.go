@@ -16,8 +16,6 @@
 package platform
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 	"github.com/cloudrec/baidu/collector"
 	"github.com/cloudrec/baidu/collector/bcc"
 	"github.com/cloudrec/baidu/collector/blb"
@@ -32,6 +30,8 @@ import (
 	"github.com/cloudrec/baidu/collector/redis"
 	"github.com/cloudrec/baidu/collector/vpc"
 	"github.com/cloudrec/baidu/collector/vpc/security_group"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/schema"
 )
 
 func GetPlatformConfig() *schema.Platform {
@@ -48,6 +48,7 @@ func GetPlatformConfig() *schema.Platform {
 			eip.GetResource(),
 			iam.GetResource(),
 			cce.GetResource(),
+			cce.GetRBACResource(),
 			redis.GetResource(),
 			ccr.GetResource(),
 			bls.GetResource(),

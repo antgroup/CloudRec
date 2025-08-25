@@ -42,7 +42,7 @@ public enum SubscriptionConfigType {
 
     platform("platform", "云平台", List.of(Operator.EQ), null),
     ruleId("ruleId", "规则名称", List.of(Operator.EQ), null),
-    ruleGroupId("ruleGroupId", "规则组", List.of(Operator.ANY_IN), null),
+    ruleGroupId("ruleGroupId", "规则组", List.of(Operator.EQ), null),
     cloudAccountId("cloudAccountId", "云账号", List.of(Operator.EQ), null),
     tenantId("tenantId", "租户", List.of(Operator.EQ), null);
 

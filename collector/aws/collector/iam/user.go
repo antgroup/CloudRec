@@ -16,225 +16,225 @@
 package iam
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/cloudrec/aws/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"time"
+	"sync"
 )
 
 // GetUserResource returns a User Resource
 func GetUserResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:       collector.User,
-		ResourceTypeName:   "IAM User",
+		ResourceTypeName:   "User",
 		ResourceGroupType:  constant.IDENTITY,
-		Desc:               `https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html`,
+		Desc:               `https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListUsers.html`,
 		ResourceDetailFunc: GetUserDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.User.UserId",
+			ResourceId:   "$.User.Arn",
 			ResourceName: "$.User.UserName",
 		},
-		Regions:   []string{"ap-northeast-1", "cn-north-1"},
-		Dimension: schema.Regional,
+		Dimension: schema.Global,
 	}
 }
 
+// UserDetail aggregates all information for a single IAM user.
 type UserDetail struct {
-	User          types.User
-	UserAttribute *types.User
-	LoginProfile  *types.LoginProfile
-	AccessKeys    []AccessKeyDetail
-	MFADevices    []types.MFADevice
-	UserPolicies  []Policy
+	User             types.User
+	AttachedPolicies []types.AttachedPolicy
+	InlinePolicies   []string
+	MFADevices       []types.MFADevice
+	AccessKeys       []types.AccessKeyMetadata
+	LoginProfile     *iam.GetLoginProfileOutput
+	Tags             []types.Tag
 }
 
-type Policy struct {
-	Policy        *types.Policy
-	PolicyVersion *types.PolicyVersion
-}
-
-type AccessKeyDetail struct {
-	AccessKeyId       *string
-	CreateDate        *time.Time
-	Status            types.StatusType
-	UserName          *string
-	AccessKeyLastUsed *types.AccessKeyLastUsed
-}
-
+// GetUserDetail fetches the details for all IAM users.
 func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).IAM
-	ctx = context.TODO()
+
 	users, err := listUsers(ctx, client)
 	if err != nil {
-		return nil
+		log.CtxLogger(ctx).Error("failed to list users", zap.Error(err))
+		return err
 	}
 
-	for _, user := range users {
-		res <- &UserDetail{
-			User:          user,
-			UserAttribute: getUser(ctx, client, user.UserName),
-			LoginProfile:  getLoginProfile(ctx, client, user.UserName),
-			AccessKeys:    listAccessKeys(ctx, client, user.UserName),
-			MFADevices:    listMFADevices(ctx, client, user.UserName),
-			UserPolicies:  listUserPolicies(ctx, client, user.UserName),
-		}
+	const numWorkers = 10
+	jobs := make(chan types.User, len(users))
+	var wg sync.WaitGroup
+	for w := 0; w < numWorkers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for user := range jobs {
+				res <- describeUserDetail(ctx, client, user)
+			}
+		}()
 	}
+	for _, user := range users {
+		jobs <- user
+	}
+	close(jobs)
+	wg.Wait()
 
 	return nil
 }
 
-func listUserPolicies(ctx context.Context, c *iam.Client, userName *string) (userPolicies []Policy) {
-	policyArnList := listAttachedUserPolicies(ctx, c, userName)
-	for _, policyArn := range policyArnList {
-		// retrieve specified managed policy
-		getPolicyOutput, err := c.GetPolicy(ctx, &iam.GetPolicyInput{
-			PolicyArn: policyArn,
-		})
+// describeUserDetail fetches all details for a single user.
+func describeUserDetail(ctx context.Context, client *iam.Client, user types.User) UserDetail {
+	var wg sync.WaitGroup
+	var attachedPolicies []types.AttachedPolicy
+	var inlinePolicies []string
+	var mfaDevices []types.MFADevice
+	var accessKeys []types.AccessKeyMetadata
+	var loginProfile *iam.GetLoginProfileOutput
+	var tags []types.Tag
+
+	wg.Add(6)
+
+	go func() {
+		defer wg.Done()
+		attachedPolicies, _ = listAttachedUserPolicies(ctx, client, user.UserName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		inlinePolicies, _ = listUserPolicies(ctx, client, user.UserName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		mfaDevices, _ = listMFADevices(ctx, client, user.UserName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		accessKeys, _ = listAccessKeys(ctx, client, user.UserName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		tags, _ = listUserTags(ctx, client, user.UserName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		loginProfile, _ = getLoginProfile(ctx, client, user.UserName)
+	}()
+
+	wg.Wait()
+
+	return UserDetail{
+		User:             user,
+		AttachedPolicies: attachedPolicies,
+		InlinePolicies:   inlinePolicies,
+		MFADevices:       mfaDevices,
+		AccessKeys:       accessKeys,
+		LoginProfile:     loginProfile,
+		Tags:             tags,
+	}
+}
+
+// listUsers retrieves all IAM users.
+func listUsers(ctx context.Context, c *iam.Client) ([]types.User, error) {
+	var users []types.User
+	paginator := iam.NewListUsersPaginator(c, &iam.ListUsersInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
-			return nil
-		}
-		userPolicies = append(userPolicies, Policy{
-			Policy:        getPolicyOutput.Policy,
-			PolicyVersion: getPolicyVersion(ctx, c, getPolicyOutput.Policy),
-		})
-	}
-
-	return userPolicies
-}
-
-func getPolicyVersion(ctx context.Context, c *iam.Client, metadata *types.Policy) *types.PolicyVersion {
-	getPolicyVersionOutput, err := c.GetPolicyVersion(ctx, &iam.GetPolicyVersionInput{
-		PolicyArn: metadata.Arn,
-		VersionId: metadata.DefaultVersionId,
-	})
-	if err != nil {
-		log.CtxLogger(ctx).Warn("GetUserPolicyVersion error", zap.Error(err))
-		return nil
-	}
-	return getPolicyVersionOutput.PolicyVersion
-}
-
-func listAttachedUserPolicies(ctx context.Context, c *iam.Client, userName *string) (policyArnList []*string) {
-	// AttachedUserPolicies
-	listAttachedUserPoliciesOutput, err := c.ListAttachedUserPolicies(ctx, &iam.ListAttachedUserPoliciesInput{UserName: userName})
-	if err != nil {
-		log.CtxLogger(ctx).Warn("ListAttachedUserPolicies error", zap.Error(err))
-		return nil
-	}
-	for _, attachedPolicy := range listAttachedUserPoliciesOutput.AttachedPolicies {
-		policyArnList = append(policyArnList, attachedPolicy.PolicyArn)
-	}
-	return policyArnList
-}
-
-func listUsers(ctx context.Context, c *iam.Client) (users []types.User, err error) {
-	userInput := &iam.ListUsersInput{}
-	userOutput, err := c.ListUsers(ctx, userInput)
-	if err != nil {
-		log.CtxLogger(ctx).Error("ListUsers error", zap.Error(err))
-		return nil, err
-	}
-	users = append(users, userOutput.Users...)
-	for userOutput.IsTruncated {
-		userInput.Marker = userOutput.Marker
-		userOutput, err = c.ListUsers(ctx, userInput)
-		if err != nil {
-			log.CtxLogger(ctx).Error("ListUsers error", zap.Error(err))
 			return nil, err
 		}
-		users = append(users, userOutput.Users...)
+		users = append(users, page.Users...)
 	}
 	return users, nil
 }
 
-func listAccessKeys(ctx context.Context, c *iam.Client, userName *string) (accessKeys []AccessKeyDetail) {
-	input := &iam.ListAccessKeysInput{
-		UserName: userName,
-	}
-	output, err := c.ListAccessKeys(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Error("ListAccessKeys error", zap.Error(err))
-		return nil
-	}
-	AccessKeyMetadataList := output.AccessKeyMetadata
-	for output.IsTruncated {
-		input.Marker = output.Marker
-		output, err = c.ListAccessKeys(ctx, input)
+// listAttachedUserPolicies retrieves all managed policies attached to a user.
+func listAttachedUserPolicies(ctx context.Context, c *iam.Client, userName *string) ([]types.AttachedPolicy, error) {
+	var policies []types.AttachedPolicy
+	paginator := iam.NewListAttachedUserPoliciesPaginator(c, &iam.ListAttachedUserPoliciesInput{UserName: userName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			log.CtxLogger(ctx).Error("ListAccessKeys error", zap.Error(err))
-			return nil
+			log.CtxLogger(ctx).Warn("failed to list attached user policies", zap.String("user", *userName), zap.Error(err))
+			return nil, err
 		}
-		AccessKeyMetadataList = append(AccessKeyMetadataList, output.AccessKeyMetadata...)
+		policies = append(policies, page.AttachedPolicies...)
 	}
-
-	for _, accessKey := range AccessKeyMetadataList {
-		accessKeys = append(accessKeys, AccessKeyDetail{
-			AccessKeyId:       accessKey.AccessKeyId,
-			CreateDate:        accessKey.CreateDate,
-			Status:            accessKey.Status,
-			UserName:          accessKey.UserName,
-			AccessKeyLastUsed: getAccessKeyLastUsed(ctx, c, accessKey.AccessKeyId),
-		})
-	}
-
-	return accessKeys
+	return policies, nil
 }
 
-func getAccessKeyLastUsed(ctx context.Context, c *iam.Client, id *string) *types.AccessKeyLastUsed {
-	input := &iam.GetAccessKeyLastUsedInput{AccessKeyId: id}
-	output, err := c.GetAccessKeyLastUsed(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("GetAccessKeyLastUsed failed", zap.Error(err))
-		return nil
-	}
-	return output.AccessKeyLastUsed
-}
-
-func getUser(ctx context.Context, c *iam.Client, name *string) *types.User {
-	input := &iam.GetUserInput{UserName: name}
-	output, err := c.GetUser(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("GetUser failed", zap.Error(err))
-		return nil
-	}
-	return output.User
-}
-
-func getLoginProfile(ctx context.Context, c *iam.Client, name *string) *types.LoginProfile {
-	input := &iam.GetLoginProfileInput{UserName: name}
-	output, err := c.GetLoginProfile(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("getLoginProfile failed", zap.Error(err))
-		return nil
-	}
-	return output.LoginProfile
-}
-
-func listMFADevices(ctx context.Context, c *iam.Client, name *string) (devices []types.MFADevice) {
-	input := &iam.ListMFADevicesInput{
-		UserName: name,
-	}
-	output, err := c.ListMFADevices(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("listMFADevices failed", zap.Error(err))
-		return nil
-	}
-	devices = append(devices, output.MFADevices...)
-	for output.IsTruncated {
-		input.Marker = output.Marker
-		output, err = c.ListMFADevices(ctx, input)
+// listUserPolicies retrieves all inline policy names for a user.
+func listUserPolicies(ctx context.Context, c *iam.Client, userName *string) ([]string, error) {
+	var policies []string
+	paginator := iam.NewListUserPoliciesPaginator(c, &iam.ListUserPoliciesInput{UserName: userName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("ListMFADevices failed", zap.Error(err))
-			return nil
+			log.CtxLogger(ctx).Warn("failed to list user inline policies", zap.String("user", *userName), zap.Error(err))
+			return nil, err
 		}
-		devices = append(devices, output.MFADevices...)
+		policies = append(policies, page.PolicyNames...)
 	}
+	return policies, nil
+}
 
-	return output.MFADevices
+// listMFADevices retrieves all MFA devices for a user.
+func listMFADevices(ctx context.Context, c *iam.Client, userName *string) ([]types.MFADevice, error) {
+	var devices []types.MFADevice
+	paginator := iam.NewListMFADevicesPaginator(c, &iam.ListMFADevicesInput{UserName: userName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list mfa devices", zap.String("user", *userName), zap.Error(err))
+			return nil, err
+		}
+		devices = append(devices, page.MFADevices...)
+	}
+	return devices, nil
+}
+
+// listAccessKeys retrieves all access key metadata for a user.
+func listAccessKeys(ctx context.Context, c *iam.Client, userName *string) ([]types.AccessKeyMetadata, error) {
+	var keys []types.AccessKeyMetadata
+	paginator := iam.NewListAccessKeysPaginator(c, &iam.ListAccessKeysInput{UserName: userName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list access keys", zap.String("user", *userName), zap.Error(err))
+			return nil, err
+		}
+		keys = append(keys, page.AccessKeyMetadata...)
+	}
+	return keys, nil
+}
+
+// getLoginProfile retrieves the login profile for a user.
+func getLoginProfile(ctx context.Context, c *iam.Client, userName *string) (*iam.GetLoginProfileOutput, error) {
+	output, err := c.GetLoginProfile(ctx, &iam.GetLoginProfileInput{UserName: userName})
+	if err != nil {
+		log.CtxLogger(ctx).Debug("failed to get login profile", zap.String("user", *userName), zap.Error(err))
+		return nil, err
+	}
+	return output, nil
+}
+
+// listUserTags retrieves all tags for a user.
+func listUserTags(ctx context.Context, c *iam.Client, userName *string) ([]types.Tag, error) {
+	var tags []types.Tag
+	paginator := iam.NewListUserTagsPaginator(c, &iam.ListUserTagsInput{UserName: userName})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list user tags", zap.String("user", *userName), zap.Error(err))
+			return nil, err
+		}
+		tags = append(tags, page.Tags...)
+	}
+	return tags, nil
 }

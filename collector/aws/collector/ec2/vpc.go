@@ -16,14 +16,16 @@
 package ec2
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/cloudrec/aws/collector"
 	"github.com/cloudrec/aws/collector/ec2/utils"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
+	"go.uber.org/zap"
 )
 
 // GetVPCResource returns a VPC Resource
@@ -60,6 +62,12 @@ type VPCDetail struct {
 	RouteTables []types.RouteTable
 
 	InternetGateways []types.InternetGateway
+
+	VPCEndpoints []types.VpcEndpoint
+
+	VPCPeeringConnections []types.VpcPeeringConnection
+
+	VPNConnections []types.VpnConnection
 }
 
 func GetVPCDetail(ctx context.Context, iService schema.ServiceInterface, res chan<- any) error {
@@ -102,6 +110,10 @@ func describeVPCDetails(ctx context.Context, c *ec2.Client) (VPCDetails []VPCDet
 					Values: []string{*vpc.VpcId},
 				},
 			}),
+			VPCEndpoints:          describeVpcEndpoints(ctx, c, *vpc.VpcId),
+			VPCPeeringConnections: describeVpcPeeringConnections(ctx, c, *vpc.VpcId),
+			VPNConnections:        describeVpnConnections(ctx, c, *vpc.VpcId),
+			RouteTables:           describeRouteTablesByVpc(ctx, c, *vpc.VpcId),
 		})
 	}
 	return VPCDetails, nil
@@ -135,19 +147,17 @@ func DescribeVPCDetailsByFilters(ctx context.Context, c *ec2.Client, filters []t
 }
 
 func DescribeSubnetsByFilters(ctx context.Context, c *ec2.Client, filters []types.Filter) (subnets []types.Subnet) {
-
-	MaxResults := int32(100)
-
-	input := &ec2.DescribeSubnetsInput{
-		Filters:    filters,
-		MaxResults: &MaxResults,
+	paginator := ec2.NewDescribeSubnetsPaginator(c, &ec2.DescribeSubnetsInput{
+		Filters: filters,
+	})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil
+		}
+		subnets = append(subnets, page.Subnets...)
 	}
-	output, err := c.DescribeSubnets(ctx, input)
-	if err != nil {
-		return nil
-	}
-
-	return output.Subnets
+	return subnets
 }
 
 func describeVpcs(ctx context.Context, c *ec2.Client) (vpcs []types.Vpc, err error) {
@@ -186,4 +196,84 @@ func DescribeVpcsByFilters(ctx context.Context, c *ec2.Client, filters []types.F
 		vpcs = append(vpcs, output.Vpcs...)
 	}
 	return vpcs
+}
+
+func describeVpcEndpoints(ctx context.Context, c *ec2.Client, vpcId string) []types.VpcEndpoint {
+	var endpoints []types.VpcEndpoint
+	paginator := ec2.NewDescribeVpcEndpointsPaginator(c, &ec2.DescribeVpcEndpointsInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []string{vpcId},
+			},
+		},
+	})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get VpcEndpoints", zap.Error(err))
+			return endpoints
+		}
+		endpoints = append(endpoints, page.VpcEndpoints...)
+	}
+	return endpoints
+}
+
+func describeVpcPeeringConnections(ctx context.Context, c *ec2.Client, vpcId string) []types.VpcPeeringConnection {
+	var peeringConnections []types.VpcPeeringConnection
+	paginator := ec2.NewDescribeVpcPeeringConnectionsPaginator(c, &ec2.DescribeVpcPeeringConnectionsInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("requester-vpc-info.vpc-id"),
+				Values: []string{vpcId},
+			},
+		},
+	})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get VpcPeeringConnections", zap.Error(err))
+			return peeringConnections
+		}
+		peeringConnections = append(peeringConnections, page.VpcPeeringConnections...)
+	}
+	return peeringConnections
+}
+
+func describeVpnConnections(ctx context.Context, c *ec2.Client, vpcId string) []types.VpnConnection {
+	out, err := c.DescribeVpnConnections(ctx, &ec2.DescribeVpnConnectionsInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []string{vpcId},
+			},
+		},
+	})
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to get VpnConnections", zap.Error(err))
+		return nil
+	}
+
+	return out.VpnConnections
+}
+
+func describeRouteTablesByVpc(ctx context.Context, c *ec2.Client, vpcId string) []types.RouteTable {
+	var routeTables []types.RouteTable
+	paginator := ec2.NewDescribeRouteTablesPaginator(c, &ec2.DescribeRouteTablesInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []string{vpcId},
+			},
+		},
+	})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get RouteTables", zap.Error(err))
+			return routeTables
+		}
+		routeTables = append(routeTables, page.RouteTables...)
+	}
+	return routeTables
 }

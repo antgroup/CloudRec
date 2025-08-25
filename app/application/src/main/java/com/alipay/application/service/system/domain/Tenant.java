@@ -38,6 +38,8 @@ public class Tenant {
 
     private String tenantName;
 
+    private String roleName;
+
     private Status status;
 
     private String tenantDesc;

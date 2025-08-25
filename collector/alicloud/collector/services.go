@@ -21,13 +21,7 @@ import (
 	"strings"
 	"time"
 
-	resourcecenter20221201 "github.com/alibabacloud-go/resourcecenter-20221201/client"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
-	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
-	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
-	"github.com/core-sdk/constant"
-	"go.uber.org/zap"
-
+	actiontrail20200706 "github.com/alibabacloud-go/actiontrail-20200706/v3/client"
 	adb20190315 "github.com/alibabacloud-go/adb-20190315/v4/client"
 	alb20200616 "github.com/alibabacloud-go/alb-20200616/v2/client"
 	alidns20150109 "github.com/alibabacloud-go/alidns-20150109/v4/client"
@@ -59,6 +53,7 @@ import (
 	privatelink20200415 "github.com/alibabacloud-go/privatelink-20200415/v5/client"
 	r_kvstore20150101 "github.com/alibabacloud-go/r-kvstore-20150101/v5/client"
 	rds20140815 "github.com/alibabacloud-go/rds-20140815/v6/client"
+	resourcecenter20221201 "github.com/alibabacloud-go/resourcecenter-20221201/client"
 	rocketmq20220801 "github.com/alibabacloud-go/rocketmq-20220801/client"
 	sas20181203 "github.com/alibabacloud-go/sas-20181203/v3/client"
 	selectdb20230522 "github.com/alibabacloud-go/selectdb-20230522/v3/client"
@@ -74,12 +69,21 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alikafka"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cdn"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/clickhouse"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/dts"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/eci"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
+  "github.com/aliyun/alibaba-cloud-sdk-go/services/eflo"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/swas-open"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
+	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
+	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
+	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
+	"go.uber.org/zap"
 )
 
 var RuntimeObject = new(util.RuntimeOptions)
@@ -166,12 +170,19 @@ type Services struct {
 	DDoS            *ddoscoo20200101.Client
 	APIG            *apig20240327.Client
 	ResourceCenter  *resourcecenter20221201.Client
+	DTS             *dts.Client
+	ECI             *eci.Client
+	Eflo            *eflo.Client
+	SWAS            *swas_open.Client
+
 }
 
 // Clone creates a new instance of Services with copied configuration
 func (s *Services) Clone() schema.ServiceInterface {
 	return &Services{}
 }
+
+
 
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {
 	param := cloudAccountParam.CommonCloudAccountParam
@@ -191,14 +202,14 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 	ctx = context.WithValue(ctx, constant.ResourceType, cloudAccountParam.ResourceType)
 	switch cloudAccountParam.ResourceType {
 
-	case ECS, SecurityGroup:
+	case ECS, SecurityGroup, ECSImage, ECSSnapshot:
 		s.ECS, err = ecs.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ecs client failed", zap.Error(err))
 		}
 		s.ECS.SetHttpProxy(cloudAccountParam.ProxyConfig)
 		s.ECS.SetHttpsProxy(cloudAccountParam.ProxyConfig)
-	case VPC, NAT, EIP:
+	case VPC, NAT, EIP, VpnConnection:
 		s.VPC, err = vpc.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init vpc client failed", zap.Error(err))
@@ -410,7 +421,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init cen client failed", zap.Error(err))
 		}
-	case CloudAPI:
+	case CloudAPI, APIGateway:
 		s.CloudAPI, err = CreateCloudAPIClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init cloudAPI client failed", zap.Error(err))
@@ -440,7 +451,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ens client failed", zap.Error(err))
 		}
-	case Yundun:
+	case Yundun, Bastionhost:
 		s.YUNDUN, err = createYundunClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init yundun client failed", zap.Error(err))
@@ -460,6 +471,22 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init resourcecenter client failed", zap.Error(err))
 		}
+	case DTSInstance:
+		s.DTS, err = dts.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init dts client failed", zap.Error(err))
+		}
+	case ECIContainerGroup, ECIImageCache:
+		s.ECI, err = eci.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init eci client failed", zap.Error(err))
+		}
+	case SWAS:
+		s.SWAS, err = swas_open.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init swas client failed", zap.Error(err))
+		}
+
 	}
 
 	return nil
@@ -1007,5 +1034,12 @@ func createResourceClient(regionId string, config *openapi.Config) (_result *res
 	}
 	_result, _err := resourcecenter20221201.NewClient(config)
 	_result.RegionId = tea.String(regionId)
+	return _result, _err
+}
+
+func createActiontrailClient(regionId string, config *openapi.Config) (_result *actiontrail20200706.Client, _err error) {
+	config.Endpoint = tea.String("actiontrail." + regionId + ".aliyuncs.com")
+	_result = &actiontrail20200706.Client{}
+	_result, _err = actiontrail20200706.NewClient(config)
 	return _result, _err
 }

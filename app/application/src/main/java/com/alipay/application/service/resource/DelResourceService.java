@@ -18,4 +18,7 @@ public interface DelResourceService {
      */
     int preDeleteByCloudAccountId(String cloudAccountId);
 
+
+    void removeResource(String cloudAccount);
+
 }

@@ -23,18 +23,11 @@ import com.alipay.application.service.resource.identitySecurity.AliRamUserResour
 import com.alipay.application.service.resource.identitySecurity.GCPServiceAccountParse;
 import com.alipay.application.service.resource.identitySecurity.HuaweiIamUserResourceParse;
 import com.alipay.application.service.resource.identitySecurity.KsyunIamUserResourceParse;
-import com.alipay.application.service.risk.RiskService;
 import com.alipay.application.service.rule.enums.RuleType;
-import com.alipay.application.share.vo.ApiResponse;
-import com.alipay.application.share.vo.ListVO;
-import com.alipay.application.share.vo.rule.RuleScanResultVO;
+import com.alipay.application.service.system.domain.repo.TenantRepository;
 import com.alipay.common.enums.Status;
-import com.alipay.common.utils.DateUtil;
-import com.alipay.dao.context.UserInfoContext;
-import com.alipay.dao.context.UserInfoDTO;
 import com.alipay.dao.dto.QueryScanResultDTO;
 import com.alipay.dao.dto.RuleDTO;
-import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.mapper.IdentitySecurityMapper;
 import com.alipay.dao.mapper.RuleMapper;
 import com.alipay.dao.mapper.RuleScanResultMapper;
@@ -69,14 +62,11 @@ public class ParseCloudResourceDataJob {
     @Resource
     private KsyunIamUserResourceParse ksyunIamUserResourceParse;
 
-	@Resource
+    @Resource
     private RuleScanResultMapper ruleScanResultMapper;
 
     @Resource
     private RuleTypeMapper ruleTypeMapper;
-
-    @Resource
-    private RiskService riskService;
 
     @Resource
     private IdentitySecurityMapper identitySecurityMapper;
@@ -87,30 +77,30 @@ public class ParseCloudResourceDataJob {
     @Resource
     private IQueryResource iQueryResource;
 
-    public void parseData() {
+    @Resource
+    private TenantRepository tenantRepository;
+
+    public void refreshIAMData() {
         //清理历史数据
         identitySecurityMapper.deleteAll();
         //获取指定资产数据
         for (IdentitySecurityConfig config : IdentitySecurityConfig.values()) {
-
             Map<String, List<RuleScanResultPO>> ruleScanResultVOMap = new HashMap<>();
-            List<Long> ruleIds = queryAllRuleId(config);
-            for (Long ruleId : ruleIds) {
-                List<RuleScanResultPO> ruleScanResultPOList = queryAllRiskByRuleId(config, ruleId);
+            List<RulePO> rulePOList = queryAllIdentitySecurityRule(config);
+            for (RulePO rulePO : rulePOList) {
+                // 只统计默认规则
+                boolean defaultRule = tenantRepository.isDefaultRule(rulePO.getRuleCode());
+                if (!defaultRule) {
+                    continue;
+                }
+                List<RuleScanResultPO> ruleScanResultPOList = queryAllRiskByRuleId(config, rulePO.getId());
                 for (RuleScanResultPO item : ruleScanResultPOList) {
                     ruleScanResultVOMap.computeIfAbsent(item.getResourceId() + "&" + item.getCloudAccountId()
                             + "&" + item.getResourceType() + "&" + item.getPlatform(), k -> new ArrayList<>()).add(item);
                 }
             }
-//            List<RuleScanResultPO> allRuleScanResultPOList = queryAllRisk(config);
-//            log.info("ParseCloudResourceDataJob queryAllRuleScanResult , platform:{},resourceType:{},size:{}", config.getPlatformType(), config.getResourceType(), allRuleScanResultPOList.size());
-//
-//            Map<String, List<RuleScanResultPO>> ruleScanResultVOMap = allRuleScanResultPOList.stream().
-//                    collect(Collectors.groupingBy(vo -> vo.getResourceId() + "&" + vo.getCloudAccountId()
-//                            + "&" + vo.getResourceType() + "&" + vo.getPlatform()));
 
             List<IdentitySecurityPO> identitySecurityPOList = new ArrayList<>();
-
             for (String key : ruleScanResultVOMap.keySet()) {
                 List<RuleScanResultPO> ruleScanResultPOList = ruleScanResultVOMap.get(key);
                 IdentitySecurityPO identitySecurityPO = buildIdentitySecurityParam(config, key, ruleScanResultPOList);
@@ -177,19 +167,15 @@ public class ParseCloudResourceDataJob {
         return identitySecurityPO;
     }
 
-    private List<Long> queryAllRuleId(IdentitySecurityConfig config) {
+    private List<RulePO> queryAllIdentitySecurityRule(IdentitySecurityConfig config) {
         RuleTypePO ruleTypePO = ruleTypeMapper.findByTypeName(RuleType.identity_security.getRuleType());
         RuleDTO ruleDTO = RuleDTO.builder().build();
         ruleDTO.setSize(100);
         ruleDTO.setResourceType(config.getResourceType());
         ruleDTO.setStatus(Status.valid.name());
-        ruleDTO.setRuleTypeIdList(Arrays.asList(ruleTypePO.getId()));
-        List<RulePO> list = ruleMapper.findSortList(ruleDTO);
-        List<Long> ruleIds = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(list)) {
-            ruleIds = list.stream().map(RulePO::getId).collect(Collectors.toList());
-        }
-        return ruleIds;
+        ruleDTO.setRuleTypeIdList(Collections.singletonList(ruleTypePO.getId()));
+
+        return ruleMapper.findSortList(ruleDTO);
     }
 
     private List<RuleScanResultPO> queryAllRiskByRuleId(IdentitySecurityConfig config, Long ruleId) {
@@ -211,85 +197,4 @@ public class ParseCloudResourceDataJob {
         }
         return ruleScanResultPOList;
     }
-
-
-    private List<RuleScanResultPO> queryAllRisk(IdentitySecurityConfig config) {
-        RuleTypePO ruleTypePO = ruleTypeMapper.findByTypeName(RuleType.identity_security.getRuleType());
-        RuleDTO ruleDTO = RuleDTO.builder().build();
-        ruleDTO.setResourceType(config.getResourceType());
-        ruleDTO.setStatus(Status.valid.name());
-        ruleDTO.setRuleTypeIdList(Arrays.asList(ruleTypePO.getId()));
-        ruleDTO.setPlatform(config.getPlatformType());
-        ruleDTO.setSize(100);
-        List<RulePO> list = ruleMapper.findSortList(ruleDTO);
-        List<Long> ruleIds = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(list)) {
-            ruleIds = list.stream().map(RulePO::getId).collect(Collectors.toList());
-        }
-        String gmtModifiedStart = DateUtil.dateToString(DateUtil.getYesterdayStartTime(), DateUtil.YYYY_MM_DD_HH_MM_SS);
-        String gmtModifiedEnd = DateUtil.dateToString(DateUtil.getYesterdayEndTime(), DateUtil.YYYY_MM_DD_HH_MM_SS);
-        QueryScanResultDTO dto = new QueryScanResultDTO();
-        dto.setPlatform(config.getPlatformType());
-        dto.setRuleIdList(ruleIds);
-        dto.setResourceType(config.getResourceType());
-        dto.setGmtModifiedStart(gmtModifiedStart);
-        dto.setGmtModifiedEnd(gmtModifiedEnd);
-
-        String scrollId = null;
-        List<RuleScanResultPO> ruleScanResultPOList = new ArrayList<>();
-        while (true) {
-            dto.setScrollId(scrollId);
-            List<RuleScanResultPO> listWithScrollId = ruleScanResultMapper.findListWithScrollId(dto);
-            if (CollectionUtils.isEmpty(listWithScrollId)) {
-                break;
-            }
-            ruleScanResultPOList.addAll(listWithScrollId);
-            scrollId = listWithScrollId.get(listWithScrollId.size() - 1).getId().toString();
-        }
-        return ruleScanResultPOList;
-    }
-
-
-    private List<RuleScanResultVO> queryAllRuleScanResult(IdentitySecurityConfig config) {
-        RuleTypePO ruleTypePO = ruleTypeMapper.findByTypeName(RuleType.identity_security.getRuleType());
-        RuleDTO ruleDTO = RuleDTO.builder().build();
-        ruleDTO.setPlatform(config.getPlatformType());
-        ruleDTO.setResourceType(config.getResourceType());
-        ruleDTO.setStatus(Status.valid.name());
-        ruleDTO.setRuleTypeIdList(Arrays.asList(ruleTypePO.getId()));
-        ruleDTO.setSize(100);
-        List<RulePO> list = ruleMapper.findSortList(ruleDTO);
-        List<Long> ruleIds = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(list)) {
-            ruleIds = list.stream().map(RulePO::getId).collect(Collectors.toList());
-        }
-
-        RuleScanResultDTO ruleScanResultDTO = RuleScanResultDTO.builder()
-                .platform(config.getPlatformType())
-                .resourceType(config.getResourceType())
-                .ruleTypeIdList(Arrays.asList(ruleTypePO.getId()))
-                .ruleIdList(ruleIds)
-                .build();
-
-
-        List<RuleScanResultVO> resultList = new ArrayList<>();
-        Integer page = 1;
-        ruleScanResultDTO.setSize(200);
-        //伪代码
-        UserInfoContext.setCurrentUser(new UserInfoDTO());
-        while (true) {
-            ruleScanResultDTO.setPage(page);
-            ApiResponse<ListVO<RuleScanResultVO>> listVOApiResponse = riskService.queryRiskList(ruleScanResultDTO);
-            ListVO<RuleScanResultVO> ruleScanResultVOListVO = listVOApiResponse.getContent();
-            if (Objects.isNull(ruleScanResultVOListVO) || CollectionUtils.isEmpty(ruleScanResultVOListVO.getData())) {
-                break;
-            }
-            resultList.addAll(ruleScanResultVOListVO.getData());
-            page++;
-        }
-        log.info("ParseCloudResourceDataJob queryAllRuleScanResult size:{}", resultList.size());
-        return resultList;
-    }
-
-
 }

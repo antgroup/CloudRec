@@ -128,16 +128,16 @@ func Remove(slice []string, elem string) []string {
 	return slice
 }
 
-// UniqueList Deduplication
+// UniqueList Deduplication while preserving original order
 func UniqueList(input []string) []string {
 	counts := make(map[string]bool)
-	for _, item := range input {
-		counts[item] = true
-	}
-
 	var result []string
-	for item := range counts {
-		result = append(result, item)
+
+	for _, item := range input {
+		if !counts[item] {
+			counts[item] = true
+			result = append(result, item)
+		}
 	}
 
 	return result

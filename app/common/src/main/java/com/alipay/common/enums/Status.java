@@ -36,6 +36,9 @@ public enum Status {
     // 异常
     unusual,
 
+    // 入队
+    // inQueue,
+
     // 运行
     running,
 

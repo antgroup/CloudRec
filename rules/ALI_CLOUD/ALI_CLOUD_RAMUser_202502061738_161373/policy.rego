@@ -11,22 +11,23 @@ risk if {
     count(ak_not_using_for_365_days) > 0
 }
 
-exist_AccessKey := input.ExistAccessKey
+exist_AccessKey := input.ExistActiveAccessKey
 exist_Policies := input.Policies
 ActiveAccessKeys contains ak if {
-    some ActiveAccessKey in input.ActiveAccessKeys[_]
-    ak := ActiveAccessKey.AccessKeyId
+    some AccessKey in input.AccessKeys[_]
+    AccessKey.Status == "Active"
+    ak := AccessKey.AccessKeyId
 }
 
-ram_aks := input.ActiveAccessKeys
+ram_aks := ActiveAccessKeys
 now_ns := time.now_ns()
 ak_not_using_for_365_days contains ak_id if {
-   some ak_info in ram_aks
-   ak_info.ActiveAccessKey.Status == "Active"
+   some ak_info in input.AccessKeys
+   ak_info.AccessKey.Status == "Active"
    last_used_date_ns := time.parse_rfc3339_ns(ak_info.LastUsedDate)
    tmp := time.add_date(last_used_date_ns, 0, 0, 365)
    tmp < now_ns
-   ak_id := ak_info.ActiveAccessKey.AccessKeyId
+   ak_id := ak_info.AccessKey.AccessKeyId
 }
 
 

@@ -1,5 +1,6 @@
 import styles from '@/components/Common/index.less';
 import Disposition from '@/components/Disposition';
+import PermissionWrapper from '@/components/Common/PermissionWrapper';
 import EditDrawerForm from '@/pages/PivotManagement/InvolveModule/components/EditDrawerForm';
 import {
   deleteInvolve,
@@ -18,7 +19,7 @@ import { MessageType } from 'antd/es/message/interface';
 import React, { useRef, useState } from 'react';
 
 // Subscription configuration
-const Involve: React.FC = () => {
+const InvolveContent: React.FC = () => {
   // Message API
   const [messageApi, contextHolder] = message.useMessage();
   // Table Action
@@ -253,6 +254,14 @@ const Involve: React.FC = () => {
         involveDrawerInfo={involveDrawerInfo.current}
       />
     </PageContainer>
+  );
+};
+
+const Involve: React.FC = () => {
+  return (
+    <PermissionWrapper accessKey="isPlatformAdmin">
+      <InvolveContent />
+    </PermissionWrapper>
   );
 };
 

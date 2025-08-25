@@ -17,6 +17,8 @@
 package com.alipay.api.web.resource;
 
 import com.alipay.api.config.filter.annotation.aop.AuthenticateToken;
+import com.alipay.api.config.filter.annotation.aop.RateLimit;
+import com.alipay.api.config.filter.annotation.aop.RateLimit.KeyStrategy;
 import com.alipay.application.service.resource.IQueryResource;
 import com.alipay.application.share.request.base.IdListRequest;
 import com.alipay.application.share.request.resource.QueryGroupTypeListRequest;
@@ -79,6 +81,8 @@ public class ResourceController {
      * Aggregate query by asset type
      */
     @AuthenticateToken
+    @RateLimit(maxRequests = 10, timeWindowSeconds = 60, keyStrategy = KeyStrategy.IP, 
+               message = "Too many requests for aggregate list query. Please try again later.")
     @PostMapping("/queryAggregateAssets")
     public ApiResponse<ListVO<ResourceAggByInstanceTypeDTO>> queryAggregateAssets(@RequestBody QueryResourceListRequest req) {
         ResourceDTO resourceDTO = new ResourceDTO();
@@ -90,6 +94,8 @@ public class ResourceController {
     /**
      * Multi-tenant division query asset list
      */
+    @RateLimit(maxRequests = 10, timeWindowSeconds = 60, keyStrategy = KeyStrategy.IP,
+            message = "Too many requests for list query. Please try again later.")
     @AuthenticateToken
     @PostMapping("/queryResourceList")
     public ApiResponse<ListVO<ResourceInstanceVO>> queryResourceList(@RequestBody QueryResourceListRequest req) {

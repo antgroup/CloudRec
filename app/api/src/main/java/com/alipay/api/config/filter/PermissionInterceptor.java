@@ -39,15 +39,26 @@ import java.util.Objects;
 @Component
 public class PermissionInterceptor implements AsyncHandlerInterceptor {
 
+    private static final Logger logger = LoggerFactory.getLogger(PermissionInterceptor.class);
+
     @Resource
     private UserMapper userMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
+        // 对于OPTIONS请求直接放行
         if (HttpMethod.OPTIONS.toString().equals(request.getMethod())) {
             return true;
         }
 
+        // 检查请求是否已被标记为OpenApi请求
+        Boolean isOpenApiRequest = (Boolean) request.getAttribute(OpenApiInterceptor.OPEN_API_REQUEST_ATTRIBUTE);
+        if (Boolean.TRUE.equals(isOpenApiRequest)) {
+            logger.info("Skipping permission check for OpenApi request");
+            return true;
+        }
+
+        // 非OpenApi请求，执行正常的权限验证
         String token = request.getHeader("token");
         if (StringUtils.isBlank(token) || "null".equals(token)) {
             throw new UserNoLoginException("Login failed");

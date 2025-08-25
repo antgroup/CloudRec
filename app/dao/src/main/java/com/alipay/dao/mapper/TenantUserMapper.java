@@ -28,8 +28,6 @@ public interface TenantUserMapper {
 
     int updateByPrimaryKeySelective(TenantUserPO record);
 
-    int updateByPrimaryKey(TenantUserPO record);
-
     int del(@Param("uid") Long uid, @Param("tenantId") Long tenantId);
 
     TenantUserPO findOne(@Param("uid") Long uid,@Param("tenantId") Long tenantId);

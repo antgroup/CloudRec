@@ -18,17 +18,19 @@ package com.alipay.application.service.system.domain.repo;
 
 
 import com.alipay.application.service.system.domain.Tenant;
+import com.alipay.application.service.system.domain.enums.RoleNameType;
+import com.alipay.common.constant.TenantConstants;
 import com.alipay.dao.dto.TenantDTO;
-import com.alipay.dao.mapper.TenantMapper;
-import com.alipay.dao.mapper.TenantUserMapper;
-import com.alipay.dao.mapper.UserMapper;
-import com.alipay.dao.po.TenantPO;
-import com.alipay.dao.po.TenantUserPO;
-import com.alipay.dao.po.UserPO;
+import com.alipay.dao.mapper.*;
+import com.alipay.dao.po.*;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /*
@@ -38,6 +40,7 @@ import java.util.stream.Collectors;
  *@version 1.0
  *@create 2025/1/17 17:46
  */
+@Slf4j
 @Repository
 public class TenantRepositoryImpl implements TenantRepository {
 
@@ -52,6 +55,15 @@ public class TenantRepositoryImpl implements TenantRepository {
 
     @Resource
     private TenantConverter tenantConverter;
+
+    @Resource
+    private TenantRuleMapper tenantRuleMapper;
+
+    @Resource
+    private RuleScanResultMapper ruleScanResultMapper;
+
+    @Resource
+    private RuleMapper ruleMapper;
 
     @Override
     public Tenant find(Long id) {
@@ -76,7 +88,7 @@ public class TenantRepositoryImpl implements TenantRepository {
 
     @Override
     public void save(Tenant tenant) {
-        TenantPO tenantPO = tenantMapper.selectByPrimaryKey(tenant.getId());
+        TenantPO tenantPO = tenantMapper.findByTenantName(tenant.getTenantName());
         if (tenantPO == null) {
             tenantMapper.insertSelective(tenantConverter.toPo(tenant));
         } else {
@@ -112,6 +124,8 @@ public class TenantRepositoryImpl implements TenantRepository {
             tenantUserPO = new TenantUserPO();
             tenantUserPO.setUserId(uid);
             tenantUserPO.setTenantId(tenantId);
+            // The default role is normal user
+            tenantUserPO.setRoleName(RoleNameType.user.name());
             tenantUserMapper.insertSelective(tenantUserPO);
         }
     }
@@ -123,5 +137,101 @@ public class TenantRepositoryImpl implements TenantRepository {
             return;
         }
         tenantUserMapper.del(userPO.getId(), tenantId);
+    }
+
+    @Override
+    public boolean isSelected(Long tenantId, String ruleCode) {
+        if (tenantId == null || ruleCode == null) {
+            return false;
+        }
+        TenantRulePO tenantRulePO = tenantRuleMapper.findOne(tenantId, ruleCode);
+        return tenantRulePO != null;
+    }
+
+    @Override
+    public boolean isDefaultRule(String ruleCode) {
+        try {
+            Tenant tenant = this.find(TenantConstants.GLOBAL_TENANT);
+            TenantRulePO tenantRulePO = tenantRuleMapper.findOne(tenant.getId(), ruleCode);
+            return tenantRulePO != null;
+        } catch (Exception e) {
+            log.error("isDefaultRule error", e);
+            return false;
+        }
+    }
+
+    @Override
+    public Tenant findGlobalTenant() {
+        return this.find(TenantConstants.GLOBAL_TENANT);
+    }
+
+    @Override
+    public void removeSelectedRule(Long tenantId, String ruleCode) {
+        TenantPO tenantPO = tenantMapper.selectByPrimaryKey(tenantId);
+        if (tenantPO == null) {
+            return;
+        }
+
+        TenantRulePO tenantRulePO = tenantRuleMapper.findOne(tenantId, ruleCode);
+        if (tenantRulePO == null) {
+            return;
+        }
+
+        RulePO rulePO = ruleMapper.findOne(tenantRulePO.getRuleCode());
+        if (rulePO == null) {
+            return;
+        }
+
+        // Delete tenant select rule
+        tenantRuleMapper.deleteByPrimaryKey(tenantRulePO.getId());
+
+        // Delete risk data
+        if (isDefaultRule(tenantRulePO.getRuleCode()) && !TenantConstants.GLOBAL_TENANT.equals(tenantPO.getTenantName())) {
+            log.info("Non-global tenants cancel self-selection and do not delete data");
+            return;
+        }
+
+        if (TenantConstants.GLOBAL_TENANT.equals(tenantPO.getTenantName())) {
+            // Delete risk data for non-selected rules tenants
+            List<TenantRulePO> selectRuleList = tenantRuleMapper.findByCode(ruleCode);
+            List<Long> list = selectRuleList.stream().map(TenantRulePO::getId).filter(id -> !id.equals(tenantId)).toList();
+            if (CollectionUtils.isEmpty(list)) {
+                ruleScanResultMapper.deleteByRuleIdAndTenantId(rulePO.getId(), tenantId);
+            }
+        } else {
+            // Delete the corresponding risk data
+            ruleScanResultMapper.deleteByRuleIdAndTenantId(rulePO.getId(), tenantId);
+        }
+    }
+
+    @Override
+    public List<String> findSelectTenantList(String ruleCode) {
+        List<String> tenantNameList = new ArrayList<>();
+        List<TenantRulePO> selectRulesList = tenantRuleMapper.findByCode(ruleCode);
+        for (TenantRulePO tenantRulePO : selectRulesList) {
+            TenantPO tenantPO = tenantMapper.selectByPrimaryKey(tenantRulePO.getTenantId());
+            if (tenantPO != null) {
+                tenantNameList.add(tenantPO.getTenantName());
+            }
+        }
+        return tenantNameList;
+    }
+
+    @Override
+    public boolean isTenantAdmin(String userId, Long tenantId) {
+        UserPO userPO = userMapper.findOne(userId);
+        TenantUserPO tenantUserPO = tenantUserMapper.findOne(userPO.getId(), tenantId);
+        return tenantUserPO != null && Objects.equals(tenantUserPO.getRoleName(), RoleNameType.admin.name());
+    }
+
+    @Override
+    public void changeUserTenantRole(String roleName, Long tenantId, String userId) {
+        UserPO userPO = userMapper.findOne(userId);
+        TenantUserPO tenantUserPO = tenantUserMapper.findOne(userPO.getId(), tenantId);
+        if (tenantUserPO == null) {
+            return;
+        }
+        tenantUserPO.setRoleName(roleName);
+        tenantUserMapper.updateByPrimaryKeySelective(tenantUserPO);
     }
 }

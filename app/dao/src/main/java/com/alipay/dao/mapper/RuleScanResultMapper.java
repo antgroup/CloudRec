@@ -45,10 +45,14 @@ public interface RuleScanResultMapper {
 
     int findCount(RuleScanResultDTO dto);
 
+    int findCountV2(RuleScanResultDTO dto);
+
     int findCountByTenant(@Param("ruleId") Long ruleId, @Param("status") String status, @Param("tenantId") Long tenantId);
 
 
     List<RuleScanResultPO> findList(RuleScanResultDTO dto);
+
+    List<RuleScanResultPO> findListV2(RuleScanResultDTO dto);
 
     List<RuleScanResultPO> findIdList(RuleScanResultDTO dto);
 
@@ -124,4 +128,9 @@ public interface RuleScanResultMapper {
 
     List<RuleStatisticsDTO> listRuleStatistics(RuleScanResultDTO dto);
 
+    int deleteByRuleIdAndTenantId(@Param("ruleId") Long ruleId,@Param("tenantId") Long tenantId);
+
+    List<CloudAccountStatisticsDTO> listCloudAccountStatistics(RuleScanResultDTO dto);
+
+    List<ResourceTypeStatisticsDTO> listResourceTypeStatistics(RuleScanResultDTO dto);
 }

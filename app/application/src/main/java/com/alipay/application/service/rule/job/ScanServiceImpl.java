@@ -34,6 +34,7 @@ import com.alipay.application.service.rule.domain.repo.RuleGroupRepository;
 import com.alipay.application.service.rule.domain.repo.RuleRepository;
 import com.alipay.application.service.rule.enums.Field;
 import com.alipay.application.service.statistics.job.StatisticsJob;
+import com.alipay.application.service.system.domain.repo.TenantRepository;
 import com.alipay.application.share.request.rule.LinkDataParam;
 import com.alipay.application.share.request.rule.WhitedRuleConfigDTO;
 import com.alipay.application.share.vo.ApiResponse;
@@ -121,10 +122,18 @@ public class ScanServiceImpl implements ScanService {
     @Resource
     private WhitedConfigContext whitedConfigContext;
 
+    @Resource
+    private TenantRepository tenantRepository;
+
     /**
      * localLockPrefix
      */
     private static final String localLockPrefix = "rule::scan::running::";
+
+    /**
+     * 最大等待时间
+     */
+    private static final int MAX_WAIT_HOURS = 6;
 
     @Override
     public void scanByGroup(Long groupId) {
@@ -183,7 +192,16 @@ public class ScanServiceImpl implements ScanService {
         return version == null ? 1 : version + 1;
     }
 
-    public void scanByRule(RuleAgg ruleAgg, @NotNull CloudAccountPO cloudAccountPO) {
+    public void scanByRule(RuleAgg ruleAgg, @NotNull CloudAccountPO cloudAccountPO, Boolean isDefaultRule) {
+        // Only the "default rules" or the optional rules of the tenant to which the account belongs
+        if (!isDefaultRule) {
+            boolean selected = tenantRepository.isSelected(cloudAccountPO.getTenantId(), ruleAgg.getRuleCode());
+            if (!selected) {
+                log.info("cloudAccountId:{},ruleCode:{} is not selected", cloudAccountPO.getCloudAccountId(), ruleAgg.getRuleCode());
+                return;
+            }
+        }
+
         String cloudAccountId = cloudAccountPO.getCloudAccountId();
         log.info("Scan by rule name:{} cloudAccountId:{}", ruleAgg.getRuleName(), cloudAccountId);
         long nextVersion = getNextVersion(ruleAgg.getId(), cloudAccountId);
@@ -327,9 +345,9 @@ public class ScanServiceImpl implements ScanService {
             return new ApiResponse<>(ApiResponse.FAIL_CODE, "The current rule is running");
         }
 
-        // 业务逻辑判断，防止1小时未运行完成的规则，再次运行
-        if (ruleAgg.getIsRunning() == 1) {
-            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The current rule is running");
+        // 上次扫描时间是否在12小时内
+        if (ruleAgg.getIsRunning() == 1 && DateUtil.getDiffHours(new Date(), ruleAgg.getLastScanTimeStart()) < MAX_WAIT_HOURS) {
+            return new ApiResponse<>(ApiResponse.FAIL_CODE, "The current rule is running, please try again after 6 hours");
         }
 
         // 修改状态
@@ -340,7 +358,7 @@ public class ScanServiceImpl implements ScanService {
             // Loading rules to opa
             ruleScanContext.loadByRuleId(ruleId);
             // Loading whitedConfigs to opa
-            whitedConfigContext.loadEnableWhitedConfigs();
+            whitedConfigContext.refreshWhitedConfigs();
 
             // Query the account account with this asset to optimize the speed
             List<String> cloudAccountIdList = cloudResourceInstanceMapper.findAccountList(ruleAgg.getPlatform(),
@@ -353,8 +371,10 @@ public class ScanServiceImpl implements ScanService {
 
             List<CloudAccountPO> cloudAccountPOS = cloudAccountMapper.findList(cloudAccountDTO);
 
-            // 获取所有的白名单规则
-            whitedConfigContext.initWhitedConfigCache();
+
+            // Determine whether the rules are selected by the global tenant
+            boolean selectedByGlobalTenant = tenantRepository.isDefaultRule(ruleAgg.getRuleCode());
+
             for (CloudAccountPO cloudAccountPO : cloudAccountPOS) {
                 if (!cloudAccountIdList.contains(cloudAccountPO.getCloudAccountId())) {
                     // 20250416 bugfix：云账号对应的资产已经不存在，将风险状态更新为已解决
@@ -363,7 +383,7 @@ public class ScanServiceImpl implements ScanService {
                 }
 
                 try {
-                    scanByRule(ruleAgg, cloudAccountPO);
+                    scanByRule(ruleAgg, cloudAccountPO, selectedByGlobalTenant);
                 } catch (Exception e) {
                     log.error("cloudAccountId:{} run rule:{} fail:{}", cloudAccountPO.getCloudAccountId(),
                             ruleAgg.getRuleCode(), e.getMessage());
@@ -381,13 +401,27 @@ public class ScanServiceImpl implements ScanService {
             dbDistributedLockUtil.releaseLock(localLockPrefix + ruleId);
         }
 
-        dbCacheUtil.clear(RuleServiceImpl.cacheKey);
+        dbCacheUtil.clear(RuleServiceImpl.tenantSelectRuleCacheKey);
 
         return ApiResponse.SUCCESS;
     }
 
+    /**
+     * 扫描指定规则列表的数据
+     *
+     * @param ruleIdList 规则列表
+     * @return ApiResponse<String>
+     */
+    @Override
+    public ApiResponse<String> scanRuleList(List<Long> ruleIdList) {
+        for (Long ruleId : ruleIdList) {
+            scanByRule(ruleId);
+        }
+        return ApiResponse.SUCCESS;
+    }
+
     protected void saveOrUpdate(CloudResourceInstancePO resourceInstance, Map<String, Object> result,
-            Long version, RuleAgg ruleAgg, CloudAccountPO cloudAccountPO) {
+                                Long version, RuleAgg ruleAgg, CloudAccountPO cloudAccountPO) {
         RuleScanResultPO ruleScanResultPO = ruleScanResultMapper.fineOne(resourceInstance.getResourceId(),
                 resourceInstance.getCloudAccountId(), ruleAgg.getId());
 
@@ -410,7 +444,7 @@ public class ScanServiceImpl implements ScanService {
     }
 
     private void scanWhitedRuleConfig(RuleScanResultPO ruleScanResultPO, String ruleCode, CloudAccountPO cloudAccountPO,
-            CloudResourceInstancePO resourceInstance) {
+                                      CloudResourceInstancePO resourceInstance) {
         List<WhitedRuleConfigPO> whitedRuleConfigPOList = whitedConfigContext.get();
         String hitWhitedRuleName = null;
         Long hitWhitedRuleConfigId = null;
@@ -479,12 +513,12 @@ public class ScanServiceImpl implements ScanService {
      * @param version          数据版本
      */
     private void finishData(RuleScanResultPO ruleScanResultPO,
-            CloudResourceInstancePO resourceInstance,
-            Long ruleId,
-            String regoPolicy,
-            Long tenantId,
-            Map<String, Object> result,
-            Long version) {
+                            CloudResourceInstancePO resourceInstance,
+                            Long ruleId,
+                            String regoPolicy,
+                            Long tenantId,
+                            Map<String, Object> result,
+                            Long version) {
 
         ruleScanResultPO.setRuleSnapshoot(regoPolicy);
         ruleScanResultPO.setResourceStatus(ResourceStatus.exist.name());
@@ -494,7 +528,6 @@ public class ScanServiceImpl implements ScanService {
         ruleScanResultPO.setVersion(version);
         ruleScanResultPO.setRuleId(ruleId);
         ruleScanResultPO.setCloudAccountId(resourceInstance.getCloudAccountId());
-        ruleScanResultPO.setTenantId(resourceInstance.getTenantId());
         ruleScanResultPO.setPlatform(resourceInstance.getPlatform());
         ruleScanResultPO.setResourceType(resourceInstance.getResourceType());
         ruleScanResultPO.setResourceId(resourceInstance.getResourceId());

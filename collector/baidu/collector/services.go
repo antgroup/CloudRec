@@ -16,8 +16,6 @@
 package collector
 
 import (
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"fmt"
 	"github.com/baidubce/bce-sdk-go/services/appblb"
 	"github.com/baidubce/bce-sdk-go/services/bcc"
@@ -33,24 +31,30 @@ import (
 	"github.com/baidubce/bce-sdk-go/services/scs"
 	"github.com/baidubce/bce-sdk-go/services/vpc"
 	"github.com/baidubce/bce-sdk-go/services/vpn"
+  
+	"time"
+	"github.com/cloudrec/baidu/customsdk/cce"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 )
 
 type Services struct {
-	VPCClient    *vpc.Client
-	BCCClient    *bcc.Client
-	BLBClient    *blb.Client
-	APPBLBClient *appblb.Client
-	BOSClient    *bos.Client
-	RDSClient    *rds.Client
-	EIPClient    *eip.Client
-	IAMClient    *iam.Client
-	CCEClient    *v2.Client
-	RedisClient  *scs.Client
-	CCRClient    *eccr.Client
-	ECCRClient   *eccr.Client
-	BLSClient    *bls.Client
-	CFWClient    *cfw.Client
-	VPNClient    *vpn.Client
+	VPCClient       *vpc.Client
+	BCCClient       *bcc.Client
+	BLBClient       *blb.Client
+	APPBLBClient    *appblb.Client
+	BOSClient       *bos.Client
+	RDSClient       *rds.Client
+	EIPClient       *eip.Client
+	IAMClient       *iam.Client
+	CCEClient       *v2.Client
+	RedisClient     *scs.Client
+	CCRClient       *eccr.Client
+	ECCRClient      *eccr.Client
+	BLSClient       *bls.Client
+	CFWClient       *cfw.Client
+	VPNClient       *vpn.Client
+	CCECustomClient *cce.Client
 }
 
 // Clone creates a new instance of Services
@@ -58,6 +62,31 @@ func (s *Services) Clone() schema.ServiceInterface {
 	// Return a new empty instance
 	// All clients will be initialized when InitServices is called
 	return &Services{}
+}
+
+// AssessCollectionTrigger determines whether asset collection should be performed for the cloud account
+// Returns true if collection should proceed, false if it should be skipped
+// This can be used to skip collection when credentials are invalid or no changes occurred
+// AssessCollectionTrigger determines whether collection should be performed for the given cloud account
+// Returns CollectRecordInfo containing collection decision and metadata
+func (s *Services) AssessCollectionTrigger(param schema.CloudAccountParam) schema.CollectRecordInfo {
+	// TODO: Implement logic to check if collection should be performed
+	// For example:
+	// - Check if credentials are valid
+	// - Check if there were recent changes in the account
+	// - Check if the last collection was recent enough
+	// - Check if the account is in maintenance mode
+
+	startTime := time.Now().Format("2006-01-02T15:04:05Z")
+	recordInfo := schema.CollectRecordInfo{
+		CloudAccountId:   param.CloudAccountId,
+		Platform:         param.Platform,
+		StartTime:        startTime,
+		EndTime:          "",   // Will be set when collection completes
+		EnableCollection: true, // Default implementation: always collect
+	}
+
+	return recordInfo
 }
 
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {
@@ -143,6 +172,12 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.GetWLogger().Warn(fmt.Sprintf("init bls client failed, err: %s", err))
 		}
 		s.CFWClient = cfwClient
+	case CCERBAC:
+		cceCustomClient, err := cce.NewClient(param.AK, param.SK, param.Region)
+		if err != nil {
+			log.GetWLogger().Warn(fmt.Sprintf("init customClient failed, err: %s", err))
+		}
+		s.CCECustomClient = cceCustomClient
 	}
 
 	return nil

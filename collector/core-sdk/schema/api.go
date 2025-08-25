@@ -95,12 +95,21 @@ func (c *Client) SendSupportResourceType(registryValue, platform string, resourc
 
 // LoadAccountFromServer Get cloud account information from the server
 func (c *Client) LoadAccountFromServer(registryValue string, taskIds []int64) (cloudAccountList []CloudAccount, err error) {
+	return c.LoadAccountFromServerWithCount(registryValue, taskIds, 0)
+}
+
+// LoadAccountFromServerWithCount Get cloud account information from the server with specified count
+func (c *Client) LoadAccountFromServerWithCount(registryValue string, taskIds []int64, freeCount int) (cloudAccountList []CloudAccount, err error) {
 	t := time.NewTimer(time.Second * 60)
 	defer t.Stop()
 	req := &AccountParam{
 		Platform:      c.Platform,
 		RegistryValue: registryValue,
 		TaskIds:       taskIds,
+	}
+
+	if freeCount > 0 {
+		req.FreeCloudAccountCount = freeCount
 	}
 
 	if len(c.Sites) != 0 {
@@ -287,4 +296,34 @@ func (c *Client) SendResource(cloudAccount CloudAccount, resource Resource, reso
 
 	log.GetWLogger().Info(fmt.Sprintf("CloudAccountId %s Submit %d %s resource data to the server %s successfully", cloudAccount.CloudAccountId, len(resourceInstanceList), resource.ResourceType, c.ServerUrl))
 	return nil
+}
+
+func (c *Client) SendRunningStartSignal(info CollectRecordInfo) (err error) {
+	t := time.NewTimer(time.Second * 10)
+	defer t.Stop()
+	paramMap := make(map[string]interface{}, 1)
+	paramMap["cloudAccountId"] = info.CloudAccountId
+	paramMap["collectRecordInfo"] = info
+	param, err := json.Marshal(paramMap)
+	if err != nil {
+		return
+	}
+
+	maxRetries := 3
+	for i := 0; i < maxRetries; i++ {
+		resp, err := c.postWithPersistentToken("/api/agent/acceptRunningStartSignal", string(param), c.PersistentToken)
+
+		if err == nil {
+			defer resp.Body.Close()
+			return nil
+		}
+
+		log.GetWLogger().Error(fmt.Sprintf("runningStartSignal error (attempt %d/%d): %s", i+1, maxRetries, err.Error()))
+
+		if i < maxRetries-1 {
+			time.Sleep(1 * time.Second * time.Duration(i+1))
+		}
+	}
+
+	return fmt.Errorf("failed after %d attempts", maxRetries)
 }

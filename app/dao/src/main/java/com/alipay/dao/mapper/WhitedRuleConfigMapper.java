@@ -16,6 +16,7 @@
  */
 package com.alipay.dao.mapper;
 
+import com.alipay.dao.dto.GroupByRuleCodeDTO;
 import com.alipay.dao.dto.QueryWhitedRuleDTO;
 import com.alipay.dao.po.WhitedRuleConfigPO;
 
@@ -37,4 +38,8 @@ public interface WhitedRuleConfigMapper {
     int count(QueryWhitedRuleDTO queryWhitedRuleDTO);
 
     List<WhitedRuleConfigPO> list(QueryWhitedRuleDTO dto);
+
+    GroupByRuleCodeDTO findNullRuleCode(QueryWhitedRuleDTO dto);
+
+    List<GroupByRuleCodeDTO> findListGroupByRuleCode(QueryWhitedRuleDTO dto);
 }

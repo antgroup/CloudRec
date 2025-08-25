@@ -16,18 +16,19 @@
 package rds
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/baidubce/bce-sdk-go/services/rds"
 	"github.com/cloudrec/baidu/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
 type Detail struct {
 	Instance    rds.Instance
 	SecurityIps []string
+	Accounts    []rds.Account
 }
 
 func GetResource() schema.Resource {
@@ -60,6 +61,7 @@ func GetResource() schema.Resource {
 					d := Detail{
 						Instance:    i,
 						SecurityIps: getSecurityIps(ctx, client, i.InstanceId),
+						Accounts:    getAccounts(ctx, client, i.InstanceId),
 					}
 
 					res <- d
@@ -87,4 +89,13 @@ func getSecurityIps(ctx context.Context, client *rds.Client, instanceId string) 
 		return nil
 	}
 	return resp.SecurityIps
+}
+
+func getAccounts(ctx context.Context, client *rds.Client, instanceId string) []rds.Account {
+	resp, err := client.ListAccount(instanceId)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("getAccounts error", zap.Error(err))
+		return nil
+	}
+	return resp.Accounts
 }

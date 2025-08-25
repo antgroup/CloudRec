@@ -68,6 +68,11 @@ public class CollectorRecordVO {
      */
     private String collectorName;
 
+    /**
+     * 采集记录信息
+     */
+    private String collectRecordInfo;
+
     public static CollectorRecordVO build(CollectorRecordPO collectorRecordPO) {
         // 基础信息
         CollectorRecordVO collectorRecordVO = new CollectorRecordVO();
@@ -79,6 +84,7 @@ public class CollectorRecordVO {
         collectorRecordVO.setStartTime(collectorRecordPO.getStartTime());
         collectorRecordVO.setEndTime(collectorRecordPO.getEndTime());
         collectorRecordVO.setCollectorName(collectorRecordPO.getRegistryValue());
+        collectorRecordVO.setCollectRecordInfo(collectorRecordPO.getCollectRecordInfo());
 
         // 云账号别名
         CloudAccountMapper cloudAccountMapper = SpringUtils.getBean(CloudAccountMapper.class);
@@ -94,6 +100,7 @@ public class CollectorRecordVO {
             List<String> errorResourceTypeList = collectorLogPOS.stream().map(CollectorLogPO::getResourceType).toList();
             collectorRecordVO.setErrorResourceTypeList(errorResourceTypeList);
         }
+
 
         return collectorRecordVO;
     }

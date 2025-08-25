@@ -5,6 +5,7 @@ go 1.23.0
 replace github.com/core-sdk => ../core-sdk
 
 require (
+	github.com/alibabacloud-go/actiontrail-20200706/v3 v3.2.0
 	github.com/alibabacloud-go/adb-20190315/v4 v4.1.4
 	github.com/alibabacloud-go/alb-20200616/v2 v2.2.0
 	github.com/alibabacloud-go/alidns-20150109/v4 v4.5.7
@@ -77,7 +78,7 @@ require (
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

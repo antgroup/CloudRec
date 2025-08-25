@@ -7,10 +7,11 @@
         <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
         <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="role_name" jdbcType="VARCHAR" property="roleName"/>
     </resultMap>
     <sql id="Base_Column_List">
         id
-        , gmt_create, gmt_modified, tenant_id, user_id
+        , gmt_create, gmt_modified, tenant_id, user_id, role_name
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
@@ -46,6 +47,9 @@
             <if test="userId != null">
                 user_id,
             </if>
+            <if test="roleName != null">
+                role_name,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -62,6 +66,9 @@
             </if>
             <if test="userId != null">
                 #{userId,jdbcType=BIGINT},
+            </if>
+            <if test="roleName != null">
+                #{roleName,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -80,15 +87,10 @@
             <if test="userId != null">
                 user_id = #{userId,jdbcType=BIGINT},
             </if>
+            <if test="roleName != null">
+                role_name = #{roleName,jdbcType=VARCHAR},
+            </if>
         </set>
-        where id = #{id,jdbcType=BIGINT}
-    </update>
-    <update id="updateByPrimaryKey" parameterType="com.alipay.dao.po.TenantUserPO">
-        update tenant_user
-        set gmt_create   = #{gmtCreate,jdbcType=TIMESTAMP},
-            gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
-            tenant_id    = #{tenantId,jdbcType=BIGINT},
-            user_id      = #{userId,jdbcType=BIGINT}
         where id = #{id,jdbcType=BIGINT}
     </update>
     <delete id="del">

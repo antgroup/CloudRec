@@ -16,13 +16,13 @@
 package ens
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -68,15 +68,20 @@ func ListNetworkResource(ctx context.Context, service schema.ServiceInterface, r
 		log.CtxLogger(ctx).Error("DescribeNetwork error", zap.Error(err))
 		return err
 	}
-	for describeNetworksResponse.PageSize*describeNetworksResponse.PageNumber <= describeNetworksResponse.TotalCount {
+
+	for {
 		for _, network := range describeNetworksResponse.Networks.Network {
 			networkDetail := NetworkDetail{
 				Network:    describeNetworkAttribute(ctx, cli, network.NetworkId),
-				NetworkAcl: describeNetworkAcl(ctx, cli, network.NetworkAclId),
+				NetworkAcl: describeNetworkAcl(ctx, cli, network.NetworkId),
 			}
-
 			res <- networkDetail
 		}
+
+		if describeNetworksResponse.PageSize*describeNetworksResponse.PageNumber >= describeNetworksResponse.TotalCount {
+			break
+		}
+
 		describeNetworksRequest.PageNumber = requests.NewInteger(describeNetworksResponse.PageNumber + 1)
 		describeNetworksResponse, err = cli.DescribeNetworks(describeNetworksRequest)
 		if err != nil {
@@ -89,7 +94,7 @@ func ListNetworkResource(ctx context.Context, service schema.ServiceInterface, r
 
 func describeNetworkAcl(ctx context.Context, cli *ens.Client, id string) ens.NetworkAcl {
 	request := ens.CreateDescribeNetworkAclsRequest()
-	request.NetworkAclId = id
+	request.ResourceId = id
 
 	response, err := cli.DescribeNetworkAcls(request)
 	if err != nil {

@@ -19,10 +19,7 @@ package com.alipay.api.collector;
 import com.alipay.application.service.collector.AgentService;
 import com.alipay.application.service.collector.domain.TaskResp;
 import com.alipay.application.service.resource.SaveResourceService;
-import com.alipay.application.share.request.collector.AcceptSupportResourceTypeRequest;
-import com.alipay.application.share.request.collector.LogRequest;
-import com.alipay.application.share.request.collector.QueryCloudAccountRequest;
-import com.alipay.application.share.request.collector.RunningFinishSignalRequest;
+import com.alipay.application.share.request.collector.*;
 import com.alipay.application.share.request.resource.DataPushRequest;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.collector.AgentCloudAccountVO;
@@ -73,13 +70,25 @@ public class CollectorApi {
     }
 
     @PostMapping("/acceptRunningFinishSignal")
-    public void acceptRunningFinishSignal(@Validated @RequestBody RunningFinishSignalRequest req,
-                                          BindingResult err) {
+    public ApiResponse<String> acceptRunningFinishSignal(@Validated @RequestBody RunningFinishSignalRequest req,
+                                                         BindingResult err) {
         if (err.hasErrors()) {
             throw new IllegalArgumentException(err.toString());
         }
 
         agentService.runningFinishSignal(req.getCloudAccountId(), req.getTaskId());
+        return ApiResponse.SUCCESS;
+    }
+
+    @PostMapping("/acceptRunningStartSignal")
+    public ApiResponse<String> acceptRunningStartSignal(HttpServletRequest request, @Validated @RequestBody RunningStartSignalRequest req,
+                                                        BindingResult err) {
+        if (err.hasErrors()) {
+            throw new IllegalArgumentException(err.toString());
+        }
+
+        agentService.runningStartSignal(request.getHeader(PERSISTENT_TOKEN), req.getCloudAccountId(), req.getCollectRecordInfo());
+        return ApiResponse.SUCCESS;
     }
 
 
@@ -94,7 +103,7 @@ public class CollectorApi {
     public ApiResponse<List<AgentCloudAccountVO>> listCloudAccount(HttpServletRequest request,
                                                                    @RequestBody QueryCloudAccountRequest req) {
         return agentService.queryCloudAccountList(request.getHeader(PERSISTENT_TOKEN),
-                req.getRegistryValue(), req.getPlatform(), req.getSites(), req.getTaskIds());
+                req.getRegistryValue(), req.getPlatform(), req.getSites(), req.getTaskIds(), req.getFreeCloudAccountCount());
     }
 
     /**

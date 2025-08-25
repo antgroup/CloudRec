@@ -46,7 +46,5 @@ public interface IdentitySecurityService {
 
     List<PlatformPO> getPlatformList();
 
-    List<IdentityCardVO> queryIdentityCardList(QueryIdentityCardRequest request);
-
     List<IdentityCardVO> queryIdentityCardListWithRulds(QueryIdentityCardRequest request);
 }

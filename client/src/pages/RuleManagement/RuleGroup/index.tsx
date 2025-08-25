@@ -18,6 +18,7 @@ import {
 } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
+import PermissionWrapper from '@/components/Common/PermissionWrapper';
 import EditModalForm from './components/EditModalForm';
 import GroupCard from './components/GroupCard';
 import styles from './index.less';
@@ -25,7 +26,7 @@ import styles from './index.less';
 const DEFAULT_PAGE_NUMBER = 1;
 const DEFAULT_PAGE_SIZE = 12;
 
-const RuleGroup: React.FC = () => {
+const RuleGroupContent: React.FC = () => {
   // Global Props
   const { ruleGroupList } = useModel('rule');
   // CurrentMediaSize
@@ -263,6 +264,12 @@ const RuleGroup: React.FC = () => {
         requestCurrentData={requestCurrentData}
       />
     </PageContainer>
+  );
+};
+
+const RuleGroup: React.FC = () => {
+  return (
+      <RuleGroupContent />
   );
 };
 

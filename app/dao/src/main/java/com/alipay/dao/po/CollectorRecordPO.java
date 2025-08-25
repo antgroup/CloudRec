@@ -17,6 +17,8 @@ public class CollectorRecordPO {
 
     private Date endTime;
 
+    private String collectRecordInfo;
+
     private String registryValue;
 
     public Long getId() {
@@ -81,5 +83,13 @@ public class CollectorRecordPO {
 
     public void setRegistryValue(String registryValue) {
         this.registryValue = registryValue;
+    }
+
+    public String getCollectRecordInfo() {
+        return collectRecordInfo;
+    }
+
+    public void setCollectRecordInfo(String collectRecordInfo) {
+        this.collectRecordInfo = collectRecordInfo;
     }
 }

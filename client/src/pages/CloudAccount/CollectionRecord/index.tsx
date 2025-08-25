@@ -1,7 +1,8 @@
 import { useIntl, useSearchParams, useModel, history } from '@umijs/max';
 import { PageContainer } from '@ant-design/pro-components';
-import { Table, DatePicker, Space, Select, Form, Tag, Progress, Tooltip, Button } from 'antd';
-import { CheckCircleOutlined, SyncOutlined, CloseCircleFilled } from '@ant-design/icons';
+import { Table, DatePicker, Space, Select, Form, Tag, Progress, Tooltip, Button, Modal, Typography, message } from 'antd';
+import { CheckCircleOutlined, SyncOutlined, CloseCircleFilled, InfoCircleOutlined, CopyOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
+import JSONEditor from '@/components/Editor/JSONEditor';
 import { cloudAccountBaseInfoListV2 } from '@/services/account/AccountController';
 import { obtainPlatformEasyIcon } from '@/utils/shared';
 import { useEffect, useState } from 'react';
@@ -26,6 +27,24 @@ const CollectionRecord = () => {
   const [errorCodeOptions, setErrorCodeOptions] = useState<{ label: string; value: string }[]>([]);
   const [selectedErrorCode, setSelectedErrorCode] = useState<string>();
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [metadataModalVisible, setMetadataModalVisible] = useState(false);
+  const [selectedMetadata, setSelectedMetadata] = useState<any>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  /**
+   * Toggle fullscreen mode for metadata modal
+   */
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  /**
+   * Handle modal close - reset fullscreen state
+   */
+  const handleModalClose = () => {
+    setMetadataModalVisible(false);
+    setIsFullscreen(false);
+  };
 
   // query cloud account list
   const fetchAccountList = async (platform?: string, searchValue?: string) => {
@@ -35,8 +54,8 @@ const CollectionRecord = () => {
     }
     try {
       const res = await cloudAccountBaseInfoListV2({ platformList: [platform], cloudAccountSearch: searchValue });
-      if (res.msg === 'success') {
-        const options = res.content?.map((item) => ({
+      if (res.code === 200) {
+        const options = res.content?.map((item: any) => ({
           label: item.alias,
           value: item.cloudAccountId,
         })) || [];
@@ -113,8 +132,8 @@ const CollectionRecord = () => {
     }
     try {
       const res = await getErrorCodeList({ platform, cloudAccountId });
-      if (res.msg === 'success') {
-        const options = res.content?.map((item: { description: string, count: number }) => ({
+      if (res) {
+        const options = (res as any)?.content?.map((item: { description: string, count: number }) => ({
           label: `${item.description} (${item.count})`,
           value: item.description,
         })) || [];
@@ -180,6 +199,67 @@ const CollectionRecord = () => {
       key: 'endTime',
     },
     {
+      title: "Metadata",
+      dataIndex: 'collectRecordInfo',
+      key: 'collectRecordInfo',
+      width: 200,
+      render: (collectRecordInfo: any, record: API.CollectorRecord) => {
+          /**
+           * Parse and handle metadata display - deserialize collectRecordInfo for better readability
+           */
+          let parsedMetadata = null;
+          
+          // Try to parse collectRecordInfo if it's a string
+          if (collectRecordInfo) {
+            try {
+              parsedMetadata = typeof collectRecordInfo === 'string' 
+                ? JSON.parse(collectRecordInfo) 
+                : collectRecordInfo;
+            } catch (error) {
+              console.warn('Failed to parse collectRecordInfo:', error);
+              parsedMetadata = collectRecordInfo;
+            }
+          }
+          
+          const handleShowMetadata = () => {
+            setSelectedMetadata(parsedMetadata);
+            setMetadataModalVisible(true);
+          };
+          
+          // Check if metadata exists
+          if (!parsedMetadata) {
+            return <span style={{ color: '#999' }}>No metadata</span>;
+          }
+        
+        return (
+          <div 
+            style={{ 
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: '1px solid #d9d9d9',
+              backgroundColor: '#fafafa',
+              transition: 'all 0.3s'
+            }} 
+            onClick={handleShowMetadata}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#e6f7ff';
+              e.currentTarget.style.borderColor = '#1890ff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fafafa';
+              e.currentTarget.style.borderColor = '#d9d9d9';
+            }}
+          >
+            <Space>
+              <InfoCircleOutlined style={{ color: '#1890ff' }} />
+              <span style={{ color: '#1890ff', fontSize: '12px' }}>View Details</span>
+            </Space>
+          </div>
+        );
+      },
+    },
+    {
       title: intl.formatMessage({ id: 'cloudAccount.table.column.status' }),
       dataIndex: 'percent',
       key: 'status',
@@ -205,7 +285,7 @@ const CollectionRecord = () => {
       title: intl.formatMessage({ id: 'cloudAccount.table.column.error.number' }),
       dataIndex: 'errorResourceTypeList',
       key: 'errorResourceTypeList',
-      render: (types: string[], record: API.CollectionRecord) => (
+      render: (types: string[], record: API.CollectorRecord) => (
         <a
           onClick={() => {
             history.push(`/cloudAccount/collectionRecord/${record.id}`);
@@ -230,7 +310,7 @@ const CollectionRecord = () => {
           <Form.Item>
           <Select
             style={{ minWidth: 200, maxWidth: '100%' }}
-            options={platformList?.map((item) => ({
+            options={platformList?.map((item: any) => ({
               ...item,
               label: (
                 <Space>
@@ -279,7 +359,7 @@ const CollectionRecord = () => {
             <RangePicker
               showTime
               value={timeRange}
-              onChange={(dates) => setTimeRange(dates)}
+              onChange={(dates) => setTimeRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])}
             />
           </Form.Item>
 
@@ -309,6 +389,51 @@ const CollectionRecord = () => {
           },
         }}
       />
+      
+      {/* Metadata Detail Modal */}
+       <Modal
+         title={
+           <Space>
+             <InfoCircleOutlined style={{ color: '#1890ff' }} />
+             <span>Metadata Details</span>
+           </Space>
+         }
+         open={metadataModalVisible}
+         onCancel={handleModalClose}
+         footer={[
+           <Button 
+             key="fullscreen" 
+             icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+             onClick={toggleFullscreen}
+           >
+             {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+           </Button>,
+         ]}
+         width={isFullscreen ? '100vw' : 800}
+         style={isFullscreen ? {
+           top: 0,
+           paddingBottom: 0,
+           maxWidth: '100vw'
+         } : {}}
+         bodyStyle={isFullscreen ? {
+           height: 'calc(100vh - 110px)',
+           padding: '24px'
+         } : {}}
+       >         <JSONEditor
+           value={selectedMetadata ? 
+             (typeof selectedMetadata === 'object' 
+               ? JSON.stringify(selectedMetadata, null, 2)
+               : selectedMetadata
+             ) : '{}'
+           }
+           readOnly={true}
+           editorStyle={{
+             height: isFullscreen ? 'calc(100vh - 200px)' : '60vh',
+             border: '1px solid #e1e4e8',
+             borderRadius: '6px'
+           }}
+         />
+       </Modal>
     </PageContainer>
   );
 };

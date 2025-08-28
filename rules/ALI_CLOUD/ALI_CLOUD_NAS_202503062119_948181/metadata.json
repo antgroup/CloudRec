@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["网络访问","数据保护"],"code":"ALI_CLOUD_NAS_202503062119_948181","context":null,"description":"未启用SMB ACL白名单","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-NAS-未启用SMB ACL白名单","platform":"ALI_CLOUD","resourceType":"NAS"}
+{"advice":null,"categoryList":["数据保护","网络访问"],"code":"ALI_CLOUD_NAS_202503062119_948181","context":null,"description":"未启用SMB ACL白名单","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-NAS-未启用SMB ACL白名单","platform":"ALI_CLOUD","resourceType":"NAS"}

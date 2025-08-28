@@ -1,4 +1,4 @@
-package ram_sso_enabled_2200011_157
+package ram_sso_enabled_2200011
 import rego.v1
 
 default risk := false

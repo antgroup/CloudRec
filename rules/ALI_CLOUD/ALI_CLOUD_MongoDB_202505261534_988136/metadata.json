@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["数据保护","日志审计"],"code":"ALI_CLOUD_MongoDB_202505261534_988136","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在MongoDB-实例未启用审计日志风险。","description":"阿里云-MongoDB-实例未启用审计日志","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-MongoDB-实例未启用审计日志","platform":"ALI_CLOUD","resourceType":"MongoDB"}

@@ -1,4 +1,4 @@
-package ecs_sg_public_open_1100001_172
+package ecs_sg_public_open_1100001
 import rego.v1
 
 default risk := false

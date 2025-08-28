@@ -1,4 +1,4 @@
-package cloudrec_8200001_153
+package cloudrec_8200001
 import rego.v1
 
 default risk := false
@@ -18,14 +18,8 @@ messages contains message if {
     risk == true
     message := {
         "Description": "账号下AK列表",
-        "AKs": ActiveAccessKeys
+        "AKs": input.AccessKeys[_].AccessKey.AccessKeyId
     }
-}
-
-ActiveAccessKeys contains ak if {
-    some AccessKey in input.AccessKeys[_]
-    AccessKey.Status == "Active"
-    ak := AccessKey.AccessKeyId
 }
 
 ## 综合 allow策略、无条件deny策略，来综合判断一个账号是否可访问OSS

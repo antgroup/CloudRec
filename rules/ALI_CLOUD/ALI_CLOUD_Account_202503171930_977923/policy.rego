@@ -1,4 +1,4 @@
-package root_ak_unused_7200001_221
+package root_ak_unused_7200001
 import rego.v1
 
 default risk := false

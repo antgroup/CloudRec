@@ -1,4 +1,4 @@
-package other_account_assume_role_3600012_218
+package other_account_assume_role_3600012
 
 import rego.v1
 
@@ -21,3 +21,5 @@ other_account_assume_role contains account if {
     account != my_account
     
 }
+
+role_name := input.Role.RoleName

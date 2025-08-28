@@ -1,4 +1,4 @@
-package listener_with_unsafe_protocal_6500002_171
+package listener_with_unsafe_protocal_6500002
 import rego.v1
 
 default risk := false

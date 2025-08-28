@@ -1,21 +1,91 @@
-package ram_user_with_risk_access_3700001_195
-
+package ram_user_with_high_risk_access_3700001
 import rego.v1
-import data
 
 default risk := false
-
 risk if {
-	count(using_high_risk_access) > 0
-    not tmp_white
+    input.ExistActiveAccessKey
+    exist_Policies != null
+    count(allow_sts) > 0
+}
+messages contains message if {
+    risk == true
+    message := {
+        "Description": "账号拥有敏感权限",
+        "RiskStatment": allow_sts,
+        "AKList": AccessKeys,
+        "Policies": exist_Policies,
+    }
 }
 
-high_risk_access_list := ["AliyunRAMFullAccess","AdministratorAccess"]
+exist_Policies := input.Policies
+AccessKeys contains ak if {
+    some AccessKey in input.AccessKeys[_]
+    ak := AccessKey.AccessKeyId
+}
 
-using_high_risk_access contains p if {
+sensitive_actions := ["*", "*:*", "ecs:*", "rds:*", "oss:*", "ram:*", "*:List*","*:Put*","ram:Create*","ram:Attach*"]
+read_only_actions := []
+# full_access_actions := ["*", "*:*", "ecs:*", "rds:*", "oss:*", "ram:*"]
+full_access_resource := "*"
+
+allow_sts contains {"Action":action,"Resource":resource} if {
     some policy in input.Policies
-    p := policy.Policy.PolicyName
-    p in high_risk_access_list
-} 
+    policy_doc := json.unmarshal(policy.DefaultPolicyVersion.PolicyDocument)
+    some sts in policy_doc.Statement
+    sts.Effect == "Allow"
+    action_str := get_str_to_array(sts.Action)
+    action_arr := get_str_to_array(sts.Action)
+    resource_str := get_str_to_array(sts.Resource)
+    resource_arr := get_str_to_array(sts.Resource)
+    action_all := array.concat(action_str, action_arr)
+    resource_all := array.concat(resource_str, resource_arr)
+    actions := get_full_access_actions(action_all)
+    resource := get_full_access_resource(resource_all)
+    action := actions[_]
+}
 
+get_str_to_array(ActionResource) := result if {
+	type_name(ActionResource) == "string"
+	result = [ActionResource]
+} else := result if {
+	type_name(ActionResource) == "array"
+	result = ActionResource
+}
 
+get_full_access_actions(action_all) := actions if {
+    actions := [action | action := action_all[_]; action in sensitive_actions]
+}
+#else if {
+#    actions := [action | action := action_all[_]; action in sensitive_actions]
+#}
+
+get_full_access_resource(resource_all) := resource if {
+    full_access_resource in resource_all
+    resource := full_access_resource
+}
+
+deny_sts contains {"Action":action, "Resource":resource} if {
+    some policy in input.Policies
+    policy_doc := json.unmarshal(policy.DefaultPolicyVersion.PolicyDocument)
+    some sts in policy_doc.Statement
+    sts.Effect == "Deny"
+    not sts.Condition
+    action_str := get_str_to_array(sts.Action)
+    action_arr := get_str_to_array(sts.Action)
+    resource_str := get_str_to_array(sts.Resource)
+    resource_arr := get_str_to_array(sts.Resource)
+    action_all := array.concat(action_str, action_arr)
+    resource_all := array.concat(resource_str, resource_arr)
+    action := action_all[_]
+    resource := resource_all[_]
+}
+
+uncovered_by_deny if {
+    every action_resource in allow_sts {
+        some sts in deny_sts
+        pattern_resource := replace(sts.Resource,"*",".*")
+        pattern_action := replace(sts.Action,"*",".*")
+        regex.match(pattern_resource,action_resource.Resource)
+        regex.match(pattern_action,action_resource.Action)
+    }
+}

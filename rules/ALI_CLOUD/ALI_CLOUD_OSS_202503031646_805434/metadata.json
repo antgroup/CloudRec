@@ -1,1 +1,15 @@
-{"advice":null,"categoryList":["日志审计"],"code":"ALI_CLOUD_OSS_202503031646_805434","context":null,"description":"Bucket 未启用日志记录","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-OSS-Bucket 未启用日志记录","platform":"ALI_CLOUD","resourceType":"OSS"}
+{
+    "advice": "为指定的 OSS Bucket 开启访问日志记录功能，将日志存储到另一个用于存放日志的 Bucket 中。",
+    "categoryList": [
+        "日志审计"
+    ],
+    "code": "ALI_CLOUD_OSS_202503031646_805434",
+    "context": "$.messages",
+    "description": "Bucket 未启用日志记录",
+    "level": "Medium",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-OSS-Bucket 未启用日志记录",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+}

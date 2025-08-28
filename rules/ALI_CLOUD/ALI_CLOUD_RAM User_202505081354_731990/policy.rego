@@ -1,4 +1,4 @@
-package ram_user_with_high_risk_access_has_no_acl_8900001_185
+package ram_user_with_high_risk_access_has_no_acl_8900001
 import rego.v1
 
 default risk := false

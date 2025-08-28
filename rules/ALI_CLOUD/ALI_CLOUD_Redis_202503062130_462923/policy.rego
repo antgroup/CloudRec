@@ -1,4 +1,4 @@
-package enable_audit_log_6800006_190
+package enable_audit_log_6800006
 import rego.v1
 
 default risk := false

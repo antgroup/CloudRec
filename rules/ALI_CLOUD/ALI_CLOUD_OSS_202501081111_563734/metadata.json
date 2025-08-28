@@ -1,1 +1,15 @@
-{"advice":"","categoryList":["数据保护"],"code":"ALI_CLOUD_OSS_202501081111_563734","context":"Bucket {$.BucketName} 存在匿名操作风险，相关 Bucket policy statement：{$.risk_statements}","description":"OSS bucket允许匿名操作","level":"High","link":"","linkedDataList":null,"name":"阿里云-OSS-Bucket授权策略允许匿名操作","platform":"ALI_CLOUD","resourceType":"OSS"}
+{
+    "advice": "",
+    "categoryList": [
+        "数据保护"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_563734",
+    "context": "Bucket {$.BucketName} 存在匿名操作风险，相关 Bucket policy statement：{$.risk_statements}",
+    "description": "OSS bucket允许匿名操作",
+    "level": "High",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-OSS-Bucket授权策略允许匿名操作",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+}

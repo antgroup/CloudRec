@@ -1,4 +1,4 @@
-package polardb_open_to_pub_2200004_225
+package polardb_open_to_pub_2200004
 import rego.v1
 
 default risk := false

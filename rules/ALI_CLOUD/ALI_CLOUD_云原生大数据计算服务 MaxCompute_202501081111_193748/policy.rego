@@ -1,4 +1,4 @@
-package maxcompute_acl_misconfiguration_2300005_208
+package cloudrec_2300005
 
 import rego.v1
 
@@ -26,3 +26,5 @@ acl_misconfiguration if {
 acl_disabled if {
     not input.GetProjectResponseBodyData.ipWhiteList
 }
+
+project_name := input.Project.name

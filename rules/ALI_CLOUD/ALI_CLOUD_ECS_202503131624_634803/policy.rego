@@ -1,4 +1,4 @@
-package cloudrec_7000001_191
+package cloudrec_7000001
 import rego.v1
 import data
 
@@ -20,8 +20,12 @@ has_public_address if {
     count(public_ip_address) > 0
 }
 
-security_groups_misconfig contains sg_rule if {
-	sg_rule := input.SecurityGroups[_].Permissions[_]
+security_groups_misconfig contains misconfig_sg_info if {
+	some sg in input.SecurityGroups
+	sg_id := sg.SecurityGroup.SecurityGroupId
+	sg_name := sg.SecurityGroup.SecurityGroupName
+
+	some sg_rule in sg.Permissions
 	cidr := sg_rule.SourceCidrIp
     acl_ip_is_special_purpose_address(cidr) == false
 	parts := split(cidr, "/")
@@ -29,6 +33,12 @@ security_groups_misconfig contains sg_rule if {
 	size <= 8
 	sg_rule.Direction == "ingress"
 	sg_rule.Policy == "Accept"
+
+	misconfig_sg_info := {
+		"SecurityGroupId": sg_id,
+		"SecurityGroupName": sg_name,
+		"Misconfig": sg_rule,
+	}
 }
 
 acl_ip_is_special_purpose_address(acl_ip) := true if {

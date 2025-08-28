@@ -1,20 +1,26 @@
-package cloudrec_7800004_200
+package cloudrec_7800004
 import rego.v1
 
 default risk := false
 risk if {
-    exist_active_AccessKey
+    exist_AccessKey
     exist_Policies != null
     without_network_acl
     not covered_by_ip_address_control
     not covered_by_vpc_control
 }
+messages contains message if {
+    risk == true
+    message := {
+        "Description": "There are policies have to set ACL",
+        "WholePolicies": exist_Policies,
+    }
+}
 
-exist_active_AccessKey := input.ExistActiveAccessKey
+exist_AccessKey := input.ExistActiveAccessKey
 exist_Policies := input.Policies
-ActiveAccessKeys contains ak if {
+AccessKeys contains ak if {
     some AccessKey in input.AccessKeys[_]
-    AccessKey.Status == "Active"
     ak := AccessKey.AccessKeyId
 }
 

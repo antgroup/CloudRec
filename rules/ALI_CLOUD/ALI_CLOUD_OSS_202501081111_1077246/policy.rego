@@ -1,4 +1,4 @@
-package cloudrec_2200002_182
+package cloudrec_2200002
 import rego.v1
 
 default risk := false

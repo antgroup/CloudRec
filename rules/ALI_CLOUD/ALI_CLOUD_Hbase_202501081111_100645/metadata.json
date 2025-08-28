@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["网络访问","数据保护"],"code":"ALI_CLOUD_Hbase_202501081111_100645","context":null,"description":"云数据库HBase公网暴露风险","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-HBase-云数据库HBase公网暴露风险","platform":"ALI_CLOUD","resourceType":"Hbase"}
+{"advice":null,"categoryList":["数据保护","网络访问"],"code":"ALI_CLOUD_Hbase_202501081111_100645","context":null,"description":"云数据库HBase公网暴露风险","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-HBase-云数据库HBase公网暴露风险","platform":"ALI_CLOUD","resourceType":"Hbase"}

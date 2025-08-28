@@ -1,4 +1,4 @@
-package lindorm_exposed_to_pub_3800005_173
+package lindorm_exposed_to_pub_3800005
 import rego.v1
 
 default risk := false

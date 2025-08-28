@@ -1,4 +1,4 @@
-package oss_bucket_policy_without_network_condition_2900001_150
+package oss_bucket_policy_without_network_condition_2900001
 
 import rego.v1
 
@@ -20,6 +20,10 @@ risk = false if {
 
 risk = false if {
 	input.BucketInfo.ACL == "private"
+}
+
+risk = false if {
+	input.BucketInfo.BlockPublicAccess == true
 }
 
 bucket_name := input.BucketInfo.Name

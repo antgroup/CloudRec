@@ -1,4 +1,4 @@
-package mongodb_open_network_to_all_1700001_212
+package mongodb_open_network_to_all_1700001
 import rego.v1
 
 default risk := false

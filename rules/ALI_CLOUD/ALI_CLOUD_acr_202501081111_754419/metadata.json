@@ -1,1 +1,15 @@
-{"advice":"","categoryList":["网络访问"],"code":"ALI_CLOUD_acr_202501081111_754419","context":"描述：{$.messages[0].Description}\nID：{$.ResourceId}\n名称：{$.ResourceName}\n问题ACL详情：{$.messages[0].ACL}。（假如ACL显示为NULL，代表未配置任何网络白名单，公网下机器均可通过凭证访问企业版实例）\n","description":"ACR公网暴露风险","level":"High","link":"https://help.aliyun.com/zh/acr/user-guide/configure-access-over-the-internet","linkedDataList":null,"name":"阿里云-ACR-实例公网暴露风险","platform":"ALI_CLOUD","resourceType":"ACR"}
+{
+    "advice": "请按照实际业务访问需求配置网络ACL，配置手册可参考阿里云帮助中心：https://help.aliyun.com/zh/acr/user-guide/configure-access-over-the-internet",
+    "categoryList": [
+        "网络访问"
+    ],
+    "code": "ALI_CLOUD_acr_202501081111_754419",
+    "context": "描述：{$.messages[0].Description}\nID：{$.ResourceId}\n名称：{$.ResourceName}\n问题ACL详情：{$.messages[0].ACL}。（假如ACL显示为NULL，代表未配置任何网络白名单，公网下机器均可通过凭证访问企业版实例）\n",
+    "description": "ACR公网暴露风险",
+    "level": "High",
+    "link": "https://help.aliyun.com/zh/acr/user-guide/configure-access-over-the-internet",
+    "linkedDataList": null,
+    "name": "阿里云-ACR-实例公网暴露风险",
+    "platform": "ALI_CLOUD",
+    "resourceType": "ACR"
+}

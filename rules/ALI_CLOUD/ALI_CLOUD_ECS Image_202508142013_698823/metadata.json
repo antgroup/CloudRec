@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["数据保护"],"code":"ALI_CLOUD_ECS Image_202508142013_698823","context":"$.messages","description":"自定义镜像共享给外部可能导致数据泄漏","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-ECS-自定义Image镜像开启共享","platform":"ALI_CLOUD","resourceType":"ECS Image"}

@@ -1,4 +1,4 @@
-package ak_never_used_after_being_created_90days_7200002_170
+package ak_never_used_after_being_created_90days_7200002
 import rego.v1
 
 default risk := false

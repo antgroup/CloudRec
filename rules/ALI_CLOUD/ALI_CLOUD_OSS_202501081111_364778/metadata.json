@@ -1,1 +1,16 @@
-{"advice":"","categoryList":["网络访问","数据保护"],"code":"ALI_CLOUD_OSS_202501081111_364778","context":"Bucket {$.bucket_name} 未设置网络访问控制","description":"OSS未配置网络策略风险","level":"High","link":"","linkedDataList":null,"name":"阿里云-OSS-未配置网络策略风险","platform":"ALI_CLOUD","resourceType":"OSS"}
+{
+    "advice": "",
+    "categoryList": [
+        "数据保护",
+        "网络访问"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_364778",
+    "context": "Bucket {$.ResourceName} 未设置网络访问控制",
+    "description": "OSS未配置网络策略风险",
+    "level": "High",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-OSS-未配置网络策略风险",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+}

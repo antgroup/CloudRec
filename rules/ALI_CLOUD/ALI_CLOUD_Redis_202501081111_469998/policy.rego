@@ -1,4 +1,4 @@
-package redis_open_network_to_all_1700002_149
+package redis_open_network_to_all_1700002
 import rego.v1
 
 default risk := false

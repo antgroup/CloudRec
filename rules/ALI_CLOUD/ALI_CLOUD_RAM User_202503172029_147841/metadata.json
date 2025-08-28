@@ -1,1 +1,15 @@
-{"advice":null,"categoryList":["身份安全"],"code":"ALI_CLOUD_RAM User_202503172029_147841","context":null,"description":"User AccessKeys从未被使用，存在权限浪费","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-RAM-RAM User AccessKey在创建90天后仍未被使用","platform":"ALI_CLOUD","resourceType":"RAM User"}
+{
+    "advice": "对于长期未使用的 AccessKey，最佳实践是立即将其禁用，并在一个观察期后彻底删除，以遵循凭证管理的最小化原则",
+    "categoryList": [
+        "身份安全"
+    ],
+    "code": "ALI_CLOUD_RAM User_202503172029_147841",
+    "context": null,
+    "description": "User AccessKeys从未被使用，存在权限浪费",
+    "level": "Medium",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-RAM-RAM User AccessKey在创建90天后仍未被使用",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RAM User"
+}

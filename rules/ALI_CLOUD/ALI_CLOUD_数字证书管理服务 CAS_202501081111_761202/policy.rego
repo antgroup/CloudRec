@@ -1,4 +1,4 @@
-package cloudrec_2200013_210
+package cloudrec_2200013
 
 import rego.v1
 

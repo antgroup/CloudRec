@@ -1,4 +1,4 @@
-package nas_exposed_to_public_3200002_219
+package nas_exposed_to_public_3200002
 import rego.v1
 
 default risk := false

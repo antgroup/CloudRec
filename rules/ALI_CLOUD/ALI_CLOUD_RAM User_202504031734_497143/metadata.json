@@ -1,1 +1,15 @@
-{"advice":null,"categoryList":["身份安全"],"code":"ALI_CLOUD_RAM User_202504031734_497143","context":null,"description":"AK未设置调用来源ACL","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-RAM-RAM User拥有AK且未设置调用来源ACL","platform":"ALI_CLOUD","resourceType":"RAM User"}
+{
+    "advice": "参考修复方案，视情况选择方案一：禁用AK；或者方案二：限制AK调用来源",
+    "categoryList": [
+        "身份安全"
+    ],
+    "code": "ALI_CLOUD_RAM User_202504031734_497143",
+    "context": "{$.messages}",
+    "description": "AK未设置调用来源ACL",
+    "level": "Medium",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-RAM-RAM User拥有AK且未设置调用来源ACL",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RAM User"
+}

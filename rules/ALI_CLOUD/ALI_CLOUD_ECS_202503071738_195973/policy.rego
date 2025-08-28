@@ -1,4 +1,4 @@
-package zen_vuln_6900004_177
+package zen_vuln_6900004
 
 import rego.v1
 

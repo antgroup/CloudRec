@@ -1,4 +1,4 @@
-package cloudfw_forbidden_net_out_by_default_2400001_211
+package cloudfw_forbidden_net_out_by_default_2400001
 import rego.v1
 
 default risk := false

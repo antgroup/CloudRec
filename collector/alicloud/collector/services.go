@@ -60,6 +60,7 @@ import (
 	selectdb20230522 "github.com/alibabacloud-go/selectdb-20230522/v3/client"
 	slb20140515 "github.com/alibabacloud-go/slb-20140515/v4/client"
 	sls20201230 "github.com/alibabacloud-go/sls-20201230/v6/client"
+	swas_open20200601 "github.com/alibabacloud-go/swas-open-20200601/v3/client"
 	tablestore20201209 "github.com/alibabacloud-go/tablestore-20201209/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
@@ -84,7 +85,6 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/sgw"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/swas-open"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
@@ -185,7 +185,7 @@ type Services struct {
 	ECP             *eds_aic20230930.Client
 	Eflo            *eflo.Client
 	EfloController  *eflo_controller.Client
-	SWAS            *swas_open.Client
+	SWAS            *swas_open20200601.Client
 	Ons             *ons.Client
 	GA              *ga.Client
 	DCDN            *dcdn.Client
@@ -198,8 +198,6 @@ type Services struct {
 func (s *Services) Clone() schema.ServiceInterface {
 	return &Services{}
 }
-
-
 
 func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err error) {
 	param := cloudAccountParam.CommonCloudAccountParam
@@ -499,7 +497,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.CtxLogger(ctx).Warn("init eci client failed", zap.Error(err))
 		}
 	case SWAS:
-		s.SWAS, err = swas_open.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		s.SWAS, err = createSWASClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init swas client failed", zap.Error(err))
 		}
@@ -551,6 +549,12 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 	}
 
 	return nil
+}
+
+func createSWASClient(region string, config *openapi.Config) (client *swas_open20200601.Client, err error) {
+	config.Endpoint = tea.String("swas." + region + ".aliyuncs.com")
+	client, err = swas_open20200601.NewClient(config)
+	return client, err
 }
 
 func createVPCClient(region string, config *openapi.Config) (client *vpc.Client, err error) {

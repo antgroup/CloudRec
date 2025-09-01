@@ -44,6 +44,7 @@ require (
 	github.com/alibabacloud-go/selectdb-20230522/v3 v3.1.0
 	github.com/alibabacloud-go/slb-20140515/v4 v4.0.9
 	github.com/alibabacloud-go/sls-20201230/v6 v6.9.2
+	github.com/alibabacloud-go/swas-open-20200601/v3 v3.0.0
 	github.com/alibabacloud-go/tablestore-20201209 v1.0.1
 	github.com/alibabacloud-go/tea v1.3.10
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.7

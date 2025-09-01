@@ -25,11 +25,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
-)
-
-const (
-	maxWorkers = 10
 )
 
 // GetDetectorResource returns a Detector Resource
@@ -64,65 +59,30 @@ func GetDetectorDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan string, len(detectorIds))
-
-	// Start workers
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for id := range tasks {
-				detail := describeDetectorDetail(ctx, client, id)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks to the queue
 	for _, detectorId := range detectorIds {
-		tasks <- detectorId
-	}
-	close(tasks)
+		detector, err := getDetector(ctx, client, detectorId)
+		if err != nil {
+			continue // If we can't get the detector, we can't proceed.
+		}
 
-	wg.Wait()
+		administrator, err := getAdministratorAccount(ctx, client, detectorId)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to getAdministratorAccount detectors", zap.Error(err))
+		}
+
+		tags, err := listTagsForResource(ctx, client, detectorId)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to listTagsForResource detectors", zap.Error(err))
+		}
+
+		res <- &DetectorDetail{
+			Detector:      detector,
+			Administrator: administrator,
+			Tags:          tags,
+		}
+	}
 
 	return nil
-}
-
-// describeDetectorDetail fetches all details for a single detector.
-func describeDetectorDetail(ctx context.Context, client *guardduty.Client, detectorId string) *DetectorDetail {
-	detector, err := getDetector(ctx, client, detectorId)
-	if err != nil {
-		return nil // If we can't get the detector, we can't proceed.
-	}
-
-	var wg sync.WaitGroup
-	var administrator *types.Administrator
-	var tags map[string]string
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		administrator, _ = getAdministratorAccount(ctx, client, detectorId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		arn := fmt.Sprintf("arn:aws:guardduty:%s:%s:detector/%s", client.Options().Region, log.GetCloudAccountId(ctx), detectorId)
-		tags, _ = listTagsForResource(ctx, client, arn)
-	}()
-
-	wg.Wait()
-
-	return &DetectorDetail{
-		Detector:      detector,
-		Administrator: administrator,
-		Tags:          tags,
-	}
 }
 
 // listDetectors retrieves all GuardDuty detector IDs in a region.
@@ -161,10 +121,11 @@ func getAdministratorAccount(ctx context.Context, c *guardduty.Client, detectorI
 }
 
 // listTagsForResource retrieves all tags for a resource.
-func listTagsForResource(ctx context.Context, c *guardduty.Client, resourceArn string) (map[string]string, error) {
-	output, err := c.ListTagsForResource(ctx, &guardduty.ListTagsForResourceInput{ResourceArn: &resourceArn})
+func listTagsForResource(ctx context.Context, c *guardduty.Client, detectorId string) (map[string]string, error) {
+	arn := fmt.Sprintf("arn:aws:guardduty:%s:%s:detector/%s", c.Options().Region, log.GetCloudAccountId(ctx), detectorId)
+	output, err := c.ListTagsForResource(ctx, &guardduty.ListTagsForResourceInput{ResourceArn: &arn})
 	if err != nil {
-		log.CtxLogger(ctx).Warn("failed to list tags for resource", zap.String("arn", resourceArn), zap.Error(err))
+		log.CtxLogger(ctx).Warn("failed to list tags for resource", zap.String("arn", arn), zap.Error(err))
 		return nil, err
 	}
 	return output.Tags, nil

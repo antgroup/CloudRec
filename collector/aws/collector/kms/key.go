@@ -25,11 +25,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
-)
-
-const (
-	maxWorkers = 10
 )
 
 // GetKeyResource returns a Key Resource
@@ -66,30 +61,9 @@ func GetKeyDetail(ctx context.Context, service schema.ServiceInterface, res chan
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.KeyListEntry, len(keys))
-
-	// Start workers
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for key := range tasks {
-				detail := describeKeyDetail(ctx, client, key.KeyId)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks to the queue
 	for _, key := range keys {
-		tasks <- key
+		res <- describeKeyDetail(ctx, client, key.KeyId)
 	}
-	close(tasks)
-
-	wg.Wait()
 
 	return nil
 }
@@ -107,29 +81,12 @@ func describeKeyDetail(ctx context.Context, client *kms.Client, keyId *string) *
 		return &KeyDetail{Key: keyMetadata}
 	}
 
-	var wg sync.WaitGroup
 	var rotationEnabled *bool
 	var policy map[string]interface{}
 	var tags []types.Tag
-
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		rotationEnabled, _ = getKeyRotationStatus(ctx, client, keyId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		policy, _ = getKeyPolicy(ctx, client, keyId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listResourceTags(ctx, client, keyId)
-	}()
-
-	wg.Wait()
+	rotationEnabled, _ = getKeyRotationStatus(ctx, client, keyId)
+	policy, _ = getKeyPolicy(ctx, client, keyId)
+	tags, _ = listResourceTags(ctx, client, keyId)
 
 	return &KeyDetail{
 		Key:             keyMetadata,

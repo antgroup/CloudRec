@@ -17,8 +17,6 @@ package inspector2
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/inspector2"
 	"github.com/aws/aws-sdk-go-v2/service/inspector2/types"
@@ -28,8 +26,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetFindingResource returns AWS Inspector2 finding resource definition
 func GetFindingResource() schema.Resource {
@@ -63,30 +59,18 @@ func GetFindingDetail(ctx context.Context, service schema.ServiceInterface, res 
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.Finding, len(findings))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for finding := range tasks {
-				detail := describeFindingDetail(ctx, client, finding)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, finding := range findings {
-		tasks <- finding
-	}
-	close(tasks)
+		tags, err := listFindingTags(ctx, client, finding.FindingArn)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list finding tags", zap.String("findingArn", *finding.FindingArn), zap.Error(err))
+		}
 
-	wg.Wait()
+		res <- &FindingDetail{
+			Finding: finding,
+			Tags:    tags,
+		}
+	}
+
 	return nil
 }
 
@@ -106,22 +90,6 @@ func listFindings(ctx context.Context, c *inspector2.Client) ([]types.Finding, e
 		findings = append(findings, page.Findings...)
 	}
 	return findings, nil
-}
-
-// describeFindingDetail fetches all details for a single finding.
-func describeFindingDetail(ctx context.Context, client *inspector2.Client, finding types.Finding) *FindingDetail {
-	var tags map[string]string
-
-	// Copy the finding to avoid race conditions
-	findingCopy := finding
-
-	// Get tags
-	tags, _ = listFindingTags(ctx, client, findingCopy.FindingArn)
-
-	return &FindingDetail{
-		Finding: findingCopy,
-		Tags:    tags,
-	}
 }
 
 // listFindingTags retrieves tags for a single finding.

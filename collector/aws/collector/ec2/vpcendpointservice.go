@@ -24,11 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
-)
-
-const (
-	maxWorkers = 10
 )
 
 func GetVpcEndpointServiceResource() schema.Resource {
@@ -60,40 +55,19 @@ func GetVpcEndpointServiceDetail(ctx context.Context, service schema.ServiceInte
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.ServiceDetail, len(services))
+	for _, vpcEndpointService := range services {
+		allowedPrincipals, err := describeVpcEndpointServicePermissions(ctx, client, vpcEndpointService.ServiceId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to describe vpc endpoint service permissions", zap.String("serviceId", *vpcEndpointService.ServiceId), zap.Error(err))
+		}
 
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for s := range tasks {
-				res <- describeVpcEndpointServiceDetail(ctx, client, s)
-			}
-		}()
+		res <- &VpcEndpointServiceDetail{
+			Service:           vpcEndpointService,
+			AllowedPrincipals: allowedPrincipals,
+		}
 	}
 
-	for _, s := range services {
-		tasks <- s
-	}
-	close(tasks)
-
-	wg.Wait()
 	return nil
-}
-
-func describeVpcEndpointServiceDetail(ctx context.Context, client *ec2.Client, service types.ServiceDetail) VpcEndpointServiceDetail {
-	permissions, err := client.DescribeVpcEndpointServicePermissions(ctx, &ec2.DescribeVpcEndpointServicePermissionsInput{
-		ServiceId: service.ServiceId,
-	})
-	if err != nil {
-		log.CtxLogger(ctx).Warn("failed to describe vpc endpoint service permissions", zap.String("serviceId", *service.ServiceId), zap.Error(err))
-	}
-
-	return VpcEndpointServiceDetail{
-		Service:           service,
-		AllowedPrincipals: permissions.AllowedPrincipals,
-	}
 }
 
 func describeVpcEndpointServices(ctx context.Context, c *ec2.Client) ([]types.ServiceDetail, error) {
@@ -115,4 +89,29 @@ func describeVpcEndpointServices(ctx context.Context, c *ec2.Client) ([]types.Se
 	}
 
 	return services, nil
+}
+
+func describeVpcEndpointServicePermissions(ctx context.Context, c *ec2.Client, id *string) ([]types.AllowedPrincipal, error) {
+	var allowedPrincipals []types.AllowedPrincipal
+
+	permissions, err := c.DescribeVpcEndpointServicePermissions(ctx, &ec2.DescribeVpcEndpointServicePermissionsInput{
+		ServiceId: id,
+	})
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to describe vpc endpoint service permissions", zap.String("serviceId", *id), zap.Error(err))
+	}
+
+	for permissions.NextToken != nil {
+		permissions, err = c.DescribeVpcEndpointServicePermissions(ctx, &ec2.DescribeVpcEndpointServicePermissionsInput{
+			ServiceId: id,
+			NextToken: permissions.NextToken,
+		})
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to describe vpc endpoint service permissions", zap.String("serviceId", *id), zap.Error(err))
+		}
+
+		allowedPrincipals = append(allowedPrincipals, permissions.AllowedPrincipals...)
+	}
+
+	return permissions.AllowedPrincipals, nil
 }

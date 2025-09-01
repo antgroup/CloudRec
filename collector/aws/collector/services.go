@@ -22,8 +22,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/account"
 	"github.com/aws/aws-sdk-go-v2/service/accessanalyzer"
+	"github.com/aws/aws-sdk-go-v2/service/account"
+	"github.com/aws/aws-sdk-go-v2/service/acm"
+	"github.com/aws/aws-sdk-go-v2/service/apigatewayv2"
 	"github.com/aws/aws-sdk-go-v2/service/appstream"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
@@ -49,21 +51,19 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/inspector2"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
-	"github.com/aws/aws-sdk-go-v2/service/securityhub"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/macie2"
+	"github.com/aws/aws-sdk-go-v2/service/networkfirewall"
+	"github.com/aws/aws-sdk-go-v2/service/opensearch"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/route53domains"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/service/securityhub"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/wafv2"
-	"github.com/aws/aws-sdk-go-v2/service/acm"
-	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
-	"github.com/aws/aws-sdk-go-v2/service/apigatewayv2"
-	"github.com/aws/aws-sdk-go-v2/service/macie2"
-	"github.com/aws/aws-sdk-go-v2/service/networkfirewall"
-	"github.com/aws/aws-sdk-go-v2/service/opensearch"
 	"github.com/aws/smithy-go/logging"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
@@ -72,48 +72,48 @@ import (
 
 // Services contains regional client of AWS services
 type Services struct {
-	EC2              *ec2.Client
-	IAM              *iam.Client
-	S3               *s3.Client
-	Lambda           *lambda.Client
-	KMS              *kms.Client
-	ECR              *ecr.Client
-	ElastiCache      *elasticache.Client
-	ELB              *elasticloadbalancingv2.Client
-	CLB              *elasticloadbalancing.Client
-	FSx              *fsx.Client
-	RDS              *rds.Client
-	Route53Domains   *route53domains.Client
-	Route53          *route53.Client
-	CloudFront       *cloudfront.Client
-	WAFv2            *wafv2.Client
-	CloudTrail       *cloudtrail.Client
-	APIGatewayV2     *apigatewayv2.Client
-	ACM              *acm.Client
-	SecretsManager   *secretsmanager.Client
-	AutoScaling      *autoscaling.Client
-	ECS              *ecs.Client
-	EKS              *eks.Client
-	DynamoDB         *dynamodb.Client
-	CloudFormation   *cloudformation.Client
-	GuardDuty        *guardduty.Client
-	EFS              *efs.Client
-	SNS              *sns.Client
-	SQS              *sqs.Client
-	CloudWatch       *cloudwatch.Client
-	CloudWatchLogs   *cloudwatchlogs.Client
-	Account          *account.Client
-	Config           *configservice.Client
-	AppStream        *appstream.Client
-	AccessAnalyzer   *accessanalyzer.Client
+	EC2                     *ec2.Client
+	IAM                     *iam.Client
+	S3                      *s3.Client
+	Lambda                  *lambda.Client
+	KMS                     *kms.Client
+	ECR                     *ecr.Client
+	ElastiCache             *elasticache.Client
+	ELB                     *elasticloadbalancingv2.Client
+	CLB                     *elasticloadbalancing.Client
+	FSx                     *fsx.Client
+	RDS                     *rds.Client
+	Route53Domains          *route53domains.Client
+	Route53                 *route53.Client
+	CloudFront              *cloudfront.Client
+	WAFv2                   *wafv2.Client
+	CloudTrail              *cloudtrail.Client
+	APIGatewayV2            *apigatewayv2.Client
+	ACM                     *acm.Client
+	SecretsManager          *secretsmanager.Client
+	AutoScaling             *autoscaling.Client
+	ECS                     *ecs.Client
+	EKS                     *eks.Client
+	DynamoDB                *dynamodb.Client
+	CloudFormation          *cloudformation.Client
+	GuardDuty               *guardduty.Client
+	EFS                     *efs.Client
+	SNS                     *sns.Client
+	SQS                     *sqs.Client
+	CloudWatch              *cloudwatch.Client
+	CloudWatchLogs          *cloudwatchlogs.Client
+	Account                 *account.Client
+	Config                  *configservice.Client
+	AppStream               *appstream.Client
+	AccessAnalyzer          *accessanalyzer.Client
 	CognitoIdentityProvider *cognitoidentityprovider.Client
 	CognitoIdentity         *cognitoidentity.Client
-	FMS              *fms.Client
-	Inspector2       *inspector2.Client
-	SecurityHub      *securityhub.Client
-	Macie            *macie2.Client
-	NetworkFirewall  *networkfirewall.Client
-	OpenSearch       *opensearch.Client
+	FMS                     *fms.Client
+	Inspector2              *inspector2.Client
+	SecurityHub             *securityhub.Client
+	Macie                   *macie2.Client
+	NetworkFirewall         *networkfirewall.Client
+	OpenSearch              *opensearch.Client
 }
 
 // Clone creates a new instance of Services
@@ -161,7 +161,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 
 	// init client of aws services
 	switch cloudAccountParam.ResourceType {
-		case EC2, ElasticIP, NetworkAcl, SecurityGroup, Vpc, VPCEndpointService, FlowLog, NetworkInterface:
+	case EC2, ElasticIP, NetworkAcl, SecurityGroup, Vpc, VPCEndpointService, FlowLog, NetworkInterface:
 		s.EC2 = initEC2Client(cfg)
 	case Bucket:
 		s.S3 = initS3Client(cfg)

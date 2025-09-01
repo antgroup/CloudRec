@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // GetRoleResource returns a Role Resource
@@ -61,62 +60,33 @@ func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res cha
 		return err
 	}
 
-	const numWorkers = 10 // A reasonable number of concurrent workers. Consider making this configurable.
-	jobs := make(chan types.Role, len(roles))
-
-	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for r := range jobs {
-				res <- describeRoleDetail(ctx, client, r)
-			}
-		}()
-	}
-
 	for _, role := range roles {
-		jobs <- role
-	}
-	close(jobs)
 
-	wg.Wait()
+		attachedPolicies, err := listAttachedRolePolicies(ctx, client, role.RoleName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list attached role policies", zap.String("role", *role.RoleName), zap.Error(err))
+			return err
+		}
+		inlinePolicies, err := listRolePolicies(ctx, client, role.RoleName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list role inline policies", zap.String("role", *role.RoleName), zap.Error(err))
+			return err
+		}
+		tags, err := listRoleTags(ctx, client, role.RoleName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list role tags", zap.String("role", *role.RoleName), zap.Error(err))
+			return err
+		}
+
+		res <- &RoleDetail{
+			Role:             role,
+			AttachedPolicies: attachedPolicies,
+			InlinePolicies:   inlinePolicies,
+			Tags:             tags,
+		}
+	}
 
 	return nil
-}
-
-// describeRoleDetail fetches all details for a single role.
-func describeRoleDetail(ctx context.Context, client *iam.Client, role types.Role) RoleDetail {
-	var wg sync.WaitGroup
-	var attachedPolicies []types.AttachedPolicy
-	var inlinePolicies []string
-	var tags []types.Tag
-
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		attachedPolicies, _ = listAttachedRolePolicies(ctx, client, role.RoleName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		inlinePolicies, _ = listRolePolicies(ctx, client, role.RoleName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listRoleTags(ctx, client, role.RoleName)
-	}()
-
-	wg.Wait()
-
-	return RoleDetail{
-		Role:             role,
-		AttachedPolicies: attachedPolicies,
-		InlinePolicies:   inlinePolicies,
-		Tags:             tags,
-	}
 }
 
 // listRoles retrieves all IAM roles.

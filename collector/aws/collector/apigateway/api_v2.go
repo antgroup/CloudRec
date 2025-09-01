@@ -24,10 +24,7 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
-
-const maxWorkers = 10
 
 // GetAPIV2Resource returns an API Gateway V2 API Resource
 func GetAPIV2Resource() schema.Resource {
@@ -63,67 +60,32 @@ func GetAPIV2Detail(ctx context.Context, service schema.ServiceInterface, res ch
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.Api, len(apis))
-
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for api := range tasks {
-				detail := describeAPIV2Detail(ctx, client, api)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
 	for _, api := range apis {
-		tasks <- api
-	}
-	close(tasks)
 
-	wg.Wait()
+		stages, err := getStages(ctx, client, api.ApiId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get stages", zap.String("apiId", *api.ApiId), zap.Error(err))
+		}
+
+		authorizers, err := getAuthorizers(ctx, client, api.ApiId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get authorizers", zap.String("apiId", *api.ApiId), zap.Error(err))
+		}
+
+		tags, err := getTags(ctx, client, api.ApiId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get tags", zap.String("apiId", *api.ApiId), zap.Error(err))
+		}
+
+		res <- &APIV2Detail{
+			API:         api,
+			Stages:      stages,
+			Authorizers: authorizers,
+			Tags:        tags,
+		}
+	}
 
 	return nil
-}
-
-// describeAPIV2Detail fetches all details for a single API.
-func describeAPIV2Detail(ctx context.Context, client *apigatewayv2.Client, api types.Api) *APIV2Detail {
-	var wg sync.WaitGroup
-	var stages []types.Stage
-	var authorizers []types.Authorizer
-	tags := make(map[string]string)
-
-	// Copy the API to avoid race conditions
-	apiCopy := api
-
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		stages, _ = getStages(ctx, client, apiCopy.ApiId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		authorizers, _ = getAuthorizers(ctx, client, apiCopy.ApiId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = getTags(ctx, client, apiCopy.ApiId)
-	}()
-
-	wg.Wait()
-
-	return &APIV2Detail{
-		API:         apiCopy,
-		Stages:      stages,
-		Authorizers: authorizers,
-		Tags:        tags,
-	}
 }
 
 // describeAPIs retrieves all API Gateway V2 APIs in a region.

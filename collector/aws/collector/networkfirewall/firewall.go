@@ -17,8 +17,6 @@ package networkfirewall
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/networkfirewall"
 	"github.com/aws/aws-sdk-go-v2/service/networkfirewall/types"
@@ -28,8 +26,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetFirewallResource returns AWS Network Firewall resource definition
 func GetFirewallResource() schema.Resource {
@@ -49,7 +45,9 @@ func GetFirewallResource() schema.Resource {
 
 // FirewallDetail aggregates all information for a single Network Firewall.
 type FirewallDetail struct {
-	Firewall *networkfirewall.DescribeFirewallOutput
+	Firewall       *types.Firewall
+	FirewallStatus *types.FirewallStatus
+	UpdateToken    *string
 }
 
 // GetFirewallDetail fetches the details for all Network Firewalls in a region.
@@ -62,30 +60,19 @@ func GetFirewallDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.FirewallMetadata, len(firewalls))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for firewall := range tasks {
-				detail := describeFirewallDetail(ctx, client, firewall)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, firewall := range firewalls {
-		tasks <- firewall
-	}
-	close(tasks)
+		describeFirewallOutput := describeFirewall(ctx, client, firewall)
+		if describeFirewallOutput == nil {
+			continue
+		}
 
-	wg.Wait()
+		res <- &FirewallDetail{
+			Firewall:       describeFirewallOutput.Firewall,
+			FirewallStatus: describeFirewallOutput.FirewallStatus,
+			UpdateToken:    describeFirewallOutput.UpdateToken,
+		}
+	}
+
 	return nil
 }
 
@@ -107,19 +94,16 @@ func listFirewalls(ctx context.Context, c *networkfirewall.Client) ([]types.Fire
 	return firewalls, nil
 }
 
-// describeFirewallDetail fetches all details for a single firewall.
-func describeFirewallDetail(ctx context.Context, client *networkfirewall.Client, firewall types.FirewallMetadata) *FirewallDetail {
+func describeFirewall(ctx context.Context, client *networkfirewall.Client, firewall types.FirewallMetadata) *networkfirewall.DescribeFirewallOutput {
 	// Get detailed firewall information
-	describeInput := &networkfirewall.DescribeFirewallInput{
+	input := &networkfirewall.DescribeFirewallInput{
 		FirewallArn: firewall.FirewallArn,
 	}
-	describeOutput, err := client.DescribeFirewall(ctx, describeInput)
+	output, err := client.DescribeFirewall(ctx, input)
 	if err != nil {
 		log.CtxLogger(ctx).Error("failed to describe Network Firewall", zap.String("arn", *firewall.FirewallArn), zap.Error(err))
 		return nil
 	}
 
-	return &FirewallDetail{
-		Firewall: describeOutput,
-	}
+	return output
 }

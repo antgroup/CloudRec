@@ -17,8 +17,6 @@ package fms
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/fms"
 	"github.com/aws/aws-sdk-go-v2/service/fms/types"
@@ -28,8 +26,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetPolicyResource returns AWS Firewall Manager policy resource definition
 func GetPolicyResource() schema.Resource {
@@ -64,30 +60,32 @@ func GetPolicyDetail(ctx context.Context, service schema.ServiceInterface, res c
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.PolicySummary, len(policies))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for policy := range tasks {
-				detail := describePolicyDetail(ctx, client, policy)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, policy := range policies {
-		tasks <- policy
-	}
-	close(tasks)
 
-	wg.Wait()
+		policyDetail, err := getPolicy(ctx, client, policy.PolicyId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get policy", zap.String("policyId", *policy.PolicyId), zap.Error(err))
+			continue
+		}
+
+		complianceStatus, err := listComplianceStatus(ctx, client, policy.PolicyId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list compliance status", zap.String("policyId", *policy.PolicyId), zap.Error(err))
+			continue
+		}
+
+		tags, err := listPolicyTags(ctx, client, policy.PolicyId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list policy tags", zap.String("policyId", *policy.PolicyId), zap.Error(err))
+			continue
+		}
+
+		res <- &PolicyDetail{
+			Policy:           *policyDetail,
+			ComplianceStatus: complianceStatus,
+			Tags:             tags,
+		}
+	}
 	return nil
 }
 
@@ -107,42 +105,6 @@ func listPolicies(ctx context.Context, c *fms.Client) ([]types.PolicySummary, er
 		policies = append(policies, page.PolicyList...)
 	}
 	return policies, nil
-}
-
-// describePolicyDetail fetches all details for a single policy.
-func describePolicyDetail(ctx context.Context, client *fms.Client, policy types.PolicySummary) *PolicyDetail {
-	var wg sync.WaitGroup
-	var policyDetail *types.Policy
-	var complianceStatus []types.PolicyComplianceStatus
-	tags := make(map[string]string)
-
-	// Copy the policy to avoid race conditions
-	policyCopy := policy
-
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		policyDetail, _ = getPolicy(ctx, client, policyCopy.PolicyId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		complianceStatus, _ = listComplianceStatus(ctx, client, policyCopy.PolicyId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listPolicyTags(ctx, client, policyCopy.PolicyId)
-	}()
-
-	wg.Wait()
-
-	return &PolicyDetail{
-		Policy:           *policyDetail,
-		ComplianceStatus: complianceStatus,
-		Tags:             tags,
-	}
 }
 
 // getPolicy retrieves details for a single policy.

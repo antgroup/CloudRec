@@ -24,10 +24,7 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
-
-const maxWorkers = 10
 
 // GetCertificateResource returns a Certificate Resource
 func GetCertificateResource() schema.Resource {
@@ -61,63 +58,25 @@ func GetCertificateDetail(ctx context.Context, service schema.ServiceInterface, 
 		return err
 	}
 
-	jobs := make(chan types.CertificateSummary, len(certificates))
-	var wg sync.WaitGroup
-	for w := 0; w < maxWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for certificate := range jobs {
-				detail := describeCertificateDetail(ctx, client, certificate)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
 	for _, certificate := range certificates {
-		jobs <- certificate
-	}
-	close(jobs)
-	wg.Wait()
 
-	return nil
-}
-
-// describeCertificateDetail fetches all details for a single certificate.
-func describeCertificateDetail(ctx context.Context, client *acm.Client, certificate types.CertificateSummary) *CertificateDetail {
-	var wg sync.WaitGroup
-	var certificateDetail types.CertificateDetail
-	var tags []types.Tag
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		detail, err := describeCertificate(ctx, client, certificate.CertificateArn)
+		certificateDetail, err := describeCertificate(ctx, client, certificate.CertificateArn)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to describe certificate", zap.String("certificate", *certificate.CertificateArn), zap.Error(err))
-		} else {
-			certificateDetail = detail
 		}
-	}()
 
-	go func() {
-		defer wg.Done()
-		tagsList, err := listCertificateTags(ctx, client, certificate.CertificateArn)
+		tags, err := listCertificateTags(ctx, client, certificate.CertificateArn)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list certificate tags", zap.String("certificate", *certificate.CertificateArn), zap.Error(err))
-		} else {
-			tags = tagsList
 		}
-	}()
 
-	wg.Wait()
-
-	return &CertificateDetail{
-		Certificate: certificateDetail,
-		Tags:        tags,
+		res <- &CertificateDetail{
+			Certificate: certificateDetail,
+			Tags:        tags,
+		}
 	}
+
+	return nil
 }
 
 // listCertificates retrieves all ACM certificates.

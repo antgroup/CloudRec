@@ -17,8 +17,6 @@ package yundun
 
 import (
 	"context"
-	"sync"
-
 	"github.com/alibabacloud-go/tea/tea"
 	yundun_bastionhost20191209 "github.com/alibabacloud-go/yundun-bastionhost-20191209/v2/client"
 	"github.com/cloudrec/alicloud/collector"
@@ -27,8 +25,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 func GetBastionhostResource() schema.Resource {
 	return schema.Resource{
@@ -59,28 +55,14 @@ func GetBastionhostDetail(ctx context.Context, service schema.ServiceInterface, 
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan *yundun_bastionhost20191209.DescribeInstancesResponseBodyInstances, len(instances))
-
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for instance := range tasks {
-				res <- &BastionhostDetail{
-					Instance:          instance,
-					InstanceAttribute: describeInstanceAttribute(ctx, client, instance.InstanceId),
-				}
-			}
-		}()
-	}
-
 	for _, instance := range instances {
-		tasks <- instance
+		instanceAttribute := describeInstanceAttribute(ctx, client, instance.InstanceId)
+		res <- &BastionhostDetail{
+			Instance:          instance,
+			InstanceAttribute: instanceAttribute,
+		}
 	}
-	close(tasks)
-
-	wg.Wait()
+	
 	return nil
 }
 

@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // GetRecorderResource returns a Recorder Resource
@@ -60,47 +59,26 @@ func GetRecorderDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	var wg sync.WaitGroup
 	for _, recorder := range recorders {
-		wg.Add(1)
-		go func(r types.ConfigurationRecorder) {
-			defer wg.Done()
-			detail := describeRecorderDetail(ctx, client, r)
-			if detail != nil {
-				res <- detail
-			}
-		}(recorder)
+		status, err := describeConfigurationRecorderStatus(ctx, client, *recorder.Name)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to describe config recorder status", zap.String("recorderName", *recorder.Name), zap.Error(err))
+			continue
+		}
+		deliveryChannel, err := describeDeliveryChannels(ctx, client, *recorder.Name)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to describe delivery channels", zap.String("recorderName", *recorder.Name), zap.Error(err))
+			continue
+		}
+
+		res <- &RecorderDetail{
+			Recorder:        recorder,
+			Status:          status,
+			DeliveryChannel: deliveryChannel,
+		}
 	}
-	wg.Wait()
 
 	return nil
-}
-
-// describeRecorderDetail fetches all details for a single recorder.
-func describeRecorderDetail(ctx context.Context, client *configservice.Client, recorder types.ConfigurationRecorder) *RecorderDetail {
-	var wg sync.WaitGroup
-	var status *types.ConfigurationRecorderStatus
-	var deliveryChannel *types.DeliveryChannel
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		status, _ = describeConfigurationRecorderStatus(ctx, client, *recorder.Name)
-	}()
-
-	go func() {
-		defer wg.Done()
-		deliveryChannel, _ = describeDeliveryChannels(ctx, client, *recorder.Name)
-	}()
-
-	wg.Wait()
-
-	return &RecorderDetail{
-		Recorder:        recorder,
-		Status:          status,
-		DeliveryChannel: deliveryChannel,
-	}
 }
 
 // describeConfigurationRecorders retrieves all Config recorders in a region.

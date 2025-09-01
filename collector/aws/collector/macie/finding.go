@@ -17,8 +17,6 @@ package macie
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/macie2"
 	"github.com/aws/aws-sdk-go-v2/service/macie2/types"
@@ -61,30 +59,11 @@ func GetFindingDetail(ctx context.Context, service schema.ServiceInterface, res 
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.Finding, len(findings))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for finding := range tasks {
-				detail := describeFindingDetail(ctx, client, finding)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, finding := range findings {
-		tasks <- finding
+		findingDetail := describeFindingDetail(ctx, client, finding)
+		res <- findingDetail
 	}
-	close(tasks)
 
-	wg.Wait()
 	return nil
 }
 
@@ -121,15 +100,12 @@ func listFindings(ctx context.Context, c *macie2.Client) ([]types.Finding, error
 func describeFindingDetail(ctx context.Context, client *macie2.Client, finding types.Finding) *FindingDetail {
 	var tags map[string]string
 
-	// Copy the finding to avoid race conditions
-	findingCopy := finding
-
 	// Get tags - Macie findings don't typically have direct tags,
 	// but we can extract relevant information from the finding itself
-	tags = extractFindingTags(&findingCopy)
+	tags = extractFindingTags(&finding)
 
 	return &FindingDetail{
-		Finding: findingCopy,
+		Finding: finding,
 		Tags:    tags,
 	}
 }

@@ -17,8 +17,6 @@ package accessanalyzer
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/service/accessanalyzer"
 	"github.com/aws/aws-sdk-go-v2/service/accessanalyzer/types"
 	"github.com/cloudrec/aws/collector"
@@ -27,8 +25,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetAnalyzerResource returns AWS Access Analyzer resource definition
 func GetAnalyzerResource() schema.Resource {
@@ -63,30 +59,16 @@ func GetAnalyzerDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.AnalyzerSummary, len(analyzers))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for analyzer := range tasks {
-				detail := describeAnalyzerDetail(ctx, client, analyzer)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, analyzer := range analyzers {
-		tasks <- analyzer
+		findings, _ := listFindings(ctx, client, analyzer.Arn)
+		tags, _ := listAnalyzerTags(ctx, client, analyzer.Arn)
+		res <- &AnalyzerDetail{
+			Analyzer: analyzer,
+			Findings: findings,
+			Tags:     tags,
+		}
 	}
-	close(tasks)
 
-	wg.Wait()
 	return nil
 }
 
@@ -104,36 +86,6 @@ func listAnalyzers(ctx context.Context, c *accessanalyzer.Client) ([]types.Analy
 		analyzers = append(analyzers, page.Analyzers...)
 	}
 	return analyzers, nil
-}
-
-// describeAnalyzerDetail fetches all details for a single analyzer.
-func describeAnalyzerDetail(ctx context.Context, client *accessanalyzer.Client, analyzer types.AnalyzerSummary) *AnalyzerDetail {
-	var wg sync.WaitGroup
-	var findings []types.FindingSummary
-	tags := make(map[string]string)
-
-	// Copy the analyzer to avoid race conditions
-	analyzerCopy := analyzer
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		findings, _ = listFindings(ctx, client, analyzerCopy.Arn)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listAnalyzerTags(ctx, client, analyzerCopy.Arn)
-	}()
-
-	wg.Wait()
-
-	return &AnalyzerDetail{
-		Analyzer: analyzerCopy,
-		Findings: findings,
-		Tags:     tags,
-	}
 }
 
 // listFindings retrieves findings for a single analyzer.

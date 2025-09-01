@@ -17,8 +17,6 @@ package opensearch
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/service/opensearch"
 	"github.com/aws/aws-sdk-go-v2/service/opensearch/types"
 	"github.com/cloudrec/aws/collector"
@@ -27,8 +25,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetDomainResource returns AWS OpenSearch domain resource definition
 func GetDomainResource() schema.Resource {
@@ -48,7 +44,7 @@ func GetDomainResource() schema.Resource {
 
 // DomainDetail aggregates all information for a single OpenSearch domain.
 type DomainDetail struct {
-	Domain *opensearch.DescribeDomainOutput
+	DomainStatus *types.DomainStatus
 }
 
 // GetDomainDetail fetches the details for all OpenSearch domains in a region.
@@ -61,30 +57,12 @@ func GetDomainDetail(ctx context.Context, service schema.ServiceInterface, res c
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.DomainInfo, len(domains))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for domain := range tasks {
-				detail := describeDomainDetail(ctx, client, domain)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, domain := range domains {
-		tasks <- domain
+		describeOutput := describeDomain(ctx, client, domain)
+		res <- DomainDetail{
+			DomainStatus: describeOutput.DomainStatus,
+		}
 	}
-	close(tasks)
-
-	wg.Wait()
 	return nil
 }
 
@@ -100,8 +78,8 @@ func listDomains(ctx context.Context, c *opensearch.Client) ([]types.DomainInfo,
 	return output.DomainNames, nil
 }
 
-// describeDomainDetail fetches all details for a single domain.
-func describeDomainDetail(ctx context.Context, client *opensearch.Client, domain types.DomainInfo) *DomainDetail {
+// describeDomain fetches all details for a single domain.
+func describeDomain(ctx context.Context, client *opensearch.Client, domain types.DomainInfo) *opensearch.DescribeDomainOutput {
 	// Get detailed domain information
 	describeInput := &opensearch.DescribeDomainInput{
 		DomainName: domain.DomainName,
@@ -112,7 +90,5 @@ func describeDomainDetail(ctx context.Context, client *opensearch.Client, domain
 		return nil
 	}
 
-	return &DomainDetail{
-		Domain: describeOutput,
-	}
+	return describeOutput
 }

@@ -17,8 +17,6 @@ package ons
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
 	"github.com/cloudrec/alicloud/collector"
@@ -27,8 +25,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetInstanceResource returns ONS Instance resource definition
 func GetInstanceResource() schema.Resource {
@@ -50,7 +46,7 @@ func GetInstanceResource() schema.Resource {
 // InstanceDetail aggregates resource details
 type InstanceDetail struct {
 	Instance         ons.InstanceVO
-	InstanceBaseInfo ons.InstanceBaseInfo
+	InstanceBaseInfo *ons.InstanceBaseInfo
 }
 
 // GetInstanceDetail gets ONS Instance details
@@ -63,28 +59,13 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan ons.InstanceVO, len(resources))
-
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for resource := range tasks {
-				detail := describeInstanceDetail(ctx, client, resource)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
 	for _, resource := range resources {
-		tasks <- resource
-	}
-	close(tasks)
 
-	wg.Wait()
+		res <- &InstanceDetail{
+			Instance:         resource,
+			InstanceBaseInfo: describeInstance(ctx, client, resource),
+		}
+	}
 	return nil
 }
 
@@ -106,8 +87,8 @@ func listInstances(ctx context.Context, c *ons.Client) ([]ons.InstanceVO, error)
 	return resources, nil
 }
 
-// describeInstanceDetail gets details for a single ONS Instance
-func describeInstanceDetail(ctx context.Context, c *ons.Client, resource ons.InstanceVO) *InstanceDetail {
+// describeInstance gets details for a single ONS Instance
+func describeInstance(ctx context.Context, c *ons.Client, resource ons.InstanceVO) *ons.InstanceBaseInfo {
 	req := ons.CreateOnsInstanceBaseInfoRequest()
 	req.InitWithApiInfo("Ons", "2019-02-14", "OnsInstanceBaseInfo", "ons", "openAPI")
 	req.Method = requests.POST
@@ -116,13 +97,8 @@ func describeInstanceDetail(ctx context.Context, c *ons.Client, resource ons.Ins
 	response, err := c.OnsInstanceBaseInfo(req)
 	if err != nil {
 		log.CtxLogger(ctx).Error("failed to get instance base info", zap.String("instanceId", resource.InstanceId), zap.Error(err))
-		return &InstanceDetail{
-			Instance: resource,
-		}
+		return nil
 	}
 
-	return &InstanceDetail{
-		Instance:         resource,
-		InstanceBaseInfo: response.InstanceBaseInfo,
-	}
+	return &response.InstanceBaseInfo
 }

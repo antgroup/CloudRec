@@ -17,8 +17,6 @@ package swas
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	swas "github.com/aliyun/alibaba-cloud-sdk-go/services/swas-open"
 	"github.com/cloudrec/alicloud/collector"
@@ -27,8 +25,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetInstanceResource returns SWAS instance resource definition
 func GetInstanceResource() schema.Resource {
@@ -55,53 +51,43 @@ type Detail struct {
 // ListInstancesResource gets SWAS instance details
 func ListInstancesResource(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).SWAS
+
+	instances, err := listInstances(ctx, cli)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("ListInstances error", zap.Error(err))
+		return err
+	}
+
+	for _, instance := range instances {
+		firewallRules := listFirewallRules(ctx, cli, instance.InstanceId)
+		res <- &Detail{
+			Instance:      &instance,
+			FirewallRules: firewallRules,
+		}
+	}
+
+	return nil
+}
+
+func listInstances(ctx context.Context, cli *swas.Client) (instances []swas.Instance, err error) {
 	req := swas.CreateListInstancesRequest()
 	req.PageSize = requests.NewInteger(50)
 	req.PageNumber = requests.NewInteger(1)
 
-	count := 0
 	for {
 		resp, err := cli.ListInstances(req)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("ListInstances error", zap.Error(err))
-			return err
+			return nil, err
 		}
 
-		var wg sync.WaitGroup
-		tasks := make(chan swas.Instance, len(resp.Instances))
-
-		// 启动工作协程
-		for i := 0; i < maxWorkers; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				for instance := range tasks {
-					d := &Detail{
-						Instance:      &instance,
-						FirewallRules: listFirewallRules(ctx, cli, instance.InstanceId),
-					}
-
-					res <- d
-				}
-			}()
-		}
-
-		// 添加任务
-		for _, instance := range resp.Instances {
-			tasks <- instance
-		}
-		close(tasks)
-
-		wg.Wait()
-
-		count += len(resp.Instances)
-		if count >= resp.TotalCount || len(resp.Instances) == 0 {
+		instances = append(instances, resp.Instances...)
+		if requests.NewInteger(len(resp.Instances)) < req.PageSize {
 			break
 		}
 		req.PageNumber = requests.NewInteger(resp.PageNumber + 1)
 	}
 
-	return nil
+	return instances, nil
 }
 
 // listFirewallRules gets firewall rules for a specific instance

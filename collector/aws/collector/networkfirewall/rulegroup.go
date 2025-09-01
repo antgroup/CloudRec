@@ -17,8 +17,6 @@ package networkfirewall
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/networkfirewall"
 	"github.com/aws/aws-sdk-go-v2/service/networkfirewall/types"
@@ -47,7 +45,9 @@ func GetRuleGroupResource() schema.Resource {
 
 // RuleGroupDetail aggregates all information for a single Network Firewall Rule Group.
 type RuleGroupDetail struct {
-	RuleGroup *networkfirewall.DescribeRuleGroupOutput
+	RuleGroupResponse *types.RuleGroupResponse
+	UpdateToken       *string
+	RuleGroup         *types.RuleGroup
 }
 
 // GetRuleGroupDetail fetches the details for all Network Firewall Rule Groups in a region.
@@ -60,30 +60,18 @@ func GetRuleGroupDetail(ctx context.Context, service schema.ServiceInterface, re
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.RuleGroupMetadata, len(ruleGroups))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for ruleGroup := range tasks {
-				detail := describeRuleGroupDetail(ctx, client, ruleGroup)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, ruleGroup := range ruleGroups {
-		tasks <- ruleGroup
-	}
-	close(tasks)
+		describeRuleGroupOutput := describeRuleGroup(ctx, client, ruleGroup)
+		if describeRuleGroupOutput == nil {
+			continue
+		}
 
-	wg.Wait()
+		res <- &RuleGroupDetail{
+			RuleGroupResponse: describeRuleGroupOutput.RuleGroupResponse,
+			UpdateToken:       describeRuleGroupOutput.UpdateToken,
+			RuleGroup:         describeRuleGroupOutput.RuleGroup,
+		}
+	}
 	return nil
 }
 
@@ -105,8 +93,7 @@ func listRuleGroups(ctx context.Context, c *networkfirewall.Client) ([]types.Rul
 	return ruleGroups, nil
 }
 
-// describeRuleGroupDetail fetches all details for a single rule group.
-func describeRuleGroupDetail(ctx context.Context, client *networkfirewall.Client, ruleGroup types.RuleGroupMetadata) *RuleGroupDetail {
+func describeRuleGroup(ctx context.Context, client *networkfirewall.Client, ruleGroup types.RuleGroupMetadata) *networkfirewall.DescribeRuleGroupOutput {
 	// Get detailed rule group information
 	describeInput := &networkfirewall.DescribeRuleGroupInput{
 		RuleGroupArn: ruleGroup.Arn,
@@ -117,7 +104,5 @@ func describeRuleGroupDetail(ctx context.Context, client *networkfirewall.Client
 		return nil
 	}
 
-	return &RuleGroupDetail{
-		RuleGroup: describeOutput,
-	}
+	return describeOutput
 }

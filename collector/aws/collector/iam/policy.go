@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // GetPolicyResource returns a Policy Resource
@@ -60,55 +59,26 @@ func GetPolicyDetail(ctx context.Context, service schema.ServiceInterface, res c
 		return err
 	}
 
-	const numWorkers = 10 // A reasonable number of concurrent workers. Consider making this configurable.
-	jobs := make(chan types.Policy, len(policies))
-
-	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for p := range jobs {
-				res <- describePolicyDetail(ctx, client, p)
-			}
-		}()
-	}
-
 	for _, policy := range policies {
-		jobs <- policy
-	}
-	close(jobs)
+		version, err := getPolicyVersion(ctx, client, policy.Arn, policy.DefaultVersionId)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get policy version", zap.String("policyArn", *policy.Arn), zap.Error(err))
+			continue
+		}
+		tags, err := listPolicyTags(ctx, client, policy.Arn)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list policy tags", zap.String("policyArn", *policy.Arn), zap.Error(err))
+			continue
+		}
 
-	wg.Wait()
+		res <- &PolicyDetail{
+			Policy:  policy,
+			Version: version,
+			Tags:    tags,
+		}
+	}
 
 	return nil
-}
-
-// describePolicyDetail fetches all details for a single policy.
-func describePolicyDetail(ctx context.Context, client *iam.Client, policy types.Policy) PolicyDetail {
-	var wg sync.WaitGroup
-	var version *types.PolicyVersion
-	var tags []types.Tag
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		version, _ = getPolicyVersion(ctx, client, policy.Arn, policy.DefaultVersionId)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listPolicyTags(ctx, client, policy.Arn)
-	}()
-
-	wg.Wait()
-
-	return PolicyDetail{
-		Policy:  policy,
-		Version: version,
-		Tags:    tags,
-	}
 }
 
 // listPolicies retrieves all customer managed IAM policies.

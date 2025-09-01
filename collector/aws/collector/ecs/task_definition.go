@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // GetTaskDefinitionResource returns a TaskDefinition Resource
@@ -58,32 +57,14 @@ func GetTaskDefinitionDetail(ctx context.Context, service schema.ServiceInterfac
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan string, len(taskDefinitionArns))
-
-	// Start workers
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for arn := range tasks {
-				detail, err := describeTaskDefinition(ctx, client, arn)
-				if err != nil {
-					log.CtxLogger(ctx).Warn("failed to describe ecs task definition", zap.String("arn", arn), zap.Error(err))
-					continue
-				}
-				res <- detail
-			}
-		}()
+	for _, taskDefinitionArn := range taskDefinitionArns {
+		taskDefinitionDetail, err := describeTaskDefinition(ctx, client, taskDefinitionArn)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to describe ecs task definition", zap.Error(err))
+			return err
+		}
+		res <- taskDefinitionDetail
 	}
-
-	// Add tasks to the queue
-	for _, arn := range taskDefinitionArns {
-		tasks <- arn
-	}
-	close(tasks)
-
-	wg.Wait()
 
 	return nil
 }

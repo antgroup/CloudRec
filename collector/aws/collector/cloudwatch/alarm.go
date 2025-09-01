@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 func GetAlarmResource() schema.Resource {
@@ -55,39 +54,21 @@ func GetAlarmDetail(ctx context.Context, service schema.ServiceInterface, res ch
 		return err
 	}
 
-	const numWorkers = 10
-	jobs := make(chan types.MetricAlarm, len(alarms))
-	var wg sync.WaitGroup
-	for w := 0; w < numWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for alarm := range jobs {
-				res <- describeAlarmDetail(ctx, client, alarm)
-			}
-		}()
-	}
 	for _, alarm := range alarms {
-		jobs <- alarm
+		tags, err := client.ListTagsForResource(ctx, &cloudwatch.ListTagsForResourceInput{
+			ResourceARN: alarm.AlarmArn,
+		})
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list tags for alarm", zap.String("alarm", *alarm.AlarmArn), zap.Error(err))
+		}
+		res <- &AlarmDetail{
+			MetricAlarm: alarm,
+			Tags:        tags.Tags,
+		}
+
 	}
-	close(jobs)
-	wg.Wait()
 
 	return nil
-}
-
-func describeAlarmDetail(ctx context.Context, client *cloudwatch.Client, alarm types.MetricAlarm) AlarmDetail {
-	tags, err := client.ListTagsForResource(ctx, &cloudwatch.ListTagsForResourceInput{
-		ResourceARN: alarm.AlarmArn,
-	})
-	if err != nil {
-		log.CtxLogger(ctx).Warn("failed to list tags for alarm", zap.String("alarm", *alarm.AlarmArn), zap.Error(err))
-	}
-
-	return AlarmDetail{
-		MetricAlarm: alarm,
-		Tags:        tags.Tags,
-	}
 }
 
 func describeAlarms(ctx context.Context, client *cloudwatch.Client) ([]types.MetricAlarm, error) {

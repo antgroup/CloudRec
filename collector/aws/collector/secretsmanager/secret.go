@@ -25,10 +25,7 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
-
-const maxWorkers = 10
 
 // GetSecretResource returns a Secret Resource
 func GetSecretResource() schema.Resource {
@@ -62,47 +59,21 @@ func GetSecretDetail(ctx context.Context, service schema.ServiceInterface, res c
 		return err
 	}
 
-	jobs := make(chan types.SecretListEntry, len(secrets))
-	var wg sync.WaitGroup
-	for w := 0; w < maxWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for secret := range jobs {
-				detail := describeSecretDetail(ctx, client, secret)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
 	for _, secret := range secrets {
-		jobs <- secret
+		res <- describeSecretDetail(ctx, client, secret)
 	}
-	close(jobs)
-	wg.Wait()
 
 	return nil
 }
 
 // describeSecretDetail fetches all details for a single secret.
 func describeSecretDetail(ctx context.Context, client *secretsmanager.Client, secret types.SecretListEntry) *SecretDetail {
-	var wg sync.WaitGroup
 	var policy *map[string]interface{}
 
-	wg.Add(1)
-
-	go func() {
-		defer wg.Done()
-		policyResult, err := getResourcePolicy(ctx, client, secret.ARN)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get resource policy", zap.String("secret", *secret.ARN), zap.Error(err))
-		} else {
-			policy = policyResult
-		}
-	}()
-
-	wg.Wait()
+	policy, err := getResourcePolicy(ctx, client, secret.ARN)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to get resource policy", zap.String("secret", *secret.ARN), zap.Error(err))
+	}
 
 	return &SecretDetail{
 		Secret: secret,
@@ -132,17 +103,16 @@ func getResourcePolicy(ctx context.Context, c *secretsmanager.Client, secretArn 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if output.ResourcePolicy == nil {
 		return nil, nil
 	}
-	
+
 	var policy map[string]interface{}
 	err = json.Unmarshal([]byte(*output.ResourcePolicy), &policy)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &policy, nil
 }
-

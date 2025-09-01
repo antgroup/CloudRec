@@ -16,9 +16,6 @@
 package elasticloadbalancing
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2_2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -27,6 +24,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/cloudrec/aws/collector"
 	"github.com/cloudrec/aws/collector/ec2"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 

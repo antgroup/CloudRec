@@ -24,11 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
-)
-
-const (
-	maxWorkers = 10
 )
 
 // GetClusterResource returns a Cluster Resource
@@ -81,55 +76,26 @@ func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res 
 		clusters = append(clusters, describedClusters...)
 	}
 
-	var wg sync.WaitGroup
-	jobs := make(chan types.Cluster, len(clusters))
-
-	// Start workers
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for cluster := range jobs {
-				detail := describeClusterDetail(ctx, client, cluster)
-				res <- detail
-			}
-		}()
-	}
-
 	for _, cluster := range clusters {
-		jobs <- cluster
-	}
-	close(jobs)
 
-	wg.Wait()
+		services, err := listServices(ctx, client, *cluster.ClusterArn)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list ecs services", zap.Error(err))
+		}
+
+		tasks, err := listTasks(ctx, client, *cluster.ClusterArn)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list ecs tasks", zap.Error(err))
+		}
+
+		res <- &ClusterDetail{
+			Cluster:  cluster,
+			Services: services,
+			Tasks:    tasks,
+		}
+	}
 
 	return nil
-}
-
-func describeClusterDetail(ctx context.Context, client *ecs.Client, cluster types.Cluster) interface{} {
-	var wg sync.WaitGroup
-	var services []types.Service
-	var tasks []types.Task
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		services, _ = listServices(ctx, client, *cluster.ClusterArn)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tasks, _ = listTasks(ctx, client, *cluster.ClusterArn)
-	}()
-
-	wg.Wait()
-
-	return &ClusterDetail{
-		Cluster:  cluster,
-		Services: services,
-		Tasks:    tasks,
-	}
 }
 
 // listClusters retrieves all ECS cluster ARNs in a region.

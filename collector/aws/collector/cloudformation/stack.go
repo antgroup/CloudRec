@@ -26,10 +26,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	maxWorkers = 10
-)
-
 // GetStackResource returns a Stack Resource
 func GetStackResource() schema.Resource {
 	return schema.Resource{

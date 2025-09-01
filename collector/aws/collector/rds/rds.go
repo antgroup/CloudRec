@@ -19,15 +19,15 @@ import (
 	"context"
 	"go.uber.org/zap"
 
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2Type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	rdsType "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/cloudrec/aws/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 )
 
 // GetRDSInstanceResource returns a RDS instance Resource

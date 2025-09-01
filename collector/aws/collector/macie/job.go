@@ -17,8 +17,6 @@ package macie
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/macie2"
 	"github.com/aws/aws-sdk-go-v2/service/macie2/types"
@@ -28,8 +26,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetClassificationJobResource returns AWS Macie classification job resource definition
 func GetClassificationJobResource() schema.Resource {
@@ -63,30 +59,11 @@ func GetClassificationJobDetail(ctx context.Context, service schema.ServiceInter
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.JobSummary, len(jobs))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for job := range tasks {
-				detail := describeClassificationJobDetail(ctx, client, job)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, job := range jobs {
-		tasks <- job
+		jobDetail := describeClassificationJobDetail(ctx, client, job)
+		res <- jobDetail
 	}
-	close(tasks)
 
-	wg.Wait()
 	return nil
 }
 
@@ -112,15 +89,12 @@ func listClassificationJobs(ctx context.Context, c *macie2.Client) ([]types.JobS
 func describeClassificationJobDetail(ctx context.Context, client *macie2.Client, job types.JobSummary) *ClassificationJobDetail {
 	var tags map[string]string
 
-	// Copy the job to avoid race conditions
-	jobCopy := job
-
 	// Get tags - Macie jobs don't typically have direct tags,
 	// but we can extract relevant information from the job itself
-	tags = extractJobTags(&jobCopy)
+	tags = extractJobTags(&job)
 
 	return &ClassificationJobDetail{
-		Job:  jobCopy,
+		Job:  job,
 		Tags: tags,
 	}
 }
@@ -133,11 +107,11 @@ func extractJobTags(job *types.JobSummary) map[string]string {
 	if job.JobId != nil {
 		tags["JobId"] = *job.JobId
 	}
-	
+
 	if job.Name != nil {
 		tags["Name"] = *job.Name
 	}
-	
+
 	tags["Status"] = string(job.JobStatus)
 	tags["Type"] = string(job.JobType)
 

@@ -17,8 +17,6 @@ package cloudapi
 
 import (
 	"context"
-	"sync"
-
 	cloudapi20160714 "github.com/alibabacloud-go/cloudapi-20160714/v5/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
@@ -27,8 +25,6 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
-
-const maxWorkers = 10
 
 // GetAPIGatewayResource 返回API Gateway资源定义
 func GetAPIGatewayResource() schema.Resource {
@@ -62,30 +58,13 @@ func GetAPIGatewayDetail(ctx context.Context, service schema.ServiceInterface, r
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan *cloudapi20160714.DescribeApisResponseBodyApiSummarysApiSummary, len(apis))
-
-	// 启动工作协程
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for api := range tasks {
-				detail := describeAPIDetail(ctx, client, api)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// 添加任务
 	for _, api := range apis {
-		tasks <- api
+		res <- &APIGatewayDetail{
+			ApiSummary: api,
+			ApiInfo:    describeAPI(ctx, client, api),
+		}
 	}
-	close(tasks)
 
-	wg.Wait()
 	return nil
 }
 
@@ -117,8 +96,7 @@ func listAPIs(ctx context.Context, c *cloudapi20160714.Client) ([]*cloudapi20160
 	return apis, nil
 }
 
-// describeAPIDetail 获取单个API详细信息
-func describeAPIDetail(ctx context.Context, c *cloudapi20160714.Client, api *cloudapi20160714.DescribeApisResponseBodyApiSummarysApiSummary) *APIGatewayDetail {
+func describeAPI(ctx context.Context, c *cloudapi20160714.Client, api *cloudapi20160714.DescribeApisResponseBodyApiSummarysApiSummary) *cloudapi20160714.DescribeApiResponseBody {
 	req := &cloudapi20160714.DescribeApiRequest{}
 	req.ApiId = api.ApiId
 
@@ -128,8 +106,5 @@ func describeAPIDetail(ctx context.Context, c *cloudapi20160714.Client, api *clo
 		return nil
 	}
 
-	return &APIGatewayDetail{
-		ApiSummary: api,
-		ApiInfo:    resp.Body,
-	}
+	return resp.Body
 }

@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 func GetLogGroupResource() schema.Resource {
@@ -57,58 +56,34 @@ func GetLogGroupDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	const numWorkers = 10
-	jobs := make(chan types.LogGroup, len(logGroups))
-	var wg sync.WaitGroup
-	for w := 0; w < numWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for lg := range jobs {
-				res <- describeLogGroupDetail(ctx, client, lg)
-			}
-		}()
-	}
 	for _, lg := range logGroups {
-		jobs <- lg
+		metricFilters, err := describeMetricFilters(ctx, client, lg.LogGroupName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to describe metric filters", zap.String("loggroup", *lg.LogGroupName), zap.Error(err))
+			return err
+		}
+
+		policies, err := describeResourcePolicies(ctx, client)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to describe resource policies", zap.Error(err))
+			return err
+		}
+
+		tags, err := listTagsForLogGroup(ctx, client, lg.Arn)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list tags for log group", zap.String("loggroup", *lg.Arn), zap.Error(err))
+			return err
+		}
+
+		res <- &LogGroupDetail{
+			LogGroup:         lg,
+			MetricFilters:    metricFilters,
+			ResourcePolicies: policies,
+			Tags:             tags,
+		}
 	}
-	close(jobs)
-	wg.Wait()
 
 	return nil
-}
-
-func describeLogGroupDetail(ctx context.Context, client *cloudwatchlogs.Client, lg types.LogGroup) LogGroupDetail {
-	var wg sync.WaitGroup
-	var metricFilters []types.MetricFilter
-	var policies []types.ResourcePolicy
-	var tags map[string]string
-
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		metricFilters, _ = describeMetricFilters(ctx, client, lg.LogGroupName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		policies, _ = describeResourcePolicies(ctx, client)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listTagsForLogGroup(ctx, client, lg.Arn)
-	}()
-
-	wg.Wait()
-
-	return LogGroupDetail{
-		LogGroup:         lg,
-		MetricFilters:    metricFilters,
-		ResourcePolicies: policies,
-		Tags:             tags,
-	}
 }
 
 func describeLogGroups(ctx context.Context, client *cloudwatchlogs.Client) ([]types.LogGroup, error) {

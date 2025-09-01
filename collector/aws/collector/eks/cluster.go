@@ -24,11 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
-)
-
-const (
-	maxWorkers = 10
 )
 
 // GetClusterResource returns a Cluster Resource
@@ -62,32 +57,14 @@ func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res 
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan string, len(clusterNames))
-
-	// Start workers
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for name := range tasks {
-				detail, err := describeCluster(ctx, client, name)
-				if err != nil {
-					log.CtxLogger(ctx).Warn("failed to describe eks cluster", zap.String("name", name), zap.Error(err))
-					continue
-				}
-				res <- detail
-			}
-		}()
-	}
-
-	// Add tasks to the queue
 	for _, name := range clusterNames {
-		tasks <- name
+		detail, err := describeCluster(ctx, client, name)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to describe eks cluster", zap.Error(err))
+			continue
+		}
+		res <- detail
 	}
-	close(tasks)
-
-	wg.Wait()
 
 	return nil
 }

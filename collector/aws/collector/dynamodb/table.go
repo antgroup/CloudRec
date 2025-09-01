@@ -24,11 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
-)
-
-const (
-	maxWorkers = 10
 )
 
 // GetTableResource returns a Table Resource
@@ -49,8 +44,8 @@ func GetTableResource() schema.Resource {
 
 // TableDetail aggregates all information for a single DynamoDB table.
 type TableDetail struct {
-	Table              *types.TableDescription
-	ContinuousBackups  *types.ContinuousBackupsDescription
+	Table             *types.TableDescription
+	ContinuousBackups *types.ContinuousBackupsDescription
 }
 
 // GetTableDetail fetches the details for all DynamoDB tables in a region.
@@ -63,72 +58,23 @@ func GetTableDetail(ctx context.Context, service schema.ServiceInterface, res ch
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan string, len(tableNames))
+	for _, tableName := range tableNames {
 
-	// Start workers
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for name := range tasks {
-				detail := describeTableDetail(ctx, client, name)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks to the queue
-	for _, name := range tableNames {
-		tasks <- name
-	}
-	close(tasks)
-
-	wg.Wait()
-
-	return nil
-}
-
-// describeTableDetail fetches all details for a single table.
-func describeTableDetail(ctx context.Context, client *dynamodb.Client, tableName string) *TableDetail {
-	var wg sync.WaitGroup
-	var table *types.TableDescription
-	var continuousBackups *types.ContinuousBackupsDescription
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		t, err := describeTable(ctx, client, tableName)
+		table, err := describeTable(ctx, client, tableName)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to describe dynamodb table", zap.String("tableName", tableName), zap.Error(err))
-		} else {
-			table = t
 		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		cb, err := describeContinuousBackups(ctx, client, tableName)
+		continuousBackups, err := describeContinuousBackups(ctx, client, tableName)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to describe continuous backups", zap.String("tableName", tableName), zap.Error(err))
-		} else {
-			continuousBackups = cb
 		}
-	}()
-
-	wg.Wait()
-
-	if table == nil {
-		return nil
+		res <- &TableDetail{
+			Table:             table,
+			ContinuousBackups: continuousBackups,
+		}
 	}
 
-	return &TableDetail{
-		Table:              table,
-		ContinuousBackups:  continuousBackups,
-	}
+	return nil
 }
 
 // listTables retrieves all DynamoDB table names in a region.

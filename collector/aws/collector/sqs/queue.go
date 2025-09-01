@@ -26,10 +26,7 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 	"strings"
-	"sync"
 )
-
-const maxWorkers = 10
 
 // GetSQSQueueResource returns a SQS Queue Resource
 func GetSQSQueueResource() schema.Resource {
@@ -67,68 +64,42 @@ func GetSQSQueueDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	jobs := make(chan SQSQueueDetail, len(queues))
-	var wg sync.WaitGroup
-	for w := 0; w < maxWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for queue := range jobs {
-				detail := describeSQSQueueDetail(ctx, client, queue)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
 	for _, queue := range queues {
-		jobs <- queue
+		queueDetail := describeSQSQueueDetail(ctx, client, queue)
+		res <- queueDetail
 	}
-	close(jobs)
-	wg.Wait()
 
 	return nil
 }
 
 // describeSQSQueueDetail fetches all details for a single SQS queue.
 func describeSQSQueueDetail(ctx context.Context, client *sqs.Client, queue SQSQueueDetail) *SQSQueueDetail {
-	var wg sync.WaitGroup
 	var attributes map[string]string
 	var policy *map[string]interface{}
 	var tags map[string]string
 
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		attrs, err := getQueueAttributes(ctx, client, queue.Url)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get queue attributes", zap.String("queue", queue.Url), zap.Error(err))
-		} else {
-			attributes = attrs
-			// Extract policy from attributes if available
-			if policyStr, ok := attrs["Policy"]; ok {
-				var policyObj map[string]interface{}
-				err = json.Unmarshal([]byte(policyStr), &policyObj)
-				if err == nil {
-					policy = &policyObj
-				}
+	attrs, err := getQueueAttributes(ctx, client, queue.Url)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to get queue attributes", zap.String("queue", queue.Url), zap.Error(err))
+	} else {
+		attributes = attrs
+		// Extract policy from attributes if available
+		if policyStr, ok := attrs["Policy"]; ok {
+			var policyObj map[string]interface{}
+			err = json.Unmarshal([]byte(policyStr), &policyObj)
+			if err == nil {
+				policy = &policyObj
 			}
 		}
-	}()
+	}
 
-	go func() {
-		defer wg.Done()
-		tagMap, err := listQueueTags(ctx, client, queue.Url)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list tags for queue", zap.String("queue", queue.Url), zap.Error(err))
-		} else {
-			tags = tagMap
-		}
-	}()
-
-	wg.Wait()
-
+	tagMap, err := listQueueTags(ctx, client, queue.Url)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to list tags for queue", zap.String("queue", queue.Url), zap.Error(err))
+	} else {
+		tags = tagMap
+	}
+	
 	queue.Attributes = attributes
 	queue.Policy = policy
 	queue.Tags = tags

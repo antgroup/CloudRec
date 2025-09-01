@@ -25,11 +25,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
-)
-
-const (
-	maxWorkers = 10
 )
 
 // GetFunctionResource returns a Function Resource
@@ -66,59 +61,23 @@ func GetFunctionDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.FunctionConfiguration, len(functions))
-
-	// Start workers
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for function := range tasks {
-				detail := describeFunctionDetail(ctx, client, function)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
-
-	// Add tasks to the queue
 	for _, function := range functions {
-		tasks <- function
+		functionDetail := describeFunctionDetail(ctx, client, function)
+		res <- functionDetail
 	}
-	close(tasks)
-
-	wg.Wait()
 
 	return nil
 }
 
 // describeFunctionDetail fetches all details for a single function.
 func describeFunctionDetail(ctx context.Context, client *lambda.Client, function types.FunctionConfiguration) *FunctionDetail {
-	var wg sync.WaitGroup
 	var policy map[string]interface{}
 	var urlConfigs []types.FunctionUrlConfig
 	var tags map[string]string
 
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		policy, _ = getPolicy(ctx, client, function.FunctionName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		urlConfigs, _ = listFunctionURLConfigs(ctx, client, function.FunctionName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listTags(ctx, client, function.FunctionArn)
-	}()
-
-	wg.Wait()
+	policy, _ = getPolicy(ctx, client, function.FunctionName)
+	urlConfigs, _ = listFunctionURLConfigs(ctx, client, function.FunctionName)
+	tags, _ = listTags(ctx, client, function.FunctionArn)
 
 	return &FunctionDetail{
 		Function:   function,

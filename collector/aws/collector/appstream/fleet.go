@@ -24,10 +24,7 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
-
-const maxWorkers = 10
 
 func GetFleetResource() schema.Resource {
 	return schema.Resource{
@@ -58,40 +55,21 @@ func GetFleetDetail(ctx context.Context, service schema.ServiceInterface, res ch
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.Fleet, len(fleets))
-
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for fleet := range tasks {
-				res <- describeFleetDetail(ctx, client, fleet)
-			}
-		}()
-	}
-
 	for _, fleet := range fleets {
-		tasks <- fleet
-	}
-	close(tasks)
+		tags, err := client.ListTagsForResource(ctx, &appstream.ListTagsForResourceInput{
+			ResourceArn: fleet.Arn,
+		})
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list tags for appstream fleet", zap.String("arn", *fleet.Arn), zap.Error(err))
+		}
 
-	wg.Wait()
+		res <- &FleetDetail{
+			Fleet: fleet,
+			Tags:  tags.Tags,
+		}
+	}
+
 	return nil
-}
-
-func describeFleetDetail(ctx context.Context, client *appstream.Client, fleet types.Fleet) FleetDetail {
-	tags, err := client.ListTagsForResource(ctx, &appstream.ListTagsForResourceInput{
-		ResourceArn: fleet.Arn,
-	})
-	if err != nil {
-		log.CtxLogger(ctx).Warn("failed to list tags for appstream fleet", zap.String("arn", *fleet.Arn), zap.Error(err))
-	}
-
-	return FleetDetail{
-		Fleet: fleet,
-		Tags:  tags.Tags,
-	}
 }
 
 func describeFleets(ctx context.Context, c *appstream.Client) ([]types.Fleet, error) {

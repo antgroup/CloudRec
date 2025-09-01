@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // GetTrailResource returns a Trail Resource
@@ -61,54 +60,31 @@ func GetTrailDetail(ctx context.Context, service schema.ServiceInterface, res ch
 		return err
 	}
 
-	var wg sync.WaitGroup
 	for _, trail := range trails {
-		wg.Add(1)
-		go func(t types.Trail) {
-			defer wg.Done()
-			detail := describeTrailDetail(ctx, client, t)
-			if detail != nil {
-				res <- detail
-			}
-		}(trail)
+		status, err := getTrailStatus(ctx, client, trail.TrailARN)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get trail status", zap.String("trailARN", *trail.TrailARN), zap.Error(err))
+		}
+
+		eventSelectors, err := getEventSelectors(ctx, client, trail.TrailARN)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get event selectors", zap.String("trailARN", *trail.TrailARN), zap.Error(err))
+		}
+
+		tags, err := listTags(ctx, client, trail.TrailARN)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list tags", zap.String("trailARN", *trail.TrailARN), zap.Error(err))
+		}
+
+		res <- &TrailDetail{
+			Trail:          trail,
+			Status:         status,
+			EventSelectors: eventSelectors,
+			Tags:           tags,
+		}
 	}
-	wg.Wait()
 
 	return nil
-}
-
-// describeTrailDetail fetches all details for a single trail.
-func describeTrailDetail(ctx context.Context, client *cloudtrail.Client, trail types.Trail) *TrailDetail {
-	var wg sync.WaitGroup
-	var status *cloudtrail.GetTrailStatusOutput
-	var eventSelectors []types.EventSelector
-	var tags []types.Tag
-
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		status, _ = getTrailStatus(ctx, client, trail.TrailARN)
-	}()
-
-	go func() {
-		defer wg.Done()
-		eventSelectors, _ = getEventSelectors(ctx, client, trail.TrailARN)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listTags(ctx, client, trail.TrailARN)
-	}()
-
-	wg.Wait()
-
-	return &TrailDetail{
-		Trail:          trail,
-		Status:         status,
-		EventSelectors: eventSelectors,
-		Tags:           tags,
-	}
 }
 
 // describeTrails retrieves all CloudTrail trails in a region.

@@ -25,10 +25,7 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
-
-const maxWorkers = 10
 
 // GetSNSTopicResource returns a SNS Topic Resource
 func GetSNSTopicResource() schema.Resource {
@@ -65,78 +62,49 @@ func GetSNSTopicDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	jobs := make(chan types.Topic, len(topics))
-	var wg sync.WaitGroup
-	for w := 0; w < maxWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for topic := range jobs {
-				detail := describeSNSTopicDetail(ctx, client, topic)
-				if detail != nil {
-					res <- detail
-				}
-			}
-		}()
-	}
 	for _, topic := range topics {
-		jobs <- topic
+		detail := describeSNSTopicDetail(ctx, client, topic)
+		res <- detail
 	}
-	close(jobs)
-	wg.Wait()
 
 	return nil
 }
 
 // describeSNSTopicDetail fetches all details for a single SNS topic.
 func describeSNSTopicDetail(ctx context.Context, client *sns.Client, topic types.Topic) *SNSTopicDetail {
-	var wg sync.WaitGroup
 	var attributes map[string]string
 	var policy *map[string]interface{}
 	var subscriptions []types.Subscription
 	var tags []types.Tag
 
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		attrs, err := getTopicAttributes(ctx, client, topic.TopicArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get topic attributes", zap.String("topic", *topic.TopicArn), zap.Error(err))
-		} else {
-			attributes = attrs
-			// Extract policy from attributes if available
-			if policyStr, ok := attrs["Policy"]; ok {
-				var policyObj map[string]interface{}
-				err = json.Unmarshal([]byte(policyStr), &policyObj)
-				if err == nil {
-					policy = &policyObj
-				}
+	attrs, err := getTopicAttributes(ctx, client, topic.TopicArn)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to get topic attributes", zap.String("topic", *topic.TopicArn), zap.Error(err))
+	} else {
+		attributes = attrs
+		// Extract policy from attributes if available
+		if policyStr, ok := attrs["Policy"]; ok {
+			var policyObj map[string]interface{}
+			err = json.Unmarshal([]byte(policyStr), &policyObj)
+			if err == nil {
+				policy = &policyObj
 			}
 		}
-	}()
+	}
 
-	go func() {
-		defer wg.Done()
-		subs, err := listSubscriptionsByTopic(ctx, client, topic.TopicArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list subscriptions by topic", zap.String("topic", *topic.TopicArn), zap.Error(err))
-		} else {
-			subscriptions = subs
-		}
-	}()
+	subs, err := listSubscriptionsByTopic(ctx, client, topic.TopicArn)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to list subscriptions by topic", zap.String("topic", *topic.TopicArn), zap.Error(err))
+	} else {
+		subscriptions = subs
+	}
 
-	go func() {
-		defer wg.Done()
-		tagList, err := listTagsForResource(ctx, client, topic.TopicArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list tags for topic", zap.String("topic", *topic.TopicArn), zap.Error(err))
-		} else {
-			tags = tagList
-		}
-	}()
-
-	wg.Wait()
+	tagList, err := listTagsForResource(ctx, client, topic.TopicArn)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to list tags for topic", zap.String("topic", *topic.TopicArn), zap.Error(err))
+	} else {
+		tags = tagList
+	}
 
 	return &SNSTopicDetail{
 		Topic:         topic,

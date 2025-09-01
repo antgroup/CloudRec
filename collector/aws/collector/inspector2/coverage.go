@@ -17,8 +17,6 @@ package inspector2
 
 import (
 	"context"
-	"sync"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/inspector2"
 	"github.com/aws/aws-sdk-go-v2/service/inspector2/types"
@@ -60,29 +58,12 @@ func GetCoverageDetail(ctx context.Context, service schema.ServiceInterface, res
 		return err
 	}
 
-	var wg sync.WaitGroup
-	tasks := make(chan types.CoveredResource, len(coverageList))
-
-	// Start worker goroutines
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for coverage := range tasks {
-				res <- &CoverageDetail{
-					Coverage: coverage,
-				}
-			}
-		}()
-	}
-
-	// Add tasks
 	for _, coverage := range coverageList {
-		tasks <- coverage
+		res <- &CoverageDetail{
+			Coverage: coverage,
+		}
 	}
-	close(tasks)
 
-	wg.Wait()
 	return nil
 }
 

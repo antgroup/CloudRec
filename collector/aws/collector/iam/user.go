@@ -24,7 +24,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // GetUserResource returns a User Resource
@@ -64,80 +63,50 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 		return err
 	}
 
-	const numWorkers = 10
-	jobs := make(chan types.User, len(users))
-	var wg sync.WaitGroup
-	for w := 0; w < numWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for user := range jobs {
-				res <- describeUserDetail(ctx, client, user)
-			}
-		}()
-	}
 	for _, user := range users {
-		jobs <- user
+		attachedPolicies, err := listAttachedUserPolicies(ctx, client, user.UserName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list attached user policies", zap.Error(err))
+			return err
+		}
+		inlinePolicies, err := listUserPolicies(ctx, client, user.UserName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list user inline policies", zap.Error(err))
+			return err
+		}
+		mfaDevices, err := listMFADevices(ctx, client, user.UserName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list mfa devices", zap.Error(err))
+			return err
+		}
+		accessKeys, err := listAccessKeys(ctx, client, user.UserName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list access keys", zap.Error(err))
+			return err
+		}
+		tags, err := listUserTags(ctx, client, user.UserName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to list user tags", zap.Error(err))
+			return err
+		}
+		loginProfile, err := getLoginProfile(ctx, client, user.UserName)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get login profile", zap.Error(err))
+			return err
+		}
+
+		res <- &UserDetail{
+			User:             user,
+			AttachedPolicies: attachedPolicies,
+			InlinePolicies:   inlinePolicies,
+			MFADevices:       mfaDevices,
+			AccessKeys:       accessKeys,
+			LoginProfile:     loginProfile,
+			Tags:             tags,
+		}
 	}
-	close(jobs)
-	wg.Wait()
 
 	return nil
-}
-
-// describeUserDetail fetches all details for a single user.
-func describeUserDetail(ctx context.Context, client *iam.Client, user types.User) UserDetail {
-	var wg sync.WaitGroup
-	var attachedPolicies []types.AttachedPolicy
-	var inlinePolicies []string
-	var mfaDevices []types.MFADevice
-	var accessKeys []types.AccessKeyMetadata
-	var loginProfile *iam.GetLoginProfileOutput
-	var tags []types.Tag
-
-	wg.Add(6)
-
-	go func() {
-		defer wg.Done()
-		attachedPolicies, _ = listAttachedUserPolicies(ctx, client, user.UserName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		inlinePolicies, _ = listUserPolicies(ctx, client, user.UserName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		mfaDevices, _ = listMFADevices(ctx, client, user.UserName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		accessKeys, _ = listAccessKeys(ctx, client, user.UserName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		tags, _ = listUserTags(ctx, client, user.UserName)
-	}()
-
-	go func() {
-		defer wg.Done()
-		loginProfile, _ = getLoginProfile(ctx, client, user.UserName)
-	}()
-
-	wg.Wait()
-
-	return UserDetail{
-		User:             user,
-		AttachedPolicies: attachedPolicies,
-		InlinePolicies:   inlinePolicies,
-		MFADevices:       mfaDevices,
-		AccessKeys:       accessKeys,
-		LoginProfile:     loginProfile,
-		Tags:             tags,
-	}
 }
 
 // listUsers retrieves all IAM users.

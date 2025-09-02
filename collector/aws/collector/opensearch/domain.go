@@ -35,8 +35,8 @@ func GetDomainResource() schema.Resource {
 		Desc:               "https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_DomainStatus.html",
 		ResourceDetailFunc: GetDomainDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.Domain.DomainId",
-			ResourceName: "$.Domain.DomainName",
+			ResourceId:   "$.DomainStatus.DomainId",
+			ResourceName: "$.DomainStatus.DomainName",
 		},
 		Dimension: schema.Regional,
 	}

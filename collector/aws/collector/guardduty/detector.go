@@ -36,8 +36,8 @@ func GetDetectorResource() schema.Resource {
 		Desc:               `https://docs.aws.amazon.com/guardduty/latest/APIReference/API_ListDetectors.html`,
 		ResourceDetailFunc: GetDetectorDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.Detector.DetectorId",
-			ResourceName: "$.Detector.DetectorId", // No friendly name
+			ResourceId:   "$.DetectorId",
+			ResourceName: "$.DetectorId", // No friendly name
 		},
 		Dimension: schema.Regional,
 	}
@@ -45,6 +45,7 @@ func GetDetectorResource() schema.Resource {
 
 // DetectorDetail aggregates all information for a single GuardDuty detector.
 type DetectorDetail struct {
+	DetectorId    string
 	Detector      *guardduty.GetDetectorOutput
 	Administrator *types.Administrator
 	Tags          map[string]string
@@ -76,6 +77,7 @@ func GetDetectorDetail(ctx context.Context, service schema.ServiceInterface, res
 		}
 
 		res <- &DetectorDetail{
+			DetectorId:    detectorId,
 			Detector:      detector,
 			Administrator: administrator,
 			Tags:          tags,

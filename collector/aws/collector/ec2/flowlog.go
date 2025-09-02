@@ -34,8 +34,8 @@ func GetFlowLogResource() schema.Resource {
 		Desc:               "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeFlowLogs.html",
 		ResourceDetailFunc: GetFlowLogDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.FlowLogId",
-			ResourceName: "$.FlowLogId",
+			ResourceId:   "$.FlowLog.FlowLogId",
+			ResourceName: "$.FlowLog.FlowLogId",
 		},
 		Dimension: schema.Regional,
 	}

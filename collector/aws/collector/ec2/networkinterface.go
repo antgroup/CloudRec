@@ -34,8 +34,8 @@ func GetNetworkInterfaceResource() schema.Resource {
 		Desc:               "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNetworkInterfaces.html",
 		ResourceDetailFunc: GetNetworkInterfaceDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.NetworkInterfaceId",
-			ResourceName: "$.NetworkInterfaceId",
+			ResourceId:   "$.NetworkInterface.NetworkInterfaceId",
+			ResourceName: "$.NetworkInterface.NetworkInterfaceId",
 		},
 		Dimension: schema.Regional,
 	}

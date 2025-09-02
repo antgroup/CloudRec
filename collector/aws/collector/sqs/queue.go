@@ -37,8 +37,8 @@ func GetSQSQueueResource() schema.Resource {
 		Desc:               "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ListQueues.html",
 		ResourceDetailFunc: GetSQSQueueDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.Queue.QueueUrl",
-			ResourceName: "$.Queue.Name",
+			ResourceId:   "$.Url",
+			ResourceName: "$.Name",
 		},
 		Dimension: schema.Regional,
 	}
@@ -99,7 +99,7 @@ func describeSQSQueueDetail(ctx context.Context, client *sqs.Client, queue SQSQu
 	} else {
 		tags = tagMap
 	}
-	
+
 	queue.Attributes = attributes
 	queue.Policy = policy
 	queue.Tags = tags

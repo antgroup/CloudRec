@@ -22,6 +22,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/actiontrail"
 	"github.com/cloudrec/alicloud/collector/apig"
 	"github.com/cloudrec/alicloud/collector/arms"
+	"github.com/cloudrec/alicloud/collector/bpstudio"
 	"github.com/cloudrec/alicloud/collector/cas"
 	"github.com/cloudrec/alicloud/collector/cdn"
 	"github.com/cloudrec/alicloud/collector/cen"
@@ -61,15 +62,18 @@ import (
 	"github.com/cloudrec/alicloud/collector/loadbalance/nlb"
 	"github.com/cloudrec/alicloud/collector/loadbalance/slb"
 	"github.com/cloudrec/alicloud/collector/maxcompute"
+	"github.com/cloudrec/alicloud/collector/mns"
 	"github.com/cloudrec/alicloud/collector/mse"
 	"github.com/cloudrec/alicloud/collector/nas"
 	"github.com/cloudrec/alicloud/collector/ons"
+	"github.com/cloudrec/alicloud/collector/oos"
 	"github.com/cloudrec/alicloud/collector/oss"
 	"github.com/cloudrec/alicloud/collector/pl"
 	"github.com/cloudrec/alicloud/collector/ram"
 	"github.com/cloudrec/alicloud/collector/redis"
 	"github.com/cloudrec/alicloud/collector/resourcecenter"
 	"github.com/cloudrec/alicloud/collector/rocketmq"
+	"github.com/cloudrec/alicloud/collector/rtc"
 	"github.com/cloudrec/alicloud/collector/sls"
 	"github.com/cloudrec/alicloud/collector/sms"
 	"github.com/cloudrec/alicloud/collector/swas"
@@ -208,13 +212,17 @@ func GetPlatformConfig() *schema.Platform {
 			swas.GetInstanceResource(),
 			vpc.GetVPNConnectionResource(),
 			ga.GetAcceleratorResource(),
-			eflo.GetNodeResource(),
+			eflo.GetClusterResource(),
 			ons.GetInstanceResource(),
 			dcdn.GetDCDNDomainResource(),
 			dcdn.GetDCDNIpaDomainResource(),
 			vod.GetVODDomainResource(),
 			sms.GetSMSTemplateResource(),
 			live.GetLiveDomainResource(),
+			bpstudio.GetBPStudioApplicationResource(),
+			mns.GetMessageServiceQueueResource(),
+			oos.GetOOSApplicationResource(),
+			rtc.GetRTCApplicationResource(),
 		},
 
 		Service:        &collector.Services{},

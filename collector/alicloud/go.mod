@@ -23,6 +23,7 @@ require (
 	github.com/alibabacloud-go/dds-20151201/v8 v8.0.0
 	github.com/alibabacloud-go/dms-enterprise-20181101 v1.63.0
 	github.com/alibabacloud-go/eds-aic-20230930/v4 v4.11.5
+	github.com/alibabacloud-go/eflo-controller-20221215/v2 v2.7.0
 	github.com/alibabacloud-go/elasticsearch-20170613/v3 v3.0.3
 	github.com/alibabacloud-go/ess-20220222/v2 v2.10.1
 	github.com/alibabacloud-go/fc-20230330/v4 v4.1.4

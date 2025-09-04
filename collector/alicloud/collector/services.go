@@ -17,6 +17,7 @@ package collector
 
 import (
 	"context"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/bpstudio"
 	"net/http"
 	"strings"
 	"time"
@@ -39,6 +40,7 @@ import (
 	dds20151201 "github.com/alibabacloud-go/dds-20151201/v8/client"
 	dms_enterprise20181101 "github.com/alibabacloud-go/dms-enterprise-20181101/client"
 	eds_aic20230930 "github.com/alibabacloud-go/eds-aic-20230930/v4/client"
+	eflo_controller20221215 "github.com/alibabacloud-go/eflo-controller-20221215/v2/client"
 	elasticsearch20170613 "github.com/alibabacloud-go/elasticsearch-20170613/v3/client"
 	ess20220222 "github.com/alibabacloud-go/ess-20220222/v2/client"
 	fc20230330 "github.com/alibabacloud-go/fc-20230330/v4/client"
@@ -78,13 +80,15 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eci"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eflo"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/eflo-controller"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ga"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/live"
+	mns_open "github.com/aliyun/alibaba-cloud-sdk-go/services/mns-open"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/oos"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/rtc"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/sgw"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
@@ -185,7 +189,7 @@ type Services struct {
 	ECI             *eci.Client
 	ECP             *eds_aic20230930.Client
 	Eflo            *eflo.Client
-	EfloController  *eflo_controller.Client
+	EfloController  *eflo_controller20221215.Client
 	SWAS            *swas_open20200601.Client
 	Ons             *ons.Client
 	GA              *ga.Client
@@ -194,6 +198,10 @@ type Services struct {
 	SGW             *sgw.Client
 	Live            *live.Client
 	DAS             *das20200116.Client
+	BPStudio        *bpstudio.Client
+	OOS             *oos.Client
+	MnsOpen         *mns_open.Client
+	RTC             *rtc.Client
 }
 
 // Clone creates a new instance of Services with copied configuration
@@ -452,7 +460,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init arms client failed", zap.Error(err))
 		}
-	case MSE:
+	case MSE, MSECluster:
 		s.MSE, err = CreateMSEClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init mse client failed", zap.Error(err))
@@ -517,8 +525,8 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ons client failed", zap.Error(err))
 		}
-	case EfloNode:
-		s.EfloController, err = eflo_controller.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+	case EfloCluster:
+		s.EfloController, err = createEfloControllerClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init eflo controller client failed", zap.Error(err))
 		}
@@ -552,9 +560,43 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init sgw client failed", zap.Error(err))
 		}
+	case BPStudioApplication:
+		s.BPStudio, err = bpstudio.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init bpstudio client failed", zap.Error(err))
+		}
+		s.BPStudio.SetHttpProxy(cloudAccountParam.ProxyConfig)
+		s.BPStudio.SetHttpsProxy(cloudAccountParam.ProxyConfig)
+	case MessageServiceQueue:
+		s.MnsOpen, err = mns_open.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init mns-open client failed", zap.Error(err))
+		}
+		s.MnsOpen.SetHttpProxy(cloudAccountParam.ProxyConfig)
+		s.MnsOpen.SetHttpsProxy(cloudAccountParam.ProxyConfig)
+	case OOSApplication:
+		s.OOS, err = oos.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init oos client failed", zap.Error(err))
+		}
+		s.OOS.SetHttpProxy(cloudAccountParam.ProxyConfig)
+		s.OOS.SetHttpsProxy(cloudAccountParam.ProxyConfig)
+	case RTCApplication:
+		s.RTC, err = rtc.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init rtc client failed", zap.Error(err))
+		}
+		s.RTC.SetHttpProxy(cloudAccountParam.ProxyConfig)
+		s.RTC.SetHttpsProxy(cloudAccountParam.ProxyConfig)
 	}
 
 	return nil
+}
+
+func createEfloControllerClient(region string, config *openapi.Config) (*eflo_controller20221215.Client, error) {
+	config.Endpoint = tea.String("eflo-controller." + region + ".aliyuncs.com")
+	client, err := eflo_controller20221215.NewClient(config)
+	return client, err
 }
 
 func createSWASClient(region string, config *openapi.Config) (client *swas_open20200601.Client, err error) {

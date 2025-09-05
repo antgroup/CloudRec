@@ -1,4 +1,4 @@
-package ecs_assume_role_3600011_178
+package ecs_assume_role_3600011
 
 import rego.v1
 

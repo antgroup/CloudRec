@@ -19,4 +19,6 @@ public interface CollectorRecordMapper {
     int findCount(CollectorRecordDTO dto);
 
     List<CollectorRecordPO> findList(CollectorRecordDTO dto);
+
+    int deleteByCloudAccountId(String cloudAccountId);
 }

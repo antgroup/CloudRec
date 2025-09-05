@@ -19,10 +19,13 @@ package com.alipay.application.share.vo.account;
 import com.alipay.application.service.account.utils.PlatformUtils;
 import com.alipay.application.service.common.utils.SpringUtils;
 import com.alipay.application.service.resource.IQueryResource;
+import com.alipay.application.service.risk.RiskStatusManager;
 import com.alipay.common.constant.CollectorStatusConstants;
 import com.alipay.common.enums.Status;
+import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.mapper.PlatformMapper;
 import com.alipay.dao.mapper.ResourceMapper;
+import com.alipay.dao.mapper.RuleScanResultMapper;
 import com.alipay.dao.mapper.TenantMapper;
 import com.alipay.dao.po.CloudAccountPO;
 import com.alipay.dao.po.PlatformPO;
@@ -95,6 +98,11 @@ public class CloudAccountVO {
     private Long resourceCount;
 
     /**
+     * 风险数
+     */
+    private Integer riskCount;
+
+    /**
      * 最近扫描时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -132,6 +140,10 @@ public class CloudAccountVO {
      */
     private String proxyConfig;
 
+    private String email;
+
+    private Boolean enableInverseSelection;
+
 
     public static CloudAccountVO buildEasy(CloudAccountPO cloudAccountPO) {
         if (cloudAccountPO == null) {
@@ -139,6 +151,8 @@ public class CloudAccountVO {
         }
         CloudAccountVO cloudAccountVO = new CloudAccountVO();
         BeanUtils.copyProperties(cloudAccountPO, cloudAccountVO, "credentialMap");
+        cloudAccountVO.setEnableInverseSelection(cloudAccountPO.getEnableInverseSelection() == 1);
+
 
         if (cloudAccountPO.getTenantId() != null) {
             TenantMapper tenantMapper = SpringUtils.getBean(TenantMapper.class);
@@ -158,21 +172,29 @@ public class CloudAccountVO {
         CloudAccountVO cloudAccountVO = new CloudAccountVO();
         BeanUtils.copyProperties(cloudAccountPO, cloudAccountVO);
 
+        // Query credential info
         if (StringUtils.isNoneEmpty(cloudAccountPO.getCredentialsJson())) {
             Map<String, String> accountCredentialsInfo = PlatformUtils.getAccountCredentialsInfo(cloudAccountPO.getPlatform(), PlatformUtils.decryptCredentialsJson(cloudAccountPO.getCredentialsJson()));
             cloudAccountVO.setCredentialMap(PlatformUtils.ignoreSensitiveInfo(accountCredentialsInfo));
         }
 
         // Query resource quantity
-        long count = SpringUtils.getBean(IQueryResource.class).queryResourceCount(cloudAccountPO.getCloudAccountId());
-        cloudAccountVO.setResourceCount(count);
+        long resourceCount = SpringUtils.getBean(IQueryResource.class).queryResourceCount(cloudAccountPO.getCloudAccountId());
+        cloudAccountVO.setResourceCount(resourceCount);
 
+        // Query risk count
+        RuleScanResultDTO dto = RuleScanResultDTO.builder().cloudAccountId(cloudAccountPO.getCloudAccountId()).status(RiskStatusManager.RiskStatus.UNREPAIRED.name()).build();
+        int riskCount = SpringUtils.getBean(RuleScanResultMapper.class).findCount(dto);
+        cloudAccountVO.setRiskCount(riskCount);
+
+        // Query platform name
         PlatformPO platformPO = SpringUtils.getBean(PlatformMapper.class).findByPlatform(cloudAccountPO.getPlatform());
         if (platformPO != null) {
             cloudAccountVO.setPlatformName(platformPO.getPlatformName());
         }
 
         // Asset types supported for scanning
+        cloudAccountVO.setEnableInverseSelection(cloudAccountPO.getEnableInverseSelection() == 1);
         if (cloudAccountPO.getResourceTypeList() != null) {
             String[] split = cloudAccountPO.getResourceTypeList().split(",");
             List<List<String>> list = Arrays.stream(split).parallel()
@@ -180,9 +202,8 @@ public class CloudAccountVO {
             cloudAccountVO.setResourceTypeListForWeb(list);
         }
 
-        cloudAccountVO.setCollectorStatus(Status.running.name().equals(cloudAccountPO.getCollectorStatus()) ? CollectorStatusConstants.running : CollectorStatusConstants.waiting);
 
-        cloudAccountVO.setChangeTenantPermission(true);
+        cloudAccountVO.setCollectorStatus(Status.running.name().equals(cloudAccountPO.getCollectorStatus()) ? CollectorStatusConstants.running : CollectorStatusConstants.waiting);
 
         if (cloudAccountPO.getTenantId() != null) {
             TenantMapper tenantMapper = SpringUtils.getBean(TenantMapper.class);

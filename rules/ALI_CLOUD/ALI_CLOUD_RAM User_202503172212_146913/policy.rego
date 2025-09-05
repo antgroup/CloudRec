@@ -1,9 +1,9 @@
-package ram_user_with_high_risk_access_has_no_acl_7200004_174
+package ram_user_with_high_risk_access_has_no_acl_7200004
 import rego.v1
 
 default risk := false
 risk if {
-    input.ExistAccessKey
+    input.ExistActiveAccessKey
     exist_Policies != null
     without_network_acl
     not covered_by_ip_address_control
@@ -14,16 +14,16 @@ messages contains message if {
     message := {
         "Description": "账号拥有敏感权限，但部分权限未设置网络ACL",
         "RiskStatment": allow_sts_without_network_acl,
-        "AKList": ActiveAccessKeys,
+        "AKList": AccessKeys,
         "Policies": exist_Policies,
     }
 }
 
 
 exist_Policies := input.Policies
-ActiveAccessKeys contains ak if {
-    some ActiveAccessKey in input.ActiveAccessKeys[_]
-    ak := ActiveAccessKey.AccessKeyId
+AccessKeys contains ak if {
+    some AccessKey in input.AccessKeys[_]
+    ak := AccessKey.AccessKeyId
 }
 
 without_network_acl if {

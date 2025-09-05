@@ -72,4 +72,11 @@ public class QueryResourceListRequest {
      * ASC OR DESC
      */
     private String sortType;
+
+    /**
+     * Aggregation type for asset grouping
+     * RESOURCE_TYPE: Group by resource type
+     * CLOUD_ACCOUNT: Group by cloud account
+     */
+    private String aggregationType;
 }

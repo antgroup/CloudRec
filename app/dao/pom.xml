@@ -5,11 +5,11 @@
     <parent>
         <artifactId>cloudrec</artifactId>
         <groupId>com.alipay</groupId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>dao</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
     <name>dao</name>
     <description>dao</description>
     <url/>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>com.alipay</groupId>
             <artifactId>common</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -56,6 +56,22 @@
 
     <build>
         <plugins>
+
+            <!-- Maven Surefire Plugin for unified JUnit 5 testing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
+                <configuration>
+                    <!-- Enable JUnit Platform for JUnit 5 support -->
+                    <useJUnitPlatform>true</useJUnitPlatform>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <testFailureIgnore>false</testFailureIgnore>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.mybatis.generator</groupId>
                 <artifactId>mybatis-generator-maven-plugin</artifactId>

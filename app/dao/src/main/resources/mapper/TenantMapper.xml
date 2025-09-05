@@ -120,8 +120,8 @@
     </update>
     <select id="findMemberCountByTenantId" resultType="java.lang.Integer">
         select count(*)
-        from tenant_user
-        where tenant_id = #{tenantId,jdbcType=BIGINT}
+        from tenant_user t1 inner join user t2 ON t1.user_id = t2.id
+        where t1.tenant_id = #{tenantId,jdbcType=BIGINT}
     </select>
     <select id="findCount" resultType="java.lang.Integer">
         select count(*) from tenant
@@ -137,7 +137,7 @@
         ORDER BY id DESC
         <include refid="com.alipay.dao.mapper.RuleMapper.getListLimit"></include>
     </select>
-    <select id="findListByUserId" resultMap="BaseResultMap">
+    <select id="findListByUserId" resultMap="ResultMapWithBLOBs">
         SELECT t.*
         FROM user u
                  INNER JOIN tenant_user tu
@@ -156,6 +156,24 @@
         <include refid="Base_Column_List"></include>
         FROM tenant where tenant_name = #{tenantName}
     </select>
+    <select id="findAll" resultMap="ResultMapWithBLOBs">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        ,
+        <include refid="Blob_Column_List"></include>
+        FROM tenant
+        ORDER BY id DESC
+    </select>
+    <select id="findMemberList" resultType="com.alipay.dao.po.UserPO">
+        SELECT
+        u.id,u.username AS username,u.user_id AS userId,u.status AS status, u.tenant_id AS tenantId,u.last_login_time AS
+        lastLoginTime,
+        tu.role_name AS roleName,tu.gmt_create AS gmtCreate,tu.gmt_modified AS gmtModified
+        FROM user u INNER JOIN tenant_user tu INNER JOIN tenant t ON u.id = tu.user_id AND tu.tenant_id = t.id
+        WHERE t.id = #{id}
+        ORDER BY u.id DESC
+        <include refid="getListLimit"></include>
+    </select>
 
     <sql id="getListWhere">
         <where>
@@ -163,5 +181,12 @@
                 tenant_name like CONCAT('%',#{tenantName,jdbcType=VARCHAR},'%')
             </if>
         </where>
+    </sql>
+    <sql id="getListLimit">
+        <if test="offset != null and size != null">
+            LIMIT
+            #{offset},
+            #{size}
+        </if>
     </sql>
 </mapper>

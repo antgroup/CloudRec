@@ -19,12 +19,12 @@ import (
 	"context"
 	"go.uber.org/zap"
 
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	cloudapi20160714 "github.com/alibabacloud-go/cloudapi-20160714/v5/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 )
 
 func GetCloudAPIResource() schema.Resource {

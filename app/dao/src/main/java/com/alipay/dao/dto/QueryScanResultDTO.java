@@ -73,6 +73,8 @@ public class QueryScanResultDTO extends BaseScrollDTO {
      */
     private String status;
 
+    private List<String> statusList;
+
     private List<Long> ruleIdList;
 
     private String platform;

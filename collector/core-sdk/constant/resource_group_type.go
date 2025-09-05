@@ -32,4 +32,5 @@ const (
 	BIGDATA    string = "BIGDATA"    // big data service
 	LOG        string = "LOG"        // log
 	GOVERNANCE string = "GOVERNANCE" // cloud governance
+	MONITORING string = "MONITORING" // monitor
 )

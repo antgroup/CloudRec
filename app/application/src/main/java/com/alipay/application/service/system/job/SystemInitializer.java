@@ -133,6 +133,9 @@ public class SystemInitializer {
         if (user == null) {
             User defaultUser = User.createDefaultUser();
             userRepository.save(defaultUser);
+        }else {
+            User.initDefaultUser(user);
+            userRepository.save(user);
         }
 
         user = userRepository.find(User.DEFAULT_USER_ID);

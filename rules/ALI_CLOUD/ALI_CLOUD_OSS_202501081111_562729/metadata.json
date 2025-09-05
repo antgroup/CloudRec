@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["网络访问","数据保护"],"code":"ALI_CLOUD_OSS_202501081111_562729","context":null,"description":"bucket的权限设为公有读(public-read)","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-OSS-Bucket的权限设为公有读(public-read)","platform":"ALI_CLOUD","resourceType":"OSS"}
+{"advice":null,"categoryList":["数据保护","网络访问"],"code":"ALI_CLOUD_OSS_202501081111_562729","context":null,"description":"bucket的权限设为公有读(public-read)","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-OSS-Bucket的权限设为公有读(public-read)","platform":"ALI_CLOUD","resourceType":"OSS"}

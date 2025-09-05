@@ -1,4 +1,4 @@
-package rds_open_network_to_all_1700003_204
+package rds_open_network_to_all_1700003
 
 import rego.v1
 

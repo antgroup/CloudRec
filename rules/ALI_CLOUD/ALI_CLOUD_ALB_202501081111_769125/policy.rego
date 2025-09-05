@@ -1,4 +1,4 @@
-package alb_open_to_pub_without_acl_2100001_155
+package alb_open_to_pub_without_acl_2100001
 import rego.v1
 
 default risk := false

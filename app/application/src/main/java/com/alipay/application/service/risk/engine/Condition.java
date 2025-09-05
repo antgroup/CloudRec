@@ -36,12 +36,17 @@ public class Condition {
         this.subConditions = subConditions;
     }
 
+    /**
+     * Evaluates the condition against the provided facts.
+     * For composite conditions (ANY/ALL), evaluates all sub-conditions.
+     * For leaf conditions, this method should be overridden by subclasses.
+     * 
+     * @param facts List of facts to evaluate against
+     * @return true if the condition matches, false otherwise
+     */
     public boolean match(List<Fact> facts) {
-        if (operator.equals(Operator.ALL)) {
-            return subConditions.stream().allMatch(subCondition -> subCondition.match(facts));
-        } else if (operator.equals(Operator.ANY)) {
-            return subConditions.stream().anyMatch(subCondition -> subCondition.match(facts));
-        }
+        // For leaf conditions without sub-conditions, return false by default
+        // This should be overridden by subclasses like ConditionItem
         return false;
     }
 }

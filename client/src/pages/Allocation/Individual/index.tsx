@@ -3,11 +3,12 @@ import AuthenList from '@/pages/Allocation/Individual/components/AuthenList';
 import EditModalForm from '@/pages/Allocation/Individual/components/EditModalForm';
 import { UserTypeList } from '@/utils/const';
 import { obtainTimeOfDay } from '@/utils/shared';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, UserOutlined, CrownOutlined } from '@ant-design/icons';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
 import { useAccess, useIntl } from '@umijs/max';
-import { Button, Col, ConfigProvider, Flex, Form, Row, Typography } from 'antd';
+import { Button, Col, ConfigProvider, Flex, Form, Row, Typography, Tooltip } from 'antd';
 import React, { useState } from 'react';
+import '@/components/Common/index.less';
 const { Text } = Typography;
 
 // Personal Center Page
@@ -43,7 +44,7 @@ const Individual: React.FC = () => {
                 alt="SMILE_ICON"
                 style={{ width: 23, marginRight: 6 }}
               />
-              {obtainTimeOfDay()}
+              {obtainTimeOfDay()}{access?.username ? `${access.username}` : ''}
             </Flex>
           }
           style={{ marginBottom: 16 }}
@@ -97,10 +98,19 @@ const Individual: React.FC = () => {
                   id: 'user.module.title.user.role',
                 })}
               >
-                <Text style={{ color: 'rgba(74, 74, 74, 1)' }}>
-                  {UserTypeList.find((item) => item.value === access?.roleName)
-                    ?.label || '-'}
-                </Text>
+                {access?.roleName ? (
+                  <Tooltip
+                    title={UserTypeList.find((item) => item.value === access?.roleName)?.label || '-'}
+                  >
+                    {access.roleName === 'admin' ? (
+                      <CrownOutlined style={{ color: '#faad14', fontSize: '16px' }} />
+                    ) : (
+                      <UserOutlined style={{ color: '#1890ff', fontSize: '16px' }} />
+                    )}
+                  </Tooltip>
+                ) : (
+                  <Text style={{ color: 'rgba(74, 74, 74, 1)' }}>-</Text>
+                )}
               </Form.Item>
             </Col>
             <Col span={8}>

@@ -78,7 +78,6 @@ const routes = [
     title: 'layout.routes.title.ruleManagement',
     path: '/ruleManagement',
     icon: 'DeliveredProcedure',
-    access: 'isAdmin',
     routes: [
       {
         path: '/ruleManagement',
@@ -157,17 +156,10 @@ const routes = [
       },
     ],
   },
-  // {
-  //   name: '身份安全',
-  //   path: '/ramManagement/ramList',
-  //   icon: 'CreditCardOutlined',
-  //   component: '@/pages/RamManagement',
-  // },
   {
     title: 'layout.routes.title.operationsCenter',
     path: '/pivotManagement',
     icon: 'DesktopOutlined',
-    access: 'isAdmin',
     routes: [
       {
         path: '/pivotManagement',
@@ -177,13 +169,11 @@ const routes = [
         title: 'layout.routes.title.userManagement',
         path: '/pivotManagement/UserModule',
         component: '@/pages/PivotManagement/UserModule',
-        access: 'isAdmin',
       },
       {
         title: 'layout.routes.title.tenantManagement',
         path: '/pivotManagement/TenantModule',
         hideChildrenInMenu: true,
-        access: 'isAdmin',
         routes: [
           {
             path: '/pivotManagement/TenantModule',
@@ -195,19 +185,16 @@ const routes = [
         name: 'Collector',
         path: '/pivotManagement/AgentModule',
         component: '@/pages/PivotManagement/AgentModule',
-        access: 'isAdmin',
       },
       {
         title: 'layout.routes.title.subscribeManagement',
         path: '/pivotManagement/InvolveModule',
         component: '@/pages/PivotManagement/InvolveModule',
-        access: 'isAdmin',
       },
       {
         title: 'layout.routes.title.variableManagement',
         path: '/pivotManagement/VariableModule',
         component: '@/pages/PivotManagement/VariableModule',
-        access: 'isAdmin',
       },
     ],
   },
@@ -219,28 +206,18 @@ const routes = [
     menuRender: false,
   },
   {
+    title: 'layout.routes.title.invitation',
+    path: '/invitation',
+    component: '@/pages/Invitation',
+    hideInMenu: true,
+    menuRender: false,
+  },
+  {
     title: 'layout.routes.title.personalCenter',
     path: '/individual',
     component: '@/pages/Allocation/Individual',
     hideInMenu: true,
   },
-  // {
-  //   name: '本地测试',
-  //   path: '/localTest',
-  //   icon: 'RightSquareOutlined',
-  //   component: '@/pages/TestInLocal',
-  // },
-  // {
-  //   name: '资产管理',
-  //   path: '/assetManagement/assetList',
-  //   icon: 'ProductOutlined',
-  //   component: '@/pages/AssetManagement',
-  // },
-  // {
-  //   name: '权限演示',
-  //   path: '/access',
-  //   component: '@/pages/Access',
-  // },
   {
     path: '*',
     redirect: '/home',

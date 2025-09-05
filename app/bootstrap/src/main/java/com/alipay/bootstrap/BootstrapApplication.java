@@ -20,11 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 
 @MapperScan("com.alipay.dao.mapper")
 @ComponentScan(basePackages = {"com.alipay.application", "com.alipay.api",
         "com.alipay.dao"})
+@EnableConfigurationProperties
 @Slf4j
 @SpringBootApplication
 public class BootstrapApplication {

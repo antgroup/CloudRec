@@ -1,0 +1,16 @@
+{
+    "advice": "",
+    "categoryList": [
+        "数据保护",
+        "日志审计"
+    ],
+    "code": "ALI_CLOUD_PolarDB_202505261533_254903",
+    "context": "实例：{$.ResourceId} ，名称：{$.ResourceName} 存在PolarDB-实例未启用审计日志风险。",
+    "description": "阿里云-PolarDB-实例未启用审计日志",
+    "level": "Low",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-PolarDB-实例未启用审计日志",
+    "platform": "ALI_CLOUD",
+    "resourceType": "PolarDB"
+}

@@ -1,4 +1,4 @@
-package ali_cloud_versioning_enable_6500006_201
+package ali_cloud_versioning_enable_6500006
 import rego.v1
 
 default risk := false

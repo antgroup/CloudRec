@@ -16,6 +16,7 @@
  */
 package com.alipay.application.share.vo.whited;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
@@ -30,8 +31,10 @@ public class WhitedRuleConfigVO {
 
     private Long id;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date gmtCreate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date gmtModified;
 
     private String ruleType;
@@ -49,6 +52,8 @@ public class WhitedRuleConfigVO {
     private String regoContent;
 
     private Long tenantId;
+
+    private String tenantName;
 
     private String creator;
 

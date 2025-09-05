@@ -33,23 +33,13 @@ public enum BizErrorCodeEnum implements ErrorCode {
      */
     UNSPECIFIED("500", "服务器异常"),
 
+    // 403
+    FORBIDDEN("403", "无权限"),
+
     NO_SERVICE("404", "网络异常, 服务器熔断"),
 
     // 通用异常
     REQUEST_ERROR("400", "入参异常,请检查入参后再次调用"),
-
-    PAGE_NUM_IS_NULL("4001", "页码不能为空"),
-
-    PAGE_SIZE_IS_NULL("4002", "页数不能为空"),
-
-    ID_IS_NULL("4003", "ID不能为空"),
-
-    SEARCH_IS_NULL("4004", "搜索条件不能为空"),
-
-    VERIFY_NOT_PASS("40006", "验签"),
-
-    RES_FAIL("40007", "响应失败"),
-
     ;
 
     /**

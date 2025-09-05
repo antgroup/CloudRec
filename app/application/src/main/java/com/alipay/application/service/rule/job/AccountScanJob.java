@@ -18,6 +18,7 @@ package com.alipay.application.service.rule.job;
 
 import com.alipay.application.service.rule.domain.RuleAgg;
 import com.alipay.application.service.rule.domain.repo.RuleRepository;
+import com.alipay.application.service.system.domain.repo.TenantRepository;
 import com.alipay.dao.mapper.CloudAccountMapper;
 import com.alipay.dao.po.CloudAccountPO;
 import com.google.common.cache.Cache;
@@ -48,7 +49,7 @@ public class AccountScanJob {
     @Resource
     private RuleRepository ruleRepository;
     @Resource
-    private WhitedConfigContext whitedConfigContext;
+    private TenantRepository tenantRepository;
 
     private final Cache<String, List<RuleAgg>> ruleCache = CacheBuilder.newBuilder()
             .maximumSize(10)
@@ -63,33 +64,32 @@ public class AccountScanJob {
 
         // load rule form cache
         List<RuleAgg> ruleAggList;
-        List<RuleAgg> cacheRuleAggList = ruleCache.getIfPresent(cloudAccountPO.getPlatform());
-        if (!CollectionUtils.isEmpty(cacheRuleAggList)) {
-            ruleAggList = cacheRuleAggList;
-        } else {
-            // load rule from db
-            ruleAggList = ruleRepository.findAll(cloudAccountPO.getPlatform());
-            ruleCache.put(cloudAccountPO.getPlatform(), ruleAggList);
+        synchronized (this) {
+            List<RuleAgg> cacheRuleAggList = ruleCache.getIfPresent(cloudAccountPO.getPlatform());
+            if (!CollectionUtils.isEmpty(cacheRuleAggList)) {
+                ruleAggList = cacheRuleAggList;
+            } else {
+                // load rule from db
+                ruleAggList = ruleRepository.findAll(cloudAccountPO.getPlatform());
+                ruleCache.put(cloudAccountPO.getPlatform(), ruleAggList);
+            }
         }
 
-        // load whited config
-        whitedConfigContext.initWhitedConfigCache();
         try {
             long startTime = System.currentTimeMillis();
             log.info("scanByCloudAccountId start, cloudAccountId:{}, platform:{} start", cloudAccountId, cloudAccountPO.getPlatform());
             for (RuleAgg ruleAgg : ruleAggList) {
+                if (ruleAgg.getIsRunning() == 1) {
+                    log.info("scanByCloudAccountId skip, cloudAccountId:{}, platform:{}, ruleCode:{}", cloudAccountId, cloudAccountPO.getPlatform(), ruleAgg.getRuleCode());
+                    continue;
+                }
                 log.info("scanByCloudAccountId start, cloudAccountId:{}, platform:{}, ruleCode:{}", cloudAccountId, cloudAccountPO.getPlatform(), ruleAgg.getRuleCode());
-                scanService.scanByRule(ruleAgg, cloudAccountPO);
+                scanService.scanByRule(ruleAgg, cloudAccountPO, tenantRepository.isDefaultRule(ruleAgg.getRuleCode()));
                 log.info("scanByCloudAccountId end, cloudAccountId:{}, platform:{}, ruleCode:{} end", cloudAccountId, cloudAccountPO.getPlatform(), ruleAgg.getRuleCode());
             }
             log.info("scanByCloudAccountId end, cloudAccountId:{}, platform:{} end, spend time:{}", cloudAccountId, cloudAccountPO.getPlatform(), System.currentTimeMillis() - startTime);
         } catch (Exception e) {
             log.error("scanByCloudAccountId error, cloudAccountId:{}", cloudAccountId, e);
-        } finally {
-            // clear whited config cache
-            if (Thread.currentThread().isAlive()) {
-                whitedConfigContext.clear();
-            }
         }
     }
 }

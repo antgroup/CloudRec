@@ -1,4 +1,4 @@
-package root_user_bind_mfa_6500001_196
+package root_user_bind_mfa_6500001
 import rego.v1
 
 default risk := false

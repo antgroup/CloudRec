@@ -63,6 +63,7 @@ public class RuleGroupController {
     /**
      * Trigger rule detection by rule group
      */
+    @AuthenticateToken
     @PostMapping("/scanByGroup")
     public ApiResponse<String> scanByGroup(@RequestParam Long id) {
         scanService.scanByGroup(id);
@@ -74,11 +75,13 @@ public class RuleGroupController {
         return ruleGroupService.queryRuleGroupList(request);
     }
 
+    @AuthenticateToken
     @GetMapping("/queryRuleGroupDetail")
     public ApiResponse<RuleGroupVO> queryRuleGroupDetail(@RequestParam Long id) {
         return ruleGroupService.queryRuleGroupDetail(id);
     }
 
+    @AuthenticateToken
     @DeleteMapping("/delRuleGroup")
     public ApiResponse<String> delRuleGroup(@RequestParam Long id) {
         return ruleGroupService.deleteRuleGroup(id);

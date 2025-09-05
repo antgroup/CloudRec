@@ -18,16 +18,32 @@ package com.alipay.application.service.risk.engine.handler;
 
 import com.alipay.application.service.risk.engine.ConditionItem;
 import com.alipay.application.service.risk.engine.Fact;
-import com.alipay.application.service.risk.engine.Operator;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Complete operator handler that supports all operators
+ * Provides unified rule engine logic for all operator types
+ */
 public class OperatorHandlerComplete {
 
-    private static final List<OperatorHandler> operatorHandlers = Arrays.asList(new EqHandler(), new AllInHandler());
+    private static final List<OperatorHandler> operatorHandlers = Arrays.asList(
+            new EqHandler(), 
+            new NeHandler(),
+            new LikeHandler(),
+            new NotLikeHandler(),
+            new InHandler(),
+            new NotInHandler()
+    );
 
+    /**
+     * Handle condition evaluation using appropriate operator handler
+     * @param conditionItem the condition to evaluate
+     * @param facts the list of facts to check against
+     * @return true if the condition is satisfied
+     */
     public static boolean handle(ConditionItem conditionItem, List<Fact> facts) {
         if (conditionItem.getOperator() == null) {
             throw new RuntimeException("operator is null");
@@ -39,18 +55,17 @@ public class OperatorHandlerComplete {
             //If there is no judgment condition, the judgment condition will be ignored.
             return true;
         }
-        if (conditionItem.getOperator() == Operator.EQ) {
-            return new EqHandler().handle(conditionItem, collect);
+
+        // Find the appropriate handler for this operator
+        for (OperatorHandler handler : operatorHandlers) {
+            if (handler instanceof AbstractHanlder) {
+                AbstractHanlder abstractHandler = (AbstractHanlder) handler;
+                if (abstractHandler.canHandle(conditionItem)) {
+                    return handler.handle(conditionItem, collect);
+                }
+            }
         }
 
-        if (conditionItem.getOperator() == Operator.ALL_IN) {
-            return new AllInHandler().handle(conditionItem, collect);
-        }
-
-        if (conditionItem.getOperator() == Operator.ANY_IN) {
-            return new AnyInHandler().handle(conditionItem, collect);
-        }
-
-        throw new RuntimeException("operator is not support");
+        throw new RuntimeException("operator is not supported: " + conditionItem.getOperator());
     }
 }

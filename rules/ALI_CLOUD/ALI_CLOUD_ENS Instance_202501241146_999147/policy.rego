@@ -1,4 +1,4 @@
-package ens_instance_didnt_install_aegis_5600001_206
+package ens_instance_didnt_install_aegis_5600001
 
 import rego.v1
 

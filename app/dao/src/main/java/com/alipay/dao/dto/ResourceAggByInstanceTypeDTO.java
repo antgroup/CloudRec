@@ -31,9 +31,26 @@ public class ResourceAggByInstanceTypeDTO {
 
     private Integer count;
 
+    /**
+     * group by resource type
+     */
     private String resourceType;
 
+    /**
+     * group by resource type name
+     */
     private String resourceTypeName;
+
+    /**
+     * group by cloud account id
+     */
+    private String cloudAccountId;
+
+    /**
+     * group by cloud account alias
+     */
+    private String alias;
+
 
     private List<List<String>> typeFullNameList;
 

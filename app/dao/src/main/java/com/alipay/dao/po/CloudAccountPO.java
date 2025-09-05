@@ -61,4 +61,7 @@ public class CloudAccountPO {
 
     private String proxyConfig;
 
+    private String email;
+
+    private Integer enableInverseSelection;
 }

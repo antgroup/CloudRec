@@ -1,4 +1,4 @@
-package ecs_public_open_rule_1200003_180
+package ecs_public_open_rule_1200003
 import rego.v1
 
 default risk := false

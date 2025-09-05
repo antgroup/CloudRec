@@ -1,4 +1,4 @@
-package oss_bucket_anony_access_2200008_215
+package oss_bucket_anony_access_2200008
 import rego.v1
 
 default risk := false

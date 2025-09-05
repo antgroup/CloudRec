@@ -1,4 +1,4 @@
-package clickhouse_open_to_pub_3800006_152
+package clickhouse_open_to_pub_3800006
 import rego.v1
 
 

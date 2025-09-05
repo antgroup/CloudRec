@@ -85,7 +85,9 @@ public class RuleDTO extends PageDTO {
     private List<String> ruleCodeList;
 
     /**
-     * tenantId
+     * tenantId list
      */
+    private List<Long> tenantIdList;
+
     private Long tenantId;
 }

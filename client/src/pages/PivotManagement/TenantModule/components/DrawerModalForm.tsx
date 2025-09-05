@@ -1,5 +1,4 @@
-import { queryMember, removeUser } from '@/services/tenant/TenantController';
-import { changeUserStatus } from '@/services/user/UserController';
+import { queryMember, removeUser, changeUserTenantRole } from '@/services/tenant/TenantController';
 import { UserTypeList } from '@/utils/const';
 import { showTotalIntlFunc, valueListAsValueEnum } from '@/utils/shared';
 import {
@@ -9,9 +8,11 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
-import { Button, Popconfirm, Space, Switch, message } from 'antd';
+import { Button, message, Popconfirm, Select } from 'antd';
 import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
-import AddTenantMember from './AddTenantMember';
+import { Tooltip } from 'antd';
+import { UserOutlined, CrownOutlined, UserDeleteOutlined } from '@ant-design/icons';
+import AddMemberModal from '../../../Allocation/Individual/components/AddMemberModal';
 
 interface IDrawerFormProps {
   drawerFormVisible: boolean;
@@ -25,12 +26,12 @@ const DrawerModalForm: React.FC<IDrawerFormProps> = (props) => {
   // Table Action
   const drawerTableActionRef = useRef<ActionType>();
   // Message API
-  const [messageApi] = message.useMessage();
+  const [messageApi, contextHolder] = message.useMessage();
   // Intl API
   const intl = useIntl();
-
+  // Add member modal state
   const [addFormVisible, setAddFormVisible] = useState<boolean>(false);
-  // Tenant Info
+  // Tenant info for add member
   const addTenantInfoRef = useRef<any>({});
 
   // Component Props
@@ -50,34 +51,70 @@ const DrawerModalForm: React.FC<IDrawerFormProps> = (props) => {
     await initDrawer();
   };
 
-  // Delete a user from the current tenant
-  const onClickDelTenantUser = async (userId: number): Promise<void> => {
+  /**
+   * Handle add member button click
+   */
+  const handleAddMember = (): void => {
+    if (drawerInfo) {
+      addTenantInfoRef.current = { ...drawerInfo };
+      setAddFormVisible(true);
+    }
+  };
+
+  /**
+   * Handle remove user from tenant
+   */
+  const handleRemoveUser = async (userId: string): Promise<void> => {
+    if (!drawerInfo?.id) return;
+    
     const body = {
       userId,
       tenantId: drawerInfo.id,
     };
-    const res = await removeUser(body);
-    if (res.code === 200 || res.msg === 'success') {
-      drawerTableActionRef.current?.reloadAndRest?.();
+    
+    try {
+      const res = await removeUser(body);
+      if (res.code === 200 || res.msg === 'success') {
+        messageApi.success(
+          intl.formatMessage({ id: 'common.message.text.delete.success' })
+        );
+        drawerTableActionRef.current?.reloadAndRest?.();
+      }
+    } catch (error) {
+      messageApi.error(
+        intl.formatMessage({ id: 'common.message.text.delete.failed' })
+      );
     }
   };
 
-  const onClickChangeUserStatus = async (
-    id: number,
-    status: string,
-  ): Promise<void> => {
-    const postBody = {
-      id,
-      status,
+  /**
+   * Handle user role change in current tenant
+   */
+  const handleRoleChange = async (userId: string, newRole: string): Promise<void> => {
+    if (!drawerInfo?.id) return;
+    
+    const body = {
+      userId,
+      roleName: newRole,
+      tenantId: drawerInfo.id,
     };
-    const res = await changeUserStatus(postBody);
-    if (res.code === 200 || res.msg === 'success') {
-      messageApi.success(
-        intl.formatMessage({ id: 'common.message.text.edit.success' }),
+    
+    try {
+      const res = await changeUserTenantRole(body);
+      if (res.code === 200 || res.msg === 'success') {
+        messageApi.success(
+          intl.formatMessage({ id: 'common.message.text.edit.success' })
+        );
+        drawerTableActionRef.current?.reloadAndRest?.();
+      }
+    } catch (error) {
+      messageApi.error(
+        intl.formatMessage({ id: 'common.message.text.edit.failed' })
       );
-      drawerTableActionRef.current?.reloadAndRest?.();
     }
   };
+
+
 
   // Table Columns
   const columns: ProColumns<API.UserInfo, 'text'>[] = [
@@ -99,13 +136,39 @@ const DrawerModalForm: React.FC<IDrawerFormProps> = (props) => {
     },
     {
       title: intl.formatMessage({
-        id: 'user.module.title.user.role',
+        id: 'tenant.module.title.user.role',
       }),
       dataIndex: 'roleName',
-      valueType: 'select',
       hideInSearch: true,
       align: 'center',
-      valueEnum: valueListAsValueEnum(UserTypeList),
+      width: 120,
+      render: (_, record) => (
+        <Select
+          value={record.roleName}
+          style={{ width: 120 }}
+          onChange={(value) => handleRoleChange(record.userId!, value)}
+          options={[
+            { 
+              label: (
+                <span>
+                  <UserOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+                  user
+                </span>
+              ), 
+              value: 'user' 
+            },
+            { 
+              label: (
+                <span>
+                  <CrownOutlined style={{ marginRight: 8, color: '#faad14' }} />
+                  admin
+                </span>
+              ), 
+              value: 'admin' 
+            },
+          ]}
+        />
+      ),
     },
     {
       title: intl.formatMessage({
@@ -126,54 +189,28 @@ const DrawerModalForm: React.FC<IDrawerFormProps> = (props) => {
       align: 'center',
     },
     {
-      title: intl.formatMessage({
-        id: 'cloudAccount.extend.title.cloud.operate',
-      }),
+      title: intl.formatMessage({ id: 'common.title.operation' }),
       dataIndex: 'option',
       valueType: 'option',
-      align: 'center',
-      render: (_, record: API.UserInfo) => (
-        <Space size={'small'}>
-          <Popconfirm
-            title={intl.formatMessage({
-              id: 'tenant.extend.member.delete.user',
-            })}
-            onConfirm={() => onClickDelTenantUser(record.id!)}
-            okText={intl.formatMessage({
-              id: 'common.button.text.ok',
-            })}
-            cancelText={intl.formatMessage({
-              id: 'common.button.text.cancel',
-            })}
-          >
-            <Button type="link" danger>
-              {intl.formatMessage({
-                id: 'common.button.text.delete',
-              })}
-            </Button>
-          </Popconfirm>
-          <Switch
-            checkedChildren={intl.formatMessage({
-              id: 'common.button.text.normal',
-            })}
-            unCheckedChildren={intl.formatMessage({
-              id: 'common.button.text.disable',
-            })}
-            checked={record?.status === 'valid'}
-            onClick={() =>
-              onClickChangeUserStatus(
-                record.id!,
-                record?.status === 'valid' ? 'invalid' : 'valid',
-              )
-            }
-          />
-        </Space>
-      ),
+      width: 120,
+      render: (_, record) => [
+        <Popconfirm
+          key="remove"
+          title={intl.formatMessage({ id: 'common.button.text.delete.confirm' })}
+          onConfirm={() => handleRemoveUser(record.userId!)}
+          okText={intl.formatMessage({ id: 'common.text.confirm' })}
+          cancelText={intl.formatMessage({ id: 'common.text.cancel' })}
+        >
+          <Button type="link" danger icon={<UserDeleteOutlined />} />
+        </Popconfirm>,
+      ],
     },
+
   ];
 
   return (
     <>
+      {contextHolder}
       <DrawerForm
         title={intl.formatMessage({
           id: 'tenant.extend.member.edit',
@@ -196,18 +233,11 @@ const DrawerModalForm: React.FC<IDrawerFormProps> = (props) => {
           options={false}
           toolBarRender={() => [
             <Button
-              key="create"
+              key="add"
               type="primary"
-              onClick={(): void => {
-                setAddFormVisible(true);
-                addTenantInfoRef.current = {
-                  ...drawerInfo,
-                };
-              }}
+              onClick={handleAddMember}
             >
-              {intl.formatMessage({
-                id: 'tenant.extend.member.add',
-              })}
+              {intl.formatMessage({ id: 'common.button.text.add' })}
             </Button>,
           ]}
           request={async (params) => {
@@ -235,12 +265,12 @@ const DrawerModalForm: React.FC<IDrawerFormProps> = (props) => {
           }}
         />
       </DrawerForm>
-
-      <AddTenantMember // Add tenant members
+      
+      <AddMemberModal
         addFormVisible={addFormVisible}
         setAddFormVisible={setAddFormVisible}
-        addTenantInfo={addTenantInfoRef?.current}
-        drawerTableActionRef={drawerTableActionRef as any}
+        addTenantInfo={addTenantInfoRef.current}
+        drawerTableActionRef={drawerTableActionRef as React.RefObject<ActionType>}
       />
     </>
   );

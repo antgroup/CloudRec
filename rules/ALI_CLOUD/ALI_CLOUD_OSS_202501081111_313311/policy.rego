@@ -1,4 +1,4 @@
-package oss_could_be_accessed_from_any_vpc_3000001_214
+package oss_could_be_accessed_from_any_vpc_3000001
 import rego.v1
 
 default risk := false

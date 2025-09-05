@@ -39,6 +39,10 @@ public interface CloudResourceInstanceMapper {
                                     @Param("cloudAccountId") String cloudAccountId,
                                     @Param("resourceId") String resourceId);
 
+    CloudResourceInstancePO findByResourceId(@Param("platform") String platform,
+                                             @Param("resourceType") String resourceType,
+                                             @Param("resourceId") String resourceId);
+
     CloudResourceInstancePO findExampleLimit1(@Param("platform") String platform,
                                               @Param("resourceType") String resourceType);
 
@@ -48,7 +52,7 @@ public interface CloudResourceInstanceMapper {
 
     long findCountByCloudAccountId(String cloudAccountId);
 
-    void deleteByCloudAccountId(String cloudAccountId);
+    int deleteByCloudAccountId(String cloudAccountId);
 
     // 预删除
     int preDeleteByIdList(@Param("idList") List<Long> idList, @Param("deleteAt") Date deleteAt);
@@ -63,6 +67,20 @@ public interface CloudResourceInstanceMapper {
     int findAggregateAssetsCount(ResourceDTO resourceDTO);
 
     List<ResourceAggByInstanceTypeDTO> findAggregateAssetsList(ResourceDTO resourceDTO);
+
+    /**
+     * Find aggregate assets count by cloud account
+     * @param resourceDTO query parameters
+     * @return count of aggregated assets by cloud account
+     */
+    int findAggregateAssetsByCloudAccountCount(ResourceDTO resourceDTO);
+
+    /**
+     * Find aggregate assets list by cloud account
+     * @param resourceDTO query parameters
+     * @return list of aggregated assets by cloud account
+     */
+    List<ResourceAggByInstanceTypeDTO> findAggregateAssetsByCloudAccountList(ResourceDTO resourceDTO);
 
     /**
      * 根据条件查询最新的资源实例
@@ -107,4 +125,6 @@ public interface CloudResourceInstanceMapper {
     int deleteByResourceType(@Param("platform") String platform, @Param("resourceType") String resourceType);
 
     List<Long> findPreDeletedDataIdList(@Param("cloudAccountId") String cloudAccountId, @Param("delNum") int delNum);
+
+    int refreshUpdateTime(@Param("gmtModified") Date gmtModified, @Param("cloudAccountId") String cloudAccountId);
 }

@@ -1,4 +1,4 @@
-package kafka_open_to_all_public_3200001_209
+package kafka_open_to_all_public_3200001
 import rego.v1
 
 default risk := false

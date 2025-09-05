@@ -55,7 +55,8 @@ func ListEipAddressesResource(ctx context.Context, service schema.ServiceInterfa
 		log.CtxLogger(ctx).Warn("DescribeEnsEipAddresses error", zap.Error(err))
 		return err
 	}
-	for describeEnsEipAddressesResponse.PageSize*describeEnsEipAddressesResponse.PageNumber <= describeEnsEipAddressesResponse.TotalCount {
+
+	for {
 		for _, eipAddress := range describeEnsEipAddressesResponse.EipAddresses.EipAddress {
 			eipAddressDetail := EipAddressDetail{
 				EipAddress: eipAddress,
@@ -63,6 +64,11 @@ func ListEipAddressesResource(ctx context.Context, service schema.ServiceInterfa
 
 			res <- eipAddressDetail
 		}
+
+		if describeEnsEipAddressesResponse.PageSize*describeEnsEipAddressesResponse.PageNumber >= describeEnsEipAddressesResponse.TotalCount {
+			break
+		}
+
 		describeEnsEipAddressesRequest.PageNumber = requests.NewInteger(describeEnsEipAddressesResponse.PageNumber + 1)
 		describeEnsEipAddressesResponse, err = cli.DescribeEnsEipAddresses(describeEnsEipAddressesRequest)
 		if err != nil {

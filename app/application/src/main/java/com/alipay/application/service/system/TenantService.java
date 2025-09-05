@@ -21,6 +21,7 @@ import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.system.TenantVO;
 import com.alipay.application.share.vo.system.UserVO;
+import com.alipay.application.share.vo.user.InvitationCodeVO;
 import com.alipay.dao.dto.TenantDTO;
 
 import java.util.List;
@@ -37,6 +38,8 @@ public interface TenantService {
 
     ListVO<TenantVO> findList(TenantDTO tenantDTO);
 
+    List<TenantVO> findListV2(String userId);
+
     ListVO<TenantVO> findAll();
 
 
@@ -49,7 +52,7 @@ public interface TenantService {
     void joinUser(String userId, Long tenantId);
 
 
-    ApiResponse<String> removeUser(Long uid, Long tenantId);
+    ApiResponse<String> removeUser(String userId, Long tenantId);
 
 
     ApiResponse<String> changeTenant(String userId, Long tenantId);
@@ -60,5 +63,11 @@ public interface TenantService {
 
     void joinDefaultTenant(String userId);
 
-    List<Tenant>  joinUserByTenants(String userId, String tenantIds);
+    List<Tenant> joinUserByTenants(String userId, String tenantIds);
+
+    void changeUserTenantRole(String roleName, Long tenantId, String userId);
+
+    String createInviteCode(Long tenantId);
+
+    InvitationCodeVO checkInviteCode(String inviteCode);
 }

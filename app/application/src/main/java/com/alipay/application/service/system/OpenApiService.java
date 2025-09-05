@@ -24,13 +24,15 @@ import com.alipay.application.share.vo.account.CloudAccountVO;
 import com.alipay.application.share.vo.resource.ResourceInstanceVO;
 import com.alipay.application.share.vo.rule.RuleScanResultVO;
 import com.alipay.application.share.vo.rule.RuleVO;
-import com.alipay.common.constant.TenantConstants;
 import com.alipay.common.exception.BizException;
 import com.alipay.dao.dto.CloudAccountDTO;
 import com.alipay.dao.dto.IQueryResourceDTO;
 import com.alipay.dao.dto.QueryScanResultDTO;
 import com.alipay.dao.mapper.*;
-import com.alipay.dao.po.*;
+import com.alipay.dao.po.CloudAccountPO;
+import com.alipay.dao.po.CloudResourceInstancePO;
+import com.alipay.dao.po.RulePO;
+import com.alipay.dao.po.RuleScanResultPO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -86,24 +88,6 @@ public class OpenApiService {
         listVO.setData(list);
         listVO.setTotal(list.size());
         return new ApiResponse<>(listVO);
-    }
-
-
-    public void checkAccessKey(String accessKey, Long tenantId) {
-        OpenApiAuthPO openApiAuthPO = openApiAuthMapper.findByAccessKey(accessKey);
-        if (Objects.isNull(openApiAuthPO)) {
-            throw new RuntimeException("accessKey does not exist");
-        }
-
-        List<TenantPO> tenantPOS = tenantMapper.findListByUserId(openApiAuthPO.getUserId());
-        if (tenantId == null) {
-            boolean present = tenantPOS.stream().anyMatch(tenantPO -> tenantPO.getTenantName().equals(TenantConstants.GLOBAL_TENANT));
-            if (!present) {
-                throw new RuntimeException("This accessKey does not have permission to access this tenant data");
-            }
-        } else if (tenantPOS.stream().noneMatch(tenantPO -> tenantPO.getId().equals(tenantId))) {
-            throw new RuntimeException("This accessKey does not have permission to access this tenant data");
-        }
     }
 
     public ApiResponse<RuleVO> queryRuleDetail(String ruleCode) {

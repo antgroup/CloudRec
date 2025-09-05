@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["网络访问","数据保护"],"code":"ALI_CLOUD_RDS_202501081111_335475","context":null,"description":"RDS全网开放","level":"High","link":null,"linkedDataList":null,"name":"阿里云-RDS-实例端口对全网开放","platform":"ALI_CLOUD","resourceType":"RDS"}
+{"advice":null,"categoryList":["数据保护","网络访问"],"code":"ALI_CLOUD_RDS_202501081111_335475","context":null,"description":"RDS全网开放","level":"High","link":null,"linkedDataList":null,"name":"阿里云-RDS-实例端口对全网开放","platform":"ALI_CLOUD","resourceType":"RDS"}

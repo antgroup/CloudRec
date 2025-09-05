@@ -1,4 +1,4 @@
-package nlb_exposed_high_risk_port_to_pub_3800004_166
+package nlb_exposed_high_risk_port_to_pub_3800004
 import rego.v1
 
 default risk := false

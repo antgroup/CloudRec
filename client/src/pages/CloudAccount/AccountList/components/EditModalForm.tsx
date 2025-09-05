@@ -1,6 +1,6 @@
 import { saveCloudAccount } from '@/services/account/AccountController';
-import { ExportOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { DrawerForm, ProFormCascader, ProFormDependency, ProFormSelect, ProFormText } from '@ant-design/pro-components';
+import { ExportOutlined, InfoCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { DrawerForm, ProFormCascader, ProFormCheckbox, ProFormDependency, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import { useIntl, useModel } from '@umijs/max';
 import { Button, Cascader, Col, Divider, Empty, Form, Row, Spin, Tooltip, Typography, message } from 'antd';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
@@ -78,11 +78,12 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
   // 提交表单
   const onClickFishEditForm = async (): Promise<void> => {
     const formData = form.getFieldsValue() as CloudAccountFormData;
-    const { cloudAccountId, alias, tenantId, platform, resourceTypeList, site, owner, proxyConfig, credentials } = formData;
+    const { cloudAccountId,email, alias, tenantId, platform, resourceTypeList, site, owner, proxyConfig, credentials, enableInverseSelection } = formData;
     
     const postBody: {
       id?: number;
       cloudAccountId: string;
+      email?: string;
       alias: string;
       tenantId?: number;
       platform: string;
@@ -91,14 +92,17 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
       owner?: string;
       credentialsObj?: CloudAccountCredentials;
       proxyConfig?: string;
+      enableInverseSelection?: boolean;
     } = {
       cloudAccountId,
+      email,
       alias,
       tenantId: typeof tenantId === 'string' ? parseInt(tenantId, 10) : tenantId,
       platform,
       resourceTypeList,
       site,
-      owner
+      owner,
+      enableInverseSelection
     };
 
     const platformConfig = PLATFORM_CONFIGS[platform];
@@ -148,7 +152,8 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
         credentials: credentialMap || {},
         resourceTypeList: resourceTypeListForWeb || [],
         proxyConfig: proxyConfig || undefined,
-        platform: platform || ''
+        platform: platform || '',
+        enableInverseSelection: rest.enableInverseSelection || false
       };
 
       if (platform && PLATFORM_CONFIGS[platform]?.type === 'json' && credentialMap?.credentialsJson) {
@@ -164,7 +169,6 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
 
   const initForm = () => {
     form.resetFields();
-    setExtendEditorVisible(true);
   };
 
   const onCancel = () => {
@@ -228,7 +232,12 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
             }}
           />
         </Col>
-
+        <Col span={24}>
+          <ProFormText
+            name="email"
+            label={intl.formatMessage({ id: 'cloudAccount.extend.title.account.email' })}
+          />
+        </Col>
         <Col span={24}>
           <ProFormText
             name="alias"
@@ -243,7 +252,6 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
             name="tenantId"
             rules={FORM_VALIDATION_RULES.tenantId}
             options={tenantListAll}
-            disabled={accountInfo.id && !accountInfo?.changeTenantPermission}
           />
         </Col>
 
@@ -292,7 +300,7 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
                 />
               </Col>
 
-              <Col span={24}>
+              <Col span={24} style={{ marginBottom: '-12px' }}>
                 <ProFormCascader
                   label={intl.formatMessage({ id: 'cloudAccount.extend.title.cloud.services' })}
                   name="resourceTypeList"
@@ -308,10 +316,23 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
                       <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
                     ),
                   }}
+                  extra={
+                    <ProFormCheckbox
+                      name="enableInverseSelection"
+                      tooltip={intl.formatMessage({ id: 'cloudAccount.extend.tooltip.selection.mode' })}
+                      style={{ marginTop: '8px', marginBottom: 0 }}
+                      initialValue={false}
+                    >
+                      {intl.formatMessage({ id: 'cloudAccount.extend.title.cloud.services.inverse.selection' })}
+                      <Tooltip title={intl.formatMessage({ id: 'cloudAccount.extend.tooltip.selection.mode' })}>
+                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                      </Tooltip>
+                    </ProFormCheckbox>
+                  }
                 />
               </Col>
 
-              <Col span={24}>
+              <Col span={24} style={{ marginTop: '-16px' }}>
                 <ProFormText
                   name="site"
                   label={intl.formatMessage({ id: 'cloudAccount.extend.title.cloud.site' })}

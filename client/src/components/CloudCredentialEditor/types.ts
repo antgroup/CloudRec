@@ -36,6 +36,7 @@ export interface CloudAccountCredentials {
 
 export interface CloudAccountFormData {
   cloudAccountId: string;
+  email?: string;
   alias: string;
   tenantId: string;
   platform: string;
@@ -44,4 +45,6 @@ export interface CloudAccountFormData {
   proxyConfig?: string;
   site?: string;
   owner?: string;
+  // Support for inverse selection of cloud services
+  enableInverseSelection?: boolean;
 }

@@ -1,1 +1,16 @@
-{"advice":"","categoryList":["网络访问","数据保护"],"code":"ALI_CLOUD_OSS_202501081111_1077246","context":"Bucket {$.Name} ACL 设置为 \"public-read-write\"，允许公共读写","description":"bucket的权限设为公有读写(public-read-write)","level":"High","link":"","linkedDataList":null,"name":"阿里云-OSS-Bucket的权限设为公有读写(public-read-write)","platform":"ALI_CLOUD","resourceType":"OSS"}
+{
+    "advice": "",
+    "categoryList": [
+        "数据保护",
+        "网络访问"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_1077246",
+    "context": "Bucket {$.Name} ACL 设置为 \"public-read-write\"，允许公共读写",
+    "description": "bucket的权限设为公有读写(public-read-write)",
+    "level": "High",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-OSS-Bucket的权限设为公有读写(public-read-write)",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+}

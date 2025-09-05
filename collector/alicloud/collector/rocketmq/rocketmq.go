@@ -16,10 +16,10 @@
 package rocketmq
 
 import (
+	"context"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"context"
 	"go.uber.org/zap"
 
 	rocketmq20220801 "github.com/alibabacloud-go/rocketmq-20220801/client"

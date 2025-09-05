@@ -1,4 +1,4 @@
-package es_open_to_pub_2200001_188
+package es_open_to_pub_2200001
 import rego.v1
 
 default risk := false

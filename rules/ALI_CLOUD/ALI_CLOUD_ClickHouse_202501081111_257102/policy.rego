@@ -1,4 +1,4 @@
-package clickhouse_open_to_pub_3800007_186
+package clickhouse_open_to_pub_3800007
 import rego.v1
 
 default risk := false

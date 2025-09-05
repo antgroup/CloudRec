@@ -16,12 +16,12 @@
 package maxcompute
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	maxcompute20220104 "github.com/alibabacloud-go/maxcompute-20220104/client"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 
 	"github.com/alibabacloud-go/maxcompute-20220104/client"

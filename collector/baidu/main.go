@@ -16,9 +16,9 @@
 package main
 
 import (
+	platfrom "github.com/cloudrec/baidu/platform"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	platfrom "github.com/cloudrec/baidu/platform"
 )
 
 func main() {

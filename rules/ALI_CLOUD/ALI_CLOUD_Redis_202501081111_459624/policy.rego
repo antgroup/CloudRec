@@ -1,4 +1,4 @@
-package kvstore_network_pub_proxy_2300004_168
+package kvstore_network_pub_proxy_2300004
 
 import rego.v1
 

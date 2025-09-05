@@ -1,4 +1,4 @@
-package adb_postgreSQL_open_to_pub_2200005_169
+package adb_postgreSQL_open_to_pub_2200005
 
 import rego.v1
 

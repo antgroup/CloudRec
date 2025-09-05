@@ -33,4 +33,6 @@ public class TenantUserPO {
     private Long tenantId;
 
     private Long userId;
+
+    private String roleName;
 }

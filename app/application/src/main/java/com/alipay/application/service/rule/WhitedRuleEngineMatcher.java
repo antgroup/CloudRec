@@ -18,9 +18,12 @@ package com.alipay.application.service.rule;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alipay.application.service.risk.engine.ConditionItem;
+import com.alipay.application.service.risk.engine.Fact;
+import com.alipay.application.service.risk.engine.Operator;
+import com.alipay.application.service.risk.engine.handler.OperatorHandlerComplete;
 import com.alipay.application.share.request.rule.WhitedRuleConfigDTO;
 import com.alipay.dao.po.RuleScanResultPO;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -37,49 +40,85 @@ import java.util.Map;
 public class WhitedRuleEngineMatcher {
 
 
+    /**
+     * Match rule using unified rule engine architecture
+     * @param rule the rule configuration to match
+     * @param risk the risk data map
+     * @return true if the rule matches
+     */
     public boolean matchRule(WhitedRuleConfigDTO rule, Map<String,String> risk) {
+        if (rule == null || risk == null) {
+            return false;
+        }
+        
         String key = rule.getKey();
-        String operator = rule.getOperator().name();
-        String value = rule.getValue().toString().trim();
+        if (key == null) {
+            return false;
+        }
+        
+        Operator operator = convertToOperator(rule.getOperator());
+        Object value = rule.getValue();
+        
+        // Handle IN and NOT_IN operators - convert comma-separated string to List
+        if ((operator == Operator.IN || operator == Operator.NOT_IN) && value instanceof String) {
+            String stringValue = value.toString().trim();
+            if (!stringValue.isEmpty()) {
+                value = List.of(stringValue.split(","));
+            }
+        } else if (value != null) {
+            value = value.toString().trim();
+        }
 
         if (!risk.containsKey(key)) {
             return false;
         }
 
+        String riskValue = risk.get(key);
+        if (riskValue != null) {
+            riskValue = riskValue.trim();
+        }
 
-        String riskValue = risk.get(key).trim();
+        // Create condition item and fact for unified rule engine
+        ConditionItem conditionItem = new ConditionItem(operator, key, value);
+        Fact fact = new Fact(key, riskValue);
+        List<Fact> facts = List.of(fact);
 
-        switch (operator) {
-            case "EQ":
-                return riskValue.equals(value);
-            case "NE":
-                return !riskValue.equals(value);
-            case "LIKE":
-                return riskValue.contains(value);
-            case "NOT_LIKE":
-                return !riskValue.contains(value);
-            case "IN":
-                return isIn(riskValue, value);
-            case "NOT_IN":
-                return !isIn(riskValue, value);
+        // Use unified rule engine handler
+        return OperatorHandlerComplete.handle(conditionItem, facts);
+    }
+
+    /**
+     * Convert WhitedRuleOperatorEnum to Operator
+     * @param whitedOperator the whited rule operator
+     * @return corresponding Operator enum
+     */
+    private Operator convertToOperator(com.alipay.common.enums.WhitedRuleOperatorEnum whitedOperator) {
+        switch (whitedOperator) {
+            case EQ:
+                return Operator.EQ;
+            case NE:
+                return Operator.NE;
+            case LIKE:
+                return Operator.LIKE;
+            case NOT_LIKE:
+                return Operator.NOT_LIKE;
+            case IN:
+                return Operator.IN;
+            case NOT_IN:
+                return Operator.NOT_IN;
             default:
-                return false;
+                throw new RuntimeException("Unsupported operator: " + whitedOperator);
         }
     }
 
-    private boolean isIn(String riskValue, String values) {
-        String[] valueArray = values.split(",");
-        for (String value : valueArray) {
-            if (riskValue.trim().equals(value.trim())) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
     public boolean matchWhitelistRule(List<WhitedRuleConfigDTO> ruleConfiglist, String condition,  RuleScanResultPO ruleScanResultPO) {
         Map<String, String> risk = convertObjectToMap(ruleScanResultPO);
-        if(CollectionUtils.isEmpty(ruleConfiglist)){
+        if(ruleConfiglist == null){
+            return false;
+        }
+        if(ruleConfiglist.isEmpty()){
             return true;
         }
         Map<Integer, Boolean> resultsMap = new HashMap<>();
@@ -93,7 +132,6 @@ public class WhitedRuleEngineMatcher {
     private boolean evaluateCondition(String condition, Map<Integer, Boolean> resultsMap) {
         return ExpressionEvaluator.evalExpression(condition, resultsMap);
     }
-
 
     public Map<String, String> convertObjectToMap(Object obj) {
         if (obj == null) {

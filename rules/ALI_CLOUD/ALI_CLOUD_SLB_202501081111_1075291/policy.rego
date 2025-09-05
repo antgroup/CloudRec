@@ -1,4 +1,4 @@
-package slb_acl_misconfiguration_2100002_184
+package slb_acl_misconfiguration_2100002
 
 import rego.v1
 
@@ -6,7 +6,7 @@ default risk := false
 
 risk if {
 	count(opened_ports) > 0
-	address_type == "internet"
+	is_internet
 }
 
 # basic info
@@ -18,7 +18,12 @@ address := input.LoadBalancerAttribute.Address
 
 standard_ports := {80, 443}
 
-address_type := input.LoadBalancer.AddressType
+is_internet if {
+	input.LoadBalancer.AddressType == "internet"
+}
+is_internet if {
+	input.EipAddress != []
+}
 
 # AclStatus set to 'off'
 opened_ports contains {port: reason} if {

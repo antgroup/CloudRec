@@ -17,6 +17,7 @@
 package com.alipay.application.service.rule.exposed;
 
 
+import com.alipay.application.service.common.utils.DbCacheUtil;
 import com.alipay.application.service.resource.exposed.QueryResourceService;
 import com.alipay.application.service.rule.domain.RuleAgg;
 import com.alipay.application.service.rule.domain.repo.RuleRepository;
@@ -26,6 +27,7 @@ import com.alipay.application.service.system.domain.enums.Status;
 import com.alipay.common.utils.JsonMaskerUtils;
 import com.alipay.dao.mapper.RuleMapper;
 import com.alipay.dao.mapper.RuleTypeMapper;
+import com.alipay.dao.po.DbCachePO;
 import com.alipay.dao.po.RulePO;
 import com.alipay.dao.po.RuleTypePO;
 import jakarta.annotation.Resource;
@@ -61,6 +63,12 @@ public class InitRuleServiceImpl implements InitRuleService {
     @Resource
     private QueryResourceService queryResourceService;
 
+    @Resource
+    private DbCacheUtil dbCacheUtil;
+
+    private static final String cacheKey = "rule::new::count";
+
+
     @Override
     public void initRuleType() {
         for (RuleType ruleType : RuleType.values()) {
@@ -80,6 +88,9 @@ public class InitRuleServiceImpl implements InitRuleService {
         log.info("init rule form github, ruleAggs size: {}", ruleAggs.size());
 
         save(ruleAggs, coverage);
+
+        dbCacheUtil.clear(cacheKey);
+        dbCacheUtil.put(cacheKey, 0);
     }
 
     @Override
@@ -128,6 +139,25 @@ public class InitRuleServiceImpl implements InitRuleService {
             }
         }
 
-         return ruleExporter.generateRulesFile(rules);
+        return ruleExporter.generateRulesFile(rules);
+    }
+
+    /**
+     * Check if new rules exist
+     */
+    @Override
+    public int checkExistNewRule() {
+        DbCachePO dbCachePO = dbCacheUtil.get(cacheKey);
+        if (dbCachePO != null) {
+            return Integer.parseInt(dbCachePO.getValue());
+        }
+
+        int newRuleCount = ruleRepository.existNewRule();
+        if (newRuleCount == 0) {
+            return 0;
+        }
+
+        dbCacheUtil.put(cacheKey, newRuleCount);
+        return newRuleCount;
     }
 }

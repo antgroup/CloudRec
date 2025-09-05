@@ -149,6 +149,7 @@ func describeEipAddress(ctx context.Context, svc schema.ServiceInterface, id *st
 	req.PageSize = requests.NewInteger(50)
 	req.PageNumber = requests.NewInteger(1)
 	req.AssociatedInstanceId = *id
+	req.AssociatedInstanceType = "SlbInstance"
 	resp, err := svc.(*collector.Services).VPC.DescribeEipAddresses(req)
 	if err != nil {
 		log.CtxLogger(ctx).Error("DescribeEipAddresses error", zap.Error(err))

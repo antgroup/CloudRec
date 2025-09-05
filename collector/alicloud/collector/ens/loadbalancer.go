@@ -16,13 +16,13 @@
 package ens
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/cloudrec/alicloud/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -74,13 +74,18 @@ func ListLoadBalancerResource(ctx context.Context, service schema.ServiceInterfa
 		log.CtxLogger(ctx).Warn("DescribeLoadBalancers error", zap.Error(err))
 		return err
 	}
-	for describeLoadBalancerResponse.PageSize*describeLoadBalancerResponse.PageNumber <= describeLoadBalancerResponse.TotalCount {
+	for {
 		for _, lb := range describeLoadBalancerResponse.LoadBalancers.LoadBalancer {
 			loadBalancerDetail := LoadBalancerDetail{
 				LoadBalancer: describeLoadBalancerAttribute(ctx, cli, lb.LoadBalancerId),
 			}
 			res <- loadBalancerDetail
 		}
+
+		if describeLoadBalancerResponse.PageSize*describeLoadBalancerResponse.PageNumber >= describeLoadBalancerResponse.TotalCount {
+			break
+		}
+
 		describeLoadBalancerRequest.PageNumber = requests.NewInteger(describeLoadBalancerResponse.PageNumber + 1)
 		describeLoadBalancerResponse, err = cli.DescribeLoadBalancers(describeLoadBalancerRequest)
 		if err != nil {

@@ -1,9 +1,9 @@
-package cloudrec_8200001_153
+package cloudrec_8200001
 import rego.v1
 
 default risk := false
 risk if {
-    input.ExistAccessKey == true
+    input.ExistActiveAccessKey == true
     not allow_covered_by_deny
     count(allow_sts_with_oss) > 0
 }
@@ -18,7 +18,7 @@ messages contains message if {
     risk == true
     message := {
         "Description": "账号下AK列表",
-        "AKs": input.ActiveAccessKeys[_].ActiveAccessKey.AccessKeyId
+        "AKs": input.AccessKeys[_].AccessKey.AccessKeyId
     }
 }
 

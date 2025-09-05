@@ -18,6 +18,7 @@ package com.alipay.dao.mapper;
 
 import com.alipay.dao.dto.TenantDTO;
 import com.alipay.dao.po.TenantPO;
+import com.alipay.dao.po.UserPO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -58,4 +59,8 @@ public interface TenantMapper {
      * @return 记录数
      */
     int findRecord(@Param("uid") Long uid, @Param("tenantId") Long tenantId);
+
+    List<TenantPO> findAll();
+
+    List<UserPO> findMemberList(TenantDTO tenantDTO);
 }

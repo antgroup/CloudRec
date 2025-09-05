@@ -1,258 +1,301 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.alipay.dao.mapper.WhitedRuleConfigMapper">
-  <resultMap id="BaseResultMap" type="com.alipay.dao.po.WhitedRuleConfigPO">
-    <id column="id" jdbcType="BIGINT" property="id" />
-    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
-    <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
-    <result column="rule_type" jdbcType="VARCHAR" property="ruleType" />
-    <result column="rule_name" jdbcType="VARCHAR" property="ruleName" />
-    <result column="rule_desc" jdbcType="VARCHAR" property="ruleDesc" />
-    <result column="rule_config" jdbcType="VARCHAR" property="ruleConfig" />
-    <result column="condition" jdbcType="VARCHAR" property="condition" />
-    <result column="rule_config_json" jdbcType="VARCHAR" property="ruleConfigJson" />
-    <result column="rego_content" jdbcType="VARCHAR" property="regoContent" />
-    <result column="tenant_id" jdbcType="BIGINT" property="tenantId" />
-    <result column="creator" jdbcType="VARCHAR" property="creator" />
-    <result column="lock_holder" jdbcType="VARCHAR" property="lockHolder" />
-    <result column="enable" jdbcType="TINYINT" property="enable" />
-    <result column="risk_rule_code" jdbcType="VARCHAR" property="riskRuleCode" />
-  </resultMap>
-  <sql id="Base_Column_List">
-    id, gmt_create, gmt_modified, rule_type, rule_name, rule_desc, rule_config,  `condition`,
+    <resultMap id="BaseResultMap" type="com.alipay.dao.po.WhitedRuleConfigPO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="rule_type" jdbcType="VARCHAR" property="ruleType"/>
+        <result column="rule_name" jdbcType="VARCHAR" property="ruleName"/>
+        <result column="rule_desc" jdbcType="VARCHAR" property="ruleDesc"/>
+        <result column="rule_config" jdbcType="VARCHAR" property="ruleConfig"/>
+        <result column="condition" jdbcType="VARCHAR" property="condition"/>
+        <result column="rule_config_json" jdbcType="VARCHAR" property="ruleConfigJson"/>
+        <result column="rego_content" jdbcType="VARCHAR" property="regoContent"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="lock_holder" jdbcType="VARCHAR" property="lockHolder"/>
+        <result column="enable" jdbcType="TINYINT" property="enable"/>
+        <result column="risk_rule_code" jdbcType="VARCHAR" property="riskRuleCode"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id
+        , gmt_create, gmt_modified, rule_type, rule_name, rule_desc, rule_config,  `condition`,
     rule_config_json, rego_content, tenant_id, creator, lock_holder, enable, risk_rule_code
-  </sql>
+    </sql>
 
-  <sql id="getListWhere">
-    <where>
-      1 = 1
-      <if test="ruleType != null">
-        AND rule_type = #{ruleType,jdbcType=VARCHAR}
-      </if>
-      <if test="ruleName != null">
-        AND rule_name like CONCAT('%',#{ruleName,jdbcType=VARCHAR},'%')
-      </if>
-      <if test="creator != null">
-        AND creator = #{creator,jdbcType=VARCHAR}
-      </if>
-      <if test="enable != null">
-        AND enable = #{enable,jdbcType=TINYINT}
-      </if>
-<!--      <if test="tenantId != null">-->
-<!--        AND tenant_id = #{tenantId,jdbcType=VARCHAR}-->
-<!--      </if>-->
-    </where>
-  </sql>
+    <sql id="getListWhere">
+        <where>
+            1 = 1
+            <if test="ruleType != null">
+                AND rule_type = #{ruleType,jdbcType=VARCHAR}
+            </if>
+            <if test="ruleName != null">
+                AND rule_name like CONCAT('%',#{ruleName,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="creator != null">
+                AND creator = #{creator,jdbcType=VARCHAR}
+            </if>
+            <if test="enable != null">
+                AND enable = #{enable,jdbcType=TINYINT}
+            </if>
+            <choose>
+                <when test="ruleCode != null and ruleCode == 'GLOBAL_CONFIG'">
+                    AND risk_rule_code IS NULL
+                </when>
+                <when test="ruleCode != null and ruleCode != ''">
+                    AND risk_rule_code = #{ruleCode,jdbcType=VARCHAR}
+                </when>
+            </choose>
+            <if test="tenantIdList != null and tenantIdList.size() > 0">
+                AND tenant_id IN
+                <foreach collection="tenantIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
 
-  <sql id="getListLimit">
-    <if test="offset != null and size != null">
-      LIMIT
-      #{offset},
-      #{size}
-    </if>
-  </sql>
+    <sql id="getListLimit">
+        <if test="offset != null and size != null">
+            LIMIT
+            #{offset},
+            #{size}
+        </if>
+    </sql>
 
-  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-    select 
-    <include refid="Base_Column_List" />
-    from whited_rule_config
-    where id = #{id,jdbcType=BIGINT}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-    delete from whited_rule_config
-    where id = #{id,jdbcType=BIGINT}
-  </delete>
-  <insert id="insert" parameterType="com.alipay.dao.po.WhitedRuleConfigPO">
-    insert into whited_rule_config (id, gmt_create, gmt_modified, 
-      rule_type, rule_name, rule_desc, 
-      rule_config, `condition`, rule_config_json,
-      rego_content, tenant_id, creator, 
-      lock_holder, enable, risk_rule_code
-      )
-    values (#{id,jdbcType=BIGINT}, #{gmtCreate,jdbcType=TIMESTAMP}, #{gmtModified,jdbcType=TIMESTAMP}, 
-      #{ruleType,jdbcType=VARCHAR}, #{ruleName,jdbcType=VARCHAR}, #{ruleDesc,jdbcType=VARCHAR}, 
-      #{ruleConfig,jdbcType=VARCHAR}, #{condition,jdbcType=VARCHAR}, #{ruleConfigJson,jdbcType=VARCHAR}, 
-      #{regoContent,jdbcType=VARCHAR}, #{tenantId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, 
-      #{lockHolder,jdbcType=VARCHAR}, #{enable,jdbcType=TINYINT}, #{riskRuleCode,jdbcType=VARCHAR}
-      )
-  </insert>
-  <insert id="insertSelective" parameterType="com.alipay.dao.po.WhitedRuleConfigPO">
-    insert into whited_rule_config
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        id,
-      </if>
-      <if test="gmtCreate != null">
-        gmt_create,
-      </if>
-      <if test="gmtModified != null">
-        gmt_modified,
-      </if>
-      <if test="ruleType != null">
-        rule_type,
-      </if>
-      <if test="ruleName != null">
-        rule_name,
-      </if>
-      <if test="ruleDesc != null">
-        rule_desc,
-      </if>
-      <if test="ruleConfig != null">
-        rule_config,
-      </if>
-      <if test="condition != null">
-        `condition`,
-      </if>
-      <if test="ruleConfigJson != null">
-        rule_config_json,
-      </if>
-      <if test="regoContent != null">
-        rego_content,
-      </if>
-      <if test="tenantId != null">
-        tenant_id,
-      </if>
-      <if test="creator != null">
-        creator,
-      </if>
-      <if test="lockHolder != null">
-        lock_holder,
-      </if>
-      <if test="enable != null">
-        enable,
-      </if>
-      <if test="riskRuleCode != null">
-        risk_rule_code,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=BIGINT},
-      </if>
-      <if test="gmtCreate != null">
-        #{gmtCreate,jdbcType=TIMESTAMP},
-      </if>
-      <if test="gmtModified != null">
-        #{gmtModified,jdbcType=TIMESTAMP},
-      </if>
-      <if test="ruleType != null">
-        #{ruleType,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleName != null">
-        #{ruleName,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleDesc != null">
-        #{ruleDesc,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleConfig != null">
-        #{ruleConfig,jdbcType=VARCHAR},
-      </if>
-      <if test="condition != null">
-        #{condition,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleConfigJson != null">
-        #{ruleConfigJson,jdbcType=VARCHAR},
-      </if>
-      <if test="regoContent != null">
-        #{regoContent,jdbcType=VARCHAR},
-      </if>
-      <if test="tenantId != null">
-        #{tenantId,jdbcType=BIGINT},
-      </if>
-      <if test="creator != null">
-        #{creator,jdbcType=VARCHAR},
-      </if>
-      <if test="lockHolder != null">
-        #{lockHolder,jdbcType=VARCHAR},
-      </if>
-      <if test="enable != null">
-        #{enable,jdbcType=TINYINT},
-      </if>
-      <if test="riskRuleCode != null">
-        #{riskRuleCode,jdbcType=VARCHAR},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.alipay.dao.po.WhitedRuleConfigPO">
-    update whited_rule_config
-    <set>
-      <if test="gmtCreate != null">
-        gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
-      </if>
-      <if test="gmtModified != null">
-        gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
-      </if>
-      <if test="ruleType != null">
-        rule_type = #{ruleType,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleName != null">
-        rule_name = #{ruleName,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleDesc != null">
-        rule_desc = #{ruleDesc,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleConfig != null">
-        rule_config = #{ruleConfig,jdbcType=VARCHAR},
-      </if>
-      <if test="condition != null">
-        `condition` = #{condition,jdbcType=VARCHAR},
-      </if>
-      <if test="ruleConfigJson != null">
-        rule_config_json = #{ruleConfigJson,jdbcType=VARCHAR},
-      </if>
-      <if test="regoContent != null">
-        rego_content = #{regoContent,jdbcType=VARCHAR},
-      </if>
-      <if test="tenantId != null">
-        tenant_id = #{tenantId,jdbcType=BIGINT},
-      </if>
-      <if test="creator != null">
-        creator = #{creator,jdbcType=VARCHAR},
-      </if>
-      <if test="lockHolder != null">
-        lock_holder = #{lockHolder,jdbcType=VARCHAR},
-      </if>
-      <if test="enable != null">
-        enable = #{enable,jdbcType=TINYINT},
-      </if>
-      <if test="riskRuleCode != null">
-        risk_rule_code = #{riskRuleCode,jdbcType=VARCHAR},
-      </if>
-    </set>
-    where id = #{id,jdbcType=BIGINT}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.alipay.dao.po.WhitedRuleConfigPO">
-    update whited_rule_config
-    set gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
-      gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
-      rule_type = #{ruleType,jdbcType=VARCHAR},
-      rule_name = #{ruleName,jdbcType=VARCHAR},
-      rule_desc = #{ruleDesc,jdbcType=VARCHAR},
-      rule_config = #{ruleConfig,jdbcType=VARCHAR},
-      `condition` = #{condition,jdbcType=VARCHAR},
-      rule_config_json = #{ruleConfigJson,jdbcType=VARCHAR},
-      rego_content = #{regoContent,jdbcType=VARCHAR},
-      tenant_id = #{tenantId,jdbcType=BIGINT},
-      creator = #{creator,jdbcType=VARCHAR},
-      lock_holder = #{lockHolder,jdbcType=VARCHAR},
-      enable = #{enable,jdbcType=TINYINT},
-      risk_rule_code = #{riskRuleCode,jdbcType=VARCHAR}
-    where id = #{id,jdbcType=BIGINT}
-  </update>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from whited_rule_config
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete
+        from whited_rule_config
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com.alipay.dao.po.WhitedRuleConfigPO">
+        insert into whited_rule_config (id, gmt_create, gmt_modified,
+                                        rule_type, rule_name, rule_desc,
+                                        rule_config, `condition`, rule_config_json,
+                                        rego_content, tenant_id, creator,
+                                        lock_holder, enable, risk_rule_code)
+        values (#{id,jdbcType=BIGINT}, #{gmtCreate,jdbcType=TIMESTAMP}, #{gmtModified,jdbcType=TIMESTAMP},
+                #{ruleType,jdbcType=VARCHAR}, #{ruleName,jdbcType=VARCHAR}, #{ruleDesc,jdbcType=VARCHAR},
+                #{ruleConfig,jdbcType=VARCHAR}, #{condition,jdbcType=VARCHAR}, #{ruleConfigJson,jdbcType=VARCHAR},
+                #{regoContent,jdbcType=VARCHAR}, #{tenantId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR},
+                #{lockHolder,jdbcType=VARCHAR}, #{enable,jdbcType=TINYINT}, #{riskRuleCode,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertSelective" parameterType="com.alipay.dao.po.WhitedRuleConfigPO" keyProperty="id"
+            useGeneratedKeys="true">
+        insert into whited_rule_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="gmtCreate != null">
+                gmt_create,
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified,
+            </if>
+            <if test="ruleType != null">
+                rule_type,
+            </if>
+            <if test="ruleName != null">
+                rule_name,
+            </if>
+            <if test="ruleDesc != null">
+                rule_desc,
+            </if>
+            <if test="ruleConfig != null">
+                rule_config,
+            </if>
+            <if test="condition != null">
+                `condition`,
+            </if>
+            <if test="ruleConfigJson != null">
+                rule_config_json,
+            </if>
+            <if test="regoContent != null">
+                rego_content,
+            </if>
+            <if test="tenantId != null">
+                tenant_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="lockHolder != null">
+                lock_holder,
+            </if>
+            <if test="enable != null">
+                enable,
+            </if>
+            <if test="riskRuleCode != null">
+                risk_rule_code,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="gmtCreate != null">
+                #{gmtCreate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="gmtModified != null">
+                #{gmtModified,jdbcType=TIMESTAMP},
+            </if>
+            <if test="ruleType != null">
+                #{ruleType,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleName != null">
+                #{ruleName,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleDesc != null">
+                #{ruleDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleConfig != null">
+                #{ruleConfig,jdbcType=VARCHAR},
+            </if>
+            <if test="condition != null">
+                #{condition,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleConfigJson != null">
+                #{ruleConfigJson,jdbcType=VARCHAR},
+            </if>
+            <if test="regoContent != null">
+                #{regoContent,jdbcType=VARCHAR},
+            </if>
+            <if test="tenantId != null">
+                #{tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="lockHolder != null">
+                #{lockHolder,jdbcType=VARCHAR},
+            </if>
+            <if test="enable != null">
+                #{enable,jdbcType=TINYINT},
+            </if>
+            <if test="riskRuleCode != null">
+                #{riskRuleCode,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.alipay.dao.po.WhitedRuleConfigPO">
+        update whited_rule_config
+        <set>
+            <if test="gmtCreate != null">
+                gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
+            </if>
+            <if test="ruleType != null">
+                rule_type = #{ruleType,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleName != null">
+                rule_name = #{ruleName,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleDesc != null">
+                rule_desc = #{ruleDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleConfig != null">
+                rule_config = #{ruleConfig,jdbcType=VARCHAR},
+            </if>
+            <if test="condition != null">
+                `condition` = #{condition,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleConfigJson != null">
+                rule_config_json = #{ruleConfigJson,jdbcType=VARCHAR},
+            </if>
+            <if test="regoContent != null">
+                rego_content = #{regoContent,jdbcType=VARCHAR},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="lockHolder != null">
+                lock_holder = #{lockHolder,jdbcType=VARCHAR},
+            </if>
+            <if test="enable != null">
+                enable = #{enable,jdbcType=TINYINT},
+            </if>
+            <if test="riskRuleCode != null">
+                risk_rule_code = #{riskRuleCode,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.alipay.dao.po.WhitedRuleConfigPO">
+        update whited_rule_config
+        set gmt_create       = #{gmtCreate,jdbcType=TIMESTAMP},
+            gmt_modified     = #{gmtModified,jdbcType=TIMESTAMP},
+            rule_type        = #{ruleType,jdbcType=VARCHAR},
+            rule_name        = #{ruleName,jdbcType=VARCHAR},
+            rule_desc        = #{ruleDesc,jdbcType=VARCHAR},
+            rule_config      = #{ruleConfig,jdbcType=VARCHAR},
+            `condition`      = #{condition,jdbcType=VARCHAR},
+            rule_config_json = #{ruleConfigJson,jdbcType=VARCHAR},
+            rego_content     = #{regoContent,jdbcType=VARCHAR},
+            tenant_id        = #{tenantId,jdbcType=BIGINT},
+            creator          = #{creator,jdbcType=VARCHAR},
+            lock_holder      = #{lockHolder,jdbcType=VARCHAR},
+            enable           = #{enable,jdbcType=TINYINT},
+            risk_rule_code   = #{riskRuleCode,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
 
-  <select id="count" resultType="java.lang.Integer">
-    SELECT COUNT(*)
-    FROM whited_rule_config
-    <include refid="getListWhere"/>
-  </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM whited_rule_config
+        <include refid="getListWhere"/>
+    </select>
 
-  <select id="list" resultMap="BaseResultMap">
-    select
-    <include refid="Base_Column_List" />
-    from whited_rule_config
-    <include refid="getListWhere"/>
-    ORDER BY id DESC
-    <include refid="getListLimit"></include>
-  </select>
+    <select id="list" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from whited_rule_config
+        <include refid="getListWhere"/>
+        ORDER BY id DESC
+        <include refid="getListLimit"></include>
+    </select>
+    <select id="findNullRuleCode" resultType="com.alipay.dao.dto.GroupByRuleCodeDTO">
+        SELECT COUNT(*) AS count
+        FROM whited_rule_config
+        WHERE risk_rule_code IS NULL
+        <if test="tenantIdList != null and tenantIdList.size() > 0">
+            AND tenant_id IN
+            <foreach collection="tenantIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY risk_rule_code
+    </select>
+    <select id="findListGroupByRuleCode" resultType="com.alipay.dao.dto.GroupByRuleCodeDTO">
+        SELECT COUNT(t1.id) AS count,t1.risk_rule_code AS ruleCode,t2.rule_name AS ruleName
+        FROM whited_rule_config t1 INNER JOIN rule t2 ON t1.risk_rule_code = t2.rule_code
+        WHERE t1.risk_rule_code IS NOT NULL
+        <if test="ruleCodeList != null and ruleCodeList.size() > 0">
+            AND t1.risk_rule_code IN
+            <foreach collection="ruleCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="tenantIdList != null and tenantIdList.size() > 0">
+            AND tenant_id IN
+            <foreach collection="tenantIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY t1.risk_rule_code
+        ORDER BY count DESC
+    </select>
 
 </mapper>

@@ -28,20 +28,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class JsonRuleEngine {
 
-    public static List<JsonRule> parse(String jsonString) {
-        try {
-            List<JSONObject> jsonObjects = new ArrayList<>();
-            JSONObject object = JSON.parseObject(jsonString);
-            if (object != null) {
-                jsonObjects.add(object);
-            }
-            return jsonObjects.stream().map(JsonRuleEngine::parseOne).filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("parse jsonString error", e);
-        }
-        return new ArrayList<>();
-    }
 
     public static JsonRule parseOne(String jsonString) {
         try {

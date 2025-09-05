@@ -26,14 +26,18 @@ import com.alipay.application.service.system.utils.TokenUtil;
 import com.alipay.application.share.request.admin.QueryUserListRequest;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.system.UserVO;
+import com.alipay.common.exception.BizException;
 import com.alipay.common.exception.UserNoLoginException;
 import com.alipay.common.exception.UserNotFindException;
 import com.alipay.dao.dto.UserDTO;
+import com.alipay.dao.mapper.InviteCodeMapper;
 import com.alipay.dao.mapper.UserMapper;
+import com.alipay.dao.po.InviteCodePO;
 import com.alipay.dao.po.UserPO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -64,6 +68,9 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private TenantRepository tenantRepository;
+
+    @Resource
+    private InviteCodeMapper inviteCodeMapper;
 
     @Override
     public void changeUserStatus(Long id, String status) {
@@ -97,9 +104,9 @@ public class UserServiceImpl implements UserService {
         List<UserVO> collect = list.stream().map(UserVO::toVo).collect(Collectors.toList());
         collect.forEach(t -> {
             List<Tenant> tenantList = tenantRepository.findList(t.getUserId());
-            if(!CollectionUtils.isEmpty(tenantList)){
+            if (!CollectionUtils.isEmpty(tenantList)) {
                 List<Long> tenantIds = tenantList.stream().map(Tenant::getId).toList();
-                t.setTenantIds(StringUtils.join(tenantIds,","));
+                t.setTenantIds(StringUtils.join(tenantIds, ","));
             }
         });
 
@@ -147,7 +154,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(String userId, String password) {
+    public String login(String userId, String password, String code) {
         User user = userRepository.find(userId, password);
         if (user == null) {
             throw new UserNotFindException("Wrong username or password");
@@ -163,6 +170,21 @@ public class UserServiceImpl implements UserService {
                 tenantService.joinDefaultTenant(userId);
             } catch (Exception e) {
                 log.error("Join default tenant failed", e);
+            }
+        }
+
+        if (Strings.isNotBlank(code)) {
+            try {
+                InviteCodePO inviteCodePO = inviteCodeMapper.findOne(code);
+                tenantService.joinUser(userId, inviteCodePO.getTenantId());
+                // switch tenant
+                userRepository.switchTenant(userId, inviteCodePO.getTenantId());
+
+                // update invite code
+                inviteCodePO.setUserId(userId);
+                inviteCodeMapper.updateByPrimaryKeySelective(inviteCodePO);
+            } catch (Exception e) {
+                log.error("Join invite tenant failed", e);
             }
         }
 
@@ -189,7 +211,7 @@ public class UserServiceImpl implements UserService {
         // auto join default tenant
         List<Tenant> tenants = tenantService.joinUserByTenants(userId, tenantIds);
         // update user select tenant
-        if(!CollectionUtils.isEmpty(tenants)){
+        if (!CollectionUtils.isEmpty(tenants)) {
             user.setTenantId(tenants.get(0).getId());
             userRepository.save(user);
         }
@@ -212,7 +234,7 @@ public class UserServiceImpl implements UserService {
         // check tenantId
         if (StringUtils.isNotBlank(tenantIds)) {
             List<Tenant> tenants = tenantService.joinUserByTenants(userId, tenantIds);
-            if(!CollectionUtils.isEmpty(tenants)){
+            if (!CollectionUtils.isEmpty(tenants)) {
                 user.setTenantId(tenants.get(0).getId());
             }
         }
@@ -221,7 +243,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(String userId) {
-        if (userId.equals(User.DEFAULT_USER_ID)){
+        if (userId.equals(User.DEFAULT_USER_ID)) {
             throw new RuntimeException("The default user cannot be deleted");
         }
         User user = userRepository.find(userId);
@@ -246,6 +268,42 @@ public class UserServiceImpl implements UserService {
         user.setPassword(newPassword);
 
         userRepository.save(user);
+    }
+
+    @Transactional(rollbackFor = RuntimeException.class)
+    @Override
+    public void register(String userId, String username, String password, String email, String code) {
+        InviteCodePO inviteCodePO = inviteCodeMapper.findOne(code);
+        if (inviteCodePO == null) {
+            throw new BizException("Invite code is invalid");
+        }
+
+        if (inviteCodePO.getUserId() != null) {
+            throw new BizException("Invite code has been used");
+        }
+
+        this.create(userId, username, password, RoleNameType.user.name(), String.valueOf(inviteCodePO.getTenantId()));
+
+        // update invite code inuse
+        inviteCodePO.setUserId(userId);
+        inviteCodeMapper.updateByPrimaryKeySelective(inviteCodePO);
+
+        // switch tenant
+        userRepository.switchTenant(userId, inviteCodePO.getTenantId());
+    }
+
+    @Override
+    public void joinTenant(String inviteCode, String userId) {
+        InviteCodePO inviteCodePO = inviteCodeMapper.findOne(inviteCode);
+        if (inviteCodePO == null) {
+            throw new BizException("Invite code is invalid");
+        }
+
+        if (inviteCodePO.getUserId() != null) {
+            throw new BizException("Invite code has been used");
+        }
+
+        tenantService.joinUser(userId, inviteCodePO.getTenantId());
     }
 
 }

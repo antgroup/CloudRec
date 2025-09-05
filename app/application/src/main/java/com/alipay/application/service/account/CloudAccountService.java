@@ -16,7 +16,6 @@
  */
 package com.alipay.application.service.account;
 
-import com.alipay.application.share.request.account.AcceptAccountRequest;
 import com.alipay.application.share.request.account.CreateCollectTaskRequest;
 import com.alipay.application.share.request.account.QueryCloudAccountListRequest;
 import com.alipay.application.share.vo.ApiResponse;
@@ -50,9 +49,6 @@ public interface CloudAccountService {
 
 
     void updateCloudAccountStatus(String cloudAccountId, String accountStatus);
-
-
-    void acceptCloudAccount(AcceptAccountRequest request);
 
 
     ApiResponse<Map<String, Object>> queryCloudAccountBaseInfoList(QueryCloudAccountListRequest request);

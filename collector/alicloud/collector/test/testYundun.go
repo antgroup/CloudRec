@@ -26,21 +26,21 @@ import (
 	"strconv"
 )
 
-func main() {
-	p := schema.GetInstance(schema.PlatformConfig{
-		Name: string(constant.AlibabaCloud),
-		Resources: []schema.Resource{
-			GetYundunData(),
-		},
-
-		Service:        &collector.Services{},
-		DefaultRegions: []string{"cn-hangzhou"},
-	})
-
-	if err := schema.RunExecutor(p); err != nil {
-		log.GetWLogger().Error(err.Error())
-	}
-}
+//func main() {
+//	p := schema.GetInstance(schema.PlatformConfig{
+//		Name: string(constant.AlibabaCloud),
+//		Resources: []schema.Resource{
+//			GetYundunData(),
+//		},
+//
+//		Service:        &collector.Services{},
+//		DefaultRegions: []string{"cn-hangzhou"},
+//	})
+//
+//	if err := schema.RunExecutor(p); err != nil {
+//		log.GetWLogger().Error(err.Error())
+//	}
+//}
 
 func GetYundunData() schema.Resource {
 	return schema.Resource{

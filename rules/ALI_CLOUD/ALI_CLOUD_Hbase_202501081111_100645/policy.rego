@@ -1,4 +1,4 @@
-package hbase_exposed_to_pub_3300001_179
+package hbase_exposed_to_pub_3300001
 import rego.v1
 
 default risk := false

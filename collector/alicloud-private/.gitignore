@@ -1,10 +1,3 @@
 !.gitignore
-config
-task
-*.log
 *.json
-test
-test/account_test.go
-deploy.log
-task.log
-lunar_collector_alicloud-sqa
+cloudrec_collector_alicloud_private

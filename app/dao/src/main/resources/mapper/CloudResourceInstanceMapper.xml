@@ -219,6 +219,19 @@
         AND resource_type = #{resourceType}
         AND platform = #{platform}
     </select>
+
+    <select id="findByResourceId" resultMap="ResultMapWithBLOBs">
+        SELECT
+        <include refid="Base_Column_List"/>
+        ,
+        <include refid="Blob_Column_List"/>
+        FROM cloud_resource_instance_v1
+        WHERE
+        resource_id = #{resourceId}
+        AND resource_type = #{resourceType}
+        AND platform = #{platform}
+        LIMIT 1
+    </select>
     <select id="findExampleLimit1" resultMap="ResultMapWithBLOBs">
         SELECT
         <include refid="Base_Column_List"/>
@@ -235,7 +248,7 @@
     <delete id="deleteByCloudAccountId">
         DELETE
         FROM cloud_resource_instance_v1
-        WHERE cloud_account_id = #{cloudAccountId}
+        WHERE cloud_account_id = #{cloudAccountId} LIMIT 10000
     </delete>
 
 
@@ -446,6 +459,11 @@
             #{id}
         </foreach>
     </update>
+    <update id="refreshUpdateTime">
+        UPDATE cloud_resource_instance_v1
+        SET gmt_modified = #{gmtModified}
+        WHERE cloud_account_id = #{cloudAccountId} LIMIT 1000
+    </update>
     <delete id="commitDeleteByCloudAccountId">
         DELETE
         FROM cloud_resource_instance_v1
@@ -480,5 +498,24 @@
           AND resource_type = #{resourceType}
     </delete>
 
+    <!-- Aggregate assets by cloud account queries -->
+    <select id="findAggregateAssetsByCloudAccountCount" resultType="java.lang.Integer">
+        SELECT /*+ query_timeout(20000000)*/
+        COUNT(distinct cloud_account_id)
+        FROM cloud_resource_instance_v1
+        <include refid="findAggregateAssetsListWhere"/>
+    </select>
+
+    <select id="findAggregateAssetsByCloudAccountList" resultType="com.alipay.dao.dto.ResourceAggByInstanceTypeDTO">
+        SELECT /*+ query_timeout(20000000)*/
+        COUNT(*) AS count,
+        cloud_account_id AS cloudAccountId,
+        platform AS platform
+        FROM cloud_resource_instance_v1
+        <include refid="findAggregateAssetsListWhere"/>
+        GROUP BY cloud_account_id
+        ORDER BY count DESC
+        <include refid="getListLimit"></include>
+    </select>
 
 </mapper>

@@ -189,9 +189,7 @@ public class RegoServiceImpl implements RegoService {
     private Long runCloudAccountTestRegoTask(List<LinkDataParam> linkDataList, String platform, String cloudAccountId, String resourceType, String rego) {
         CloudAccountPO cloudAccountPO = cloudAccountMapper.findByCloudAccountId(cloudAccountId);
         if (cloudAccountPO != null) {
-            List<CloudResourceInstancePO> cloudResourceInstancePOS = iQueryResource.queryByCond(platform, resourceType, cloudAccountId);
-            cloudResourceInstancePOS = ResourceMergerTask.mergeJson(linkDataList, cloudResourceInstancePOS, cloudAccountId);
-            Long taskId = runningProgressService.init(cloudResourceInstancePOS.size());
+            Long taskId = runningProgressService.init(1);
             executeTestTasksAsynchronously(List.of(cloudAccountPO.getCloudAccountId()), platform, resourceType, rego, taskId, linkDataList);
             return taskId;
         }

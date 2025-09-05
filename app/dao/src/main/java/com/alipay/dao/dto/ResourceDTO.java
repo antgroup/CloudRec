@@ -53,4 +53,9 @@ public class ResourceDTO extends PageDTO {
     private String customFieldValue;
 
     private Long tenantId;
+
+    /**
+     * Aggregation type for asset aggregation (RESOURCE_TYPE or CLOUD_ACCOUNT)
+     */
+    private String aggregationType;
 }

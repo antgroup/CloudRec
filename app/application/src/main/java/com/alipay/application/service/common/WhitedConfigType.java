@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 public enum WhitedConfigType {
 
     cloudAccountId("cloudAccountId", "云账号", Arrays.asList(WhitedRuleOperatorEnum.values()), null),
-//    ruleCode("ruleCode", "规则code", Arrays.asList(WhitedRuleOperatorEnum.values()), null),
     resourceType("resourceType", "资源类型", Arrays.asList(WhitedRuleOperatorEnum.values()), null),
     resourceId("resourceId", "资源id", Arrays.asList(WhitedRuleOperatorEnum.values()), null),
     resourceName("resourceName", "  资源名称", Arrays.asList(WhitedRuleOperatorEnum.values()), null),

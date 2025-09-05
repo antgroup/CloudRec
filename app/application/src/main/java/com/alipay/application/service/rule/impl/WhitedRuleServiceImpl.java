@@ -29,40 +29,43 @@ import com.alipay.application.service.rule.WhitedRegoMatcher;
 import com.alipay.application.service.rule.WhitedRuleEngineMatcher;
 import com.alipay.application.service.rule.WhitedRuleService;
 import com.alipay.application.service.rule.job.ScanService;
+import com.alipay.application.service.rule.job.context.TenantWhitedConfigContextV2;
 import com.alipay.application.service.system.domain.User;
+import com.alipay.application.service.system.domain.repo.TenantRepository;
 import com.alipay.application.service.system.domain.repo.UserRepository;
 import com.alipay.application.share.request.rule.*;
 import com.alipay.application.share.vo.ApiResponse;
 import com.alipay.application.share.vo.ListVO;
 import com.alipay.application.share.vo.rule.RuleScanResultVO;
 import com.alipay.application.share.vo.rule.RuleVO;
+import com.alipay.application.share.vo.whited.GroupByRuleCodeVO;
 import com.alipay.application.share.vo.whited.WhitedConfigVO;
 import com.alipay.application.share.vo.whited.WhitedRuleConfigVO;
 import com.alipay.common.enums.WhitedRuleOperatorEnum;
 import com.alipay.common.enums.WhitedRuleTypeEnum;
+import com.alipay.common.exception.BizException;
 import com.alipay.dao.context.UserInfoContext;
 import com.alipay.dao.context.UserInfoDTO;
+import com.alipay.dao.dto.GroupByRuleCodeDTO;
 import com.alipay.dao.dto.QueryScanResultDTO;
 import com.alipay.dao.dto.QueryWhitedRuleDTO;
 import com.alipay.dao.dto.RuleScanResultDTO;
 import com.alipay.dao.mapper.RuleMapper;
 import com.alipay.dao.mapper.RuleScanResultMapper;
+import com.alipay.dao.mapper.TenantMapper;
 import com.alipay.dao.mapper.WhitedRuleConfigMapper;
-import com.alipay.dao.po.CloudAccountPO;
-import com.alipay.dao.po.RulePO;
-import com.alipay.dao.po.RuleScanResultPO;
-import com.alipay.dao.po.WhitedRuleConfigPO;
+import com.alipay.dao.po.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Date: 2025/3/13
@@ -96,6 +99,12 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
     @Resource
     private ScanService scanService;
 
+    @Resource
+    private TenantRepository tenantRepository;
+
+    @Resource
+    private TenantWhitedConfigContextV2 tenantWhitedConfigContextV2;
+
     private static final ExecutorService executorService = new ThreadPoolExecutor(
             8,
             8,
@@ -105,11 +114,14 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
             Executors.defaultThreadFactory(),
             new ThreadPoolExecutor.CallerRunsPolicy()
     );
+    @Autowired
+    private TenantMapper tenantMapper;
 
 
     @Override
-    public int save(SaveWhitedRuleRequestDTO dto) throws RuntimeException {
+    public Long save(SaveWhitedRuleRequest dto) throws RuntimeException {
         UserInfoDTO currentUser = UserInfoContext.getCurrentUser();
+        permissionCheck(dto.getId());
         paramCheck(dto, currentUser);
         WhitedRuleConfigPO whitedRuleConfigPO = new WhitedRuleConfigPO();
         //处理白名单规则详情
@@ -134,27 +146,32 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
             if (Objects.nonNull(whitedRuleConfigPO)) {
                 if (!currentUser.getUserId().equals(whitedRuleConfigPO.getLockHolder())) {
                     log.error("save whitedRuleConfig error, lockHolder and current user different， whitedRuleId: {} , lockHolder:{}， currentUser:{} ", whitedRuleConfigPO.getId(), whitedRuleConfigPO.getLockHolder(), currentUser.getUserId());
-                    throw new RuntimeException("当前规则已被其他用户锁定,请抢锁并重试!");
+                    throw new RuntimeException("The current whitelist has been locked by other users, please grab the lock and try again!");
                 }
+
+                tenantWhitedConfigContextV2.clearAllCache();
                 //更新数据
                 buildWhitedRuleConfigPO(whitedRuleConfigPO, dto, currentUser, ruleConfigJson);
                 whitedRuleConfigPO.setGmtModified(new Date());
-                return whitedRuleConfigMapper.updateByPrimaryKeySelective(whitedRuleConfigPO);
+                whitedRuleConfigMapper.updateByPrimaryKeySelective(whitedRuleConfigPO);
+                return whitedRuleConfigPO.getId();
             } else {
-                throw new RuntimeException("whitedRuleConfigPO id: " + dto.getId() + "不存在,请检查!");
+                throw new RuntimeException("whitedRuleConfigPO id: " + dto.getId() + "Does not exist");
             }
         }
+
+        tenantWhitedConfigContextV2.clearAllCache();
         buildWhitedRuleConfigPO(whitedRuleConfigPO, dto, currentUser, ruleConfigJson);
-        whitedRuleConfigPO.setEnable(dto.getEnable());
+        whitedRuleConfigPO.setEnable(1);
         int insertResult = whitedRuleConfigMapper.insertSelective(whitedRuleConfigPO);
-        if(insertResult > 0 && dto.getEnable() == 1 && WhitedRuleTypeEnum.RULE_ENGINE.name().equals(dto.getRuleType()) && !StringUtils.isEmpty(dto.getRiskRuleCode())){
+        if (insertResult > 0 && dto.getEnable() == 1 && WhitedRuleTypeEnum.RULE_ENGINE.name().equals(dto.getRuleType()) && !StringUtils.isEmpty(dto.getRiskRuleCode())) {
             //触发风险扫描
             RulePO rulePO = ruleMapper.findOne(dto.getRiskRuleCode());
             executorService.execute(() -> {
                 scanService.scanByRule(rulePO.getId());
             });
         }
-        return insertResult;
+        return whitedRuleConfigPO.getId();
     }
 
     @Override
@@ -169,22 +186,29 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
                 dto.setCreator(user.getUserId());
             }
         }
-        UserInfoDTO currentUser = UserInfoContext.getCurrentUser();
-        Long tenantId = currentUser.getTenantId();
-        dto.setTenantId(tenantId);
-        int count = whitedRuleConfigMapper.count(dto);
-        if (count == 0) {
-            return listVO;
+
+        Long globalTenantId = tenantRepository.findGlobalTenant().getId();
+        Long userTenantId = UserInfoContext.getCurrentUser().getUserTenantId();
+        if (!globalTenantId.equals(userTenantId)) {
+            dto.setTenantIdList(Stream.of(userTenantId).toList());
         }
+
         List<WhitedRuleConfigPO> list = whitedRuleConfigMapper.list(dto);
-        List<WhitedRuleConfigVO> whitedRuleConfigVOS = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(list)) {
-            whitedRuleConfigVOS = list.stream()
-                    .map(this::convertToVO)
-                    .collect(Collectors.toList());
+        if (StringUtils.isNoneEmpty(dto.getSearch())) {
+            list = list.stream()
+                    .filter(po -> po.getRuleConfig().contains(dto.getSearch()) || po.getRegoContent().contains(dto.getSearch()))
+                    .toList();
         }
-        listVO.setData(whitedRuleConfigVOS);
-        listVO.setTotal(count);
+
+        List<WhitedRuleConfigVO> result = list.stream()
+                .skip((long) (dto.getPage() - 1) * dto.getSize())
+                .limit(dto.getSize())
+                .map(this::convertToVO)
+                .toList();
+
+        listVO.setTotal(list.size());
+        listVO.setData(result);
+
         return listVO;
     }
 
@@ -195,7 +219,14 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
 
         UserRepository userRepository = SpringUtils.getApplicationContext().getBean(UserRepository.class);
         User user = userRepository.find(whitedRuleConfigPO.getCreator());
-        vo.setCreatorName(user.getUsername());
+        if (Objects.nonNull(user)) {
+            vo.setCreatorName(user.getUsername());
+        }
+
+        TenantPO tenantPO = tenantMapper.selectByPrimaryKey(whitedRuleConfigPO.getTenantId());
+        if (Objects.nonNull(tenantPO)) {
+            vo.setTenantName(tenantPO.getTenantName());
+        }
 
         boolean isLockHolder = false;
         if (currentUser.getUserId().equals(whitedRuleConfigPO.getLockHolder())) {
@@ -219,45 +250,51 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
 
     @Override
     public int deleteById(Long id) {
+        permissionCheck(id);
+
         WhitedRuleConfigPO whitedRuleConfigPO = whitedRuleConfigMapper.selectByPrimaryKey(id);
         if (Objects.isNull(whitedRuleConfigPO)) {
-            throw new RuntimeException("当前规则不存在,请检查!");
+            throw new RuntimeException("The current whitelist does not exist");
         }
         UserInfoDTO currentUser = UserInfoContext.getCurrentUser();
         if (!currentUser.getUserId().equals(whitedRuleConfigPO.getLockHolder())) {
             log.error("deleteById whitedRuleConfig error, lockHolder and current user different， whitedRuleid: {} , lockHolder:{}， currentUser:{} ", whitedRuleConfigPO.getId(), whitedRuleConfigPO.getLockHolder(), currentUser.getUserId());
-            throw new RuntimeException("当前规则已被其他用户锁定,请抢锁并重试!");
+            throw new RuntimeException("The current whitelist has been locked by other users, please grab the lock and try again!");
         }
+        tenantWhitedConfigContextV2.clearAllCache();
         return whitedRuleConfigMapper.deleteByPrimaryKey(id);
     }
 
     @Override
     public void changeStatus(Long id, int enable) {
+        permissionCheck(id);
         WhitedRuleConfigPO whitedRuleConfigPO = whitedRuleConfigMapper.selectByPrimaryKey(id);
         if (Objects.nonNull(whitedRuleConfigPO)) {
             UserInfoDTO currentUser = UserInfoContext.getCurrentUser();
             if (!currentUser.getUserId().equals(whitedRuleConfigPO.getLockHolder())) {
                 log.error("deleteById whitedRuleConfig error, lockHolder and current user different， whitedRuleid: {} , lockHolder:{}， currentUser:{} ", whitedRuleConfigPO.getId(), whitedRuleConfigPO.getLockHolder(), currentUser.getUserId());
-                throw new RuntimeException("当前规则已被其他用户锁定,请抢锁并重试!");
+                throw new RuntimeException("The current whitelist has been locked by other users, please grab the lock and try again!");
             }
             whitedRuleConfigPO.setEnable(enable);
             whitedRuleConfigPO.setGmtModified(new Date());
+            tenantWhitedConfigContextV2.clearAllCache();
             whitedRuleConfigMapper.updateByPrimaryKeySelective(whitedRuleConfigPO);
         } else {
-            throw new RuntimeException("whitedRuleConfigPO id: " + id + "不存在,请检查!");
+            throw new RuntimeException("whitedRuleConfigPO id: " + id + "Does not exist");
         }
     }
 
 
     @Override
     public void grabLock(Long id) {
+        permissionCheck(id);
         WhitedRuleConfigPO whitedRuleConfigPO = whitedRuleConfigMapper.selectByPrimaryKey(id);
         if (Objects.nonNull(whitedRuleConfigPO)) {
             whitedRuleConfigPO.setLockHolder(UserInfoContext.getCurrentUser().getUserId());
             whitedRuleConfigPO.setGmtModified(new Date());
             whitedRuleConfigMapper.updateByPrimaryKeySelective(whitedRuleConfigPO);
         } else {
-            throw new RuntimeException("whitedRuleConfigPO id: " + id + "不存在,请检查!");
+            throw new RuntimeException("whitedRuleConfigPO id: " + id + "Does not exist");
         }
     }
 
@@ -302,6 +339,7 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
         //获取当前租户下的风险数据
         QueryScanResultDTO queryScanResultDTO = new QueryScanResultDTO();
         queryScanResultDTO.setTenantId(UserInfoContext.getCurrentUser().getTenantId());
+        queryScanResultDTO.setStatusList(Arrays.asList(RiskStatusManager.RiskStatus.UNREPAIRED.name(), RiskStatusManager.RiskStatus.WHITED.name()));
         queryScanResultDTO.setLimit(100);
 
         String scrollId = null;
@@ -314,7 +352,7 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
             }
             queryScanResultDTO.setRuleId(rulePO.getId());
         }
-        List<RuleScanResultPO> listWithScrollId = new ArrayList<>();
+        List<RuleScanResultPO> listWithScrollId;
         while (true) {
             queryScanResultDTO.setScrollId(scrollId);
             listWithScrollId = ruleScanResultMapper.findListWithScrollId(queryScanResultDTO);
@@ -347,16 +385,14 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
             }
         }
 
-        TestRunWhitedRuleResultDTO resultDTO = TestRunWhitedRuleResultDTO.builder()
+        return TestRunWhitedRuleResultDTO.builder()
                 .count(count)
                 .ruleScanResultList(preWhitedList)
                 .build();
-
-        return resultDTO;
     }
 
     @Override
-    public SaveWhitedRuleRequestDTO queryWhitedContentByRisk(Long riskId) {
+    public SaveWhitedRuleRequest queryWhitedContentByRisk(Long riskId) {
         ApiResponse<RuleScanResultVO> ruleScanResultVOApiResponse = riskService.queryRiskDetail(riskId);
         if (!StringUtils.isEmpty(ruleScanResultVOApiResponse.getErrorCode()) || Objects.isNull(ruleScanResultVOApiResponse.getContent())) {
             log.error("query RuleScanResultVO not exist,riskId:{} ", riskId);
@@ -365,17 +401,49 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
         return buildContentByRiskInfo(ruleScanResultVOApiResponse.getContent());
     }
 
-    private SaveWhitedRuleRequestDTO buildContentByRiskInfo(RuleScanResultVO ruleScanResultVO){
+    @Override
+    public ListVO<GroupByRuleCodeVO> getListGroupByRuleCode(QueryWhitedRuleDTO dto) {
+        ListVO<GroupByRuleCodeVO> listVO = new ListVO<>();
+
+        // Tenant isolation
+        Long globalTenantId = tenantRepository.findGlobalTenant().getId();
+        Long userTenantId = UserInfoContext.getCurrentUser().getUserTenantId();
+        if (!globalTenantId.equals(userTenantId)) {
+            dto.setTenantIdList(Stream.of(userTenantId).toList());
+        }
+
+        List<GroupByRuleCodeDTO> list = whitedRuleConfigMapper.findListGroupByRuleCode(dto);
+
+        if (CollectionUtils.isEmpty(dto.getRuleCodeList())) {
+            GroupByRuleCodeDTO groupByRuleCodeDTO = whitedRuleConfigMapper.findNullRuleCode(dto);
+            if (Objects.nonNull(groupByRuleCodeDTO)) {
+                list.add(0, groupByRuleCodeDTO);
+            }
+        }
+
+        List<GroupByRuleCodeVO> result = list.stream()
+                .skip((long) (dto.getPage() - 1) * dto.getSize())
+                .limit(dto.getSize())
+                .map(GroupByRuleCodeVO::build)
+                .toList();
+
+        listVO.setTotal(list.size());
+        listVO.setData(result);
+
+        return listVO;
+    }
+
+    private SaveWhitedRuleRequest buildContentByRiskInfo(RuleScanResultVO ruleScanResultVO) {
         RuleVO ruleVO = ruleScanResultVO.getRuleVO();
-        SaveWhitedRuleRequestDTO saveWhitedRuleRequestDTO = new SaveWhitedRuleRequestDTO();
-        saveWhitedRuleRequestDTO.setRuleName(ruleVO.getRuleName() + "_手动加白");
-        saveWhitedRuleRequestDTO.setRuleDesc(ruleVO.getRuleName() + "_手动加白");
-        saveWhitedRuleRequestDTO.setRuleType(WhitedRuleTypeEnum.RULE_ENGINE.name());
-        saveWhitedRuleRequestDTO.setRiskRuleCode(ruleScanResultVO.getRuleCode());
+        SaveWhitedRuleRequest saveWhitedRuleRequest = new SaveWhitedRuleRequest();
+        saveWhitedRuleRequest.setRuleName(ruleVO.getRuleName() + "_手动加白");
+        saveWhitedRuleRequest.setRuleDesc(ruleVO.getRuleName() + "_手动加白");
+        saveWhitedRuleRequest.setRuleType(WhitedRuleTypeEnum.RULE_ENGINE.name());
+        saveWhitedRuleRequest.setRiskRuleCode(ruleScanResultVO.getRuleCode());
 
         List<WhitedRuleConfigDTO> ruleConfigList = new ArrayList<>();
         int index = 1;
-        if (!StringUtils.isEmpty(ruleScanResultVO.getResourceId())){
+        if (!StringUtils.isEmpty(ruleScanResultVO.getResourceId())) {
             WhitedRuleConfigDTO resourceIdRuleConfigDTO = WhitedRuleConfigDTO.builder()
                     .id(index)
                     .key("resourceId")
@@ -385,7 +453,7 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
             index++;
             ruleConfigList.add(resourceIdRuleConfigDTO);
         }
-        if (!StringUtils.isEmpty(ruleScanResultVO.getCloudAccountId())){
+        if (!StringUtils.isEmpty(ruleScanResultVO.getCloudAccountId())) {
             WhitedRuleConfigDTO resourceTypeRuleConfigDTO = WhitedRuleConfigDTO.builder()
                     .id(index)
                     .key("resourceType")
@@ -395,7 +463,7 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
             index++;
             ruleConfigList.add(resourceTypeRuleConfigDTO);
         }
-        if (!StringUtils.isEmpty(ruleScanResultVO.getCloudAccountId())){
+        if (!StringUtils.isEmpty(ruleScanResultVO.getCloudAccountId())) {
             WhitedRuleConfigDTO cloudAccountIdRuleConfigDTO = WhitedRuleConfigDTO.builder()
                     .id(index)
                     .key("cloudAccountId")
@@ -411,75 +479,58 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
                 condition.append("&&");
             }
         }
-        saveWhitedRuleRequestDTO.setCondition(condition.toString());
-        saveWhitedRuleRequestDTO.setRuleConfigList(ruleConfigList);
-        return saveWhitedRuleRequestDTO;
-    }
-
-    private TestRunWhitedRuleResultDTO runRegoWithInput(TestRunWhitedRuleRequestDTO dto) {
-        //rego模式下且选择了风险规则
-        if (dto.getRuleType().equals(WhitedRuleTypeEnum.REGO.name()) && !StringUtils.isEmpty(dto.getRiskRuleCode())) {
-
-            RuleScanResultDTO ruleScanResultDTO = RuleScanResultDTO.builder()
-                    .status(RiskStatusManager.RiskStatus.UNREPAIRED.name())
-                    .ruleCodeList(Collections.singletonList(dto.getRiskRuleCode()))
-                    .build();
-
-            List<RuleScanResultPO> ruleScanResultList = ruleScanResultMapper.findList(ruleScanResultDTO);
-            RuleScanResultPO ruleScanResultPO = null;
-            if (!CollectionUtils.isEmpty(ruleScanResultList)) {
-                ruleScanResultPO = ruleScanResultList.get(0);
-            }
-            WhitedScanInputDataDTO whitedExampleDataResultDTO = JSON.parseObject(dto.getInput(), WhitedScanInputDataDTO.class);
-
-            // 无示例数据的情况
-            if (!areAllFieldsNull(whitedExampleDataResultDTO)) {
-                boolean scanResult = executeRegoScan(dto, whitedExampleDataResultDTO);
-                if (scanResult) {
-                    return TestRunWhitedRuleResultDTO.builder()
-                            .count(1)
-                            .ruleScanResultList(Collections.singletonList(ruleScanResultPO))
-                            .build();
-                }
-            }
-        }
-        return TestRunWhitedRuleResultDTO.builder()
-                .count(0)
-                .build();
+        saveWhitedRuleRequest.setCondition(condition.toString());
+        saveWhitedRuleRequest.setRuleConfigList(ruleConfigList);
+        return saveWhitedRuleRequest;
     }
 
     private void testRunParamCheck(TestRunWhitedRuleRequestDTO dto) {
         if (WhitedRuleTypeEnum.REGO.name().equals(dto.getRuleType()) && StringUtils.isEmpty(dto.getRegoContent())) {
-            throw new RuntimeException("REGO规则内容为空,请检查!");
+            throw new RuntimeException("REGO whitelist content is empty");
         }
         if (!WhitedRuleTypeEnum.exist(dto.getRuleType())) {
-            throw new RuntimeException("规则类型不存在,请检查!");
+            throw new RuntimeException("The whitelist type does not exist");
         }
         if (WhitedRuleTypeEnum.RULE_ENGINE.name().equals(dto.getRuleType())) {
-            if (!StringUtils.isEmpty(dto.getRuleConfigList()) && dto.getRuleConfigList().size() == 1 && StringUtils.isEmpty(dto.getCondition())) {
+            if (!CollectionUtils.isEmpty(dto.getRuleConfigList()) && dto.getRuleConfigList().size() == 1 && StringUtils.isEmpty(dto.getCondition())) {
                 dto.setCondition("1");
             }
-            if (!StringUtils.isEmpty(dto.getRuleConfigList()) && dto.getRuleConfigList().size() > 1 && StringUtils.isEmpty(dto.getCondition())) {
-                throw new RuntimeException("存在多个条件配置规则,请设置其逻辑关系!");
+            if (!CollectionUtils.isEmpty(dto.getRuleConfigList()) && dto.getRuleConfigList().size() > 1 && StringUtils.isEmpty(dto.getCondition())) {
+                throw new RuntimeException("There are multiple conditional configuration rules, please set their logical relationship!");
             }
         }
     }
 
-    private void paramCheck(SaveWhitedRuleRequestDTO dto, UserInfoDTO userInfo) {
-        if (Objects.isNull(userInfo)) {
-            throw new RuntimeException("用户信息为空,请检查!");
+    private void permissionCheck(Long whiteId) {
+        if (whiteId != null) {
+            WhitedRuleConfigPO whitedRuleConfigPO = whitedRuleConfigMapper.selectByPrimaryKey(whiteId);
+            if (whitedRuleConfigPO != null) {
+                Long tenantId = whitedRuleConfigPO.getTenantId();
+                if (tenantId != null && !tenantId.equals(UserInfoContext.getCurrentUser().getUserTenantId())) {
+                    throw new BizException("No permission to operate the whitelist,tenant not match");
+                }
+            }
+        }
+    }
+
+    private void paramCheck(SaveWhitedRuleRequest dto, UserInfoDTO userInfo) {
+        if (Objects.isNull(userInfo) || StringUtils.isEmpty(userInfo.getUserId())) {
+            throw new RuntimeException("User information is empty");
         }
         if (!WhitedRuleTypeEnum.exist(dto.getRuleType())) {
-            throw new RuntimeException("规则类型不存在,请检查!");
+            throw new RuntimeException("The whitelist type does not exist");
         }
         if (WhitedRuleTypeEnum.REGO.name().equals(dto.getRuleType()) && StringUtils.isEmpty(dto.getRegoContent())) {
-            throw new RuntimeException("REGO规则内容为空,请检查!");
+            throw new RuntimeException("The content of the REGO whitelist is empty");
         }
         if (WhitedRuleTypeEnum.RULE_ENGINE.name().equals(dto.getRuleType())) {
-            if (!StringUtils.isEmpty(dto.getRuleConfigList()) && dto.getRuleConfigList().size() > 1 && StringUtils.isEmpty(dto.getCondition())) {
-                throw new RuntimeException("存在多个条件配置规则,请设置其逻辑关系!");
+            if (CollectionUtils.isEmpty(dto.getRuleConfigList())) {
+                throw new RuntimeException("The whitelist is configured as empty");
             }
-            if (!StringUtils.isEmpty(dto.getRuleConfigList()) && dto.getRuleConfigList().size() == 1 && StringUtils.isEmpty(dto.getCondition())) {
+            if (dto.getRuleConfigList().size() > 1 && StringUtils.isEmpty(dto.getCondition())) {
+                throw new RuntimeException("There are multiple conditional configuration rules, please set their logical relationship!");
+            }
+            if (!CollectionUtils.isEmpty(dto.getRuleConfigList()) && dto.getRuleConfigList().size() == 1 && StringUtils.isEmpty(dto.getCondition())) {
                 dto.setCondition("1");
             }
         }
@@ -492,12 +543,12 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
                     .build();
             List<WhitedRuleConfigPO> list = whitedRuleConfigMapper.list(queryWhitedRuleDTO);
             if (!CollectionUtils.isEmpty(list)) {
-                throw new RuntimeException("当前规则类型存在重复规则名,请修改!");
+                throw new RuntimeException("The current whitelist name already exists");
             }
         }
     }
 
-    private WhitedRuleConfigPO buildWhitedRuleConfigPO(WhitedRuleConfigPO whitedRuleConfigPO, SaveWhitedRuleRequestDTO dto, UserInfoDTO userInfo, String ruleConfigJson) {
+    private void buildWhitedRuleConfigPO(WhitedRuleConfigPO whitedRuleConfigPO, SaveWhitedRuleRequest dto, UserInfoDTO userInfo, String ruleConfigJson) {
         whitedRuleConfigPO.setRuleName(dto.getRuleName());
         whitedRuleConfigPO.setRuleDesc(dto.getRuleDesc());
         whitedRuleConfigPO.setRuleType(dto.getRuleType());
@@ -505,13 +556,12 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
         whitedRuleConfigPO.setRuleConfigJson(ruleConfigJson);
         whitedRuleConfigPO.setCondition(dto.getCondition());
         whitedRuleConfigPO.setRegoContent(dto.getRegoContent());
-        if (Objects.isNull(whitedRuleConfigPO.getId())){
+        if (Objects.isNull(whitedRuleConfigPO.getId())) {
             whitedRuleConfigPO.setCreator(userInfo.getUserId());
         }
         whitedRuleConfigPO.setLockHolder(userInfo.getUserId());
-        whitedRuleConfigPO.setTenantId(userInfo.getTenantId());
+        whitedRuleConfigPO.setTenantId(userInfo.getUserTenantId());
         whitedRuleConfigPO.setRiskRuleCode(dto.getRiskRuleCode());
-        return whitedRuleConfigPO;
     }
 
     /**
@@ -533,41 +583,5 @@ public class WhitedRuleServiceImpl implements WhitedRuleService {
      */
     private boolean executeTestRegoScan(TestRunWhitedRuleRequestDTO dto, RuleScanResultPO ruleScanResultPO, CloudAccountPO cloudAccountPO) {
         return whitedRegoMatcher.executeRegoMatch(dto.getRegoContent(), null, ruleScanResultPO, cloudAccountPO, null);
-    }
-
-    /**
-     * REGO规则引擎扫描器执行-
-     *
-     * @param dto
-     * @param whitedScanInputDataDTO
-     * @return
-     */
-    private boolean executeRegoScan(TestRunWhitedRuleRequestDTO dto, WhitedScanInputDataDTO whitedScanInputDataDTO) {
-        return whitedRegoMatcher.executeRegoMatch(dto.getRegoContent(),null, whitedScanInputDataDTO);
-    }
-
-
-    public static boolean areAllFieldsNull(WhitedScanInputDataDTO whitedScanInputDataDTO) {
-        if (whitedScanInputDataDTO == null) {
-            return true;
-        }
-        // 遍历所有字段
-        for (Field field : whitedScanInputDataDTO.getClass().getDeclaredFields()) {
-            field.setAccessible(true);
-            try {
-                Object value = field.get(whitedScanInputDataDTO);
-                if (value != null) {
-                    if (value instanceof String && !((String) value).trim().isEmpty()) {
-                        return false;
-                    } else if (!(value instanceof String)) {
-                        return false;
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                log.error("areAllFieldsNull error", e);
-            }
-        }
-
-        return true;
     }
 }

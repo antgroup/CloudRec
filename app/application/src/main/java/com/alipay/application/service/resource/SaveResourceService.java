@@ -35,4 +35,7 @@ public interface SaveResourceService {
 
 
     void acceptResourceData(DataPushRequest dataPushRequest) throws InterruptedException;
+
+
+    void refreshResourceUpdateTime(String cloudAccountId);
 }

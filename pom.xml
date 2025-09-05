@@ -6,7 +6,7 @@
 
     <groupId>com.alipay</groupId>
     <artifactId>cloudrec</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -17,11 +17,11 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>app/api</module>
-        <module>app/dao</module>
         <module>app/common</module>
-        <module>app/bootstrap</module>
+        <module>app/dao</module>
         <module>app/application</module>
+        <module>app/api</module>
+        <module>app/bootstrap</module>
     </modules>
 
     <properties>
@@ -43,7 +43,7 @@
         <spring-boot-starter-web.version>3.3.5</spring-boot-starter-web.version>
         <jakarta.servlet-api.version>5.0.0</jakarta.servlet-api.version>
         <mysql-connector-java.version>8.0.11</mysql-connector-java.version>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.12</junit.version>
         <easyexcel.version>3.3.4</easyexcel.version>
         <poi.version>3.17</poi.version>
         <poi-ooxml.version>3.17</poi-ooxml.version>
@@ -130,16 +130,28 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring-boot-starter-web.version}</version>
         </dependency>
+        <!-- JUnit 5 (Jupiter) for unified testing framework -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- JUnit Vintage Engine for backward compatibility with JUnit 4 tests -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Mockito for mocking framework -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.11.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Mockito JUnit Jupiter integration -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -299,6 +311,21 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+                <!-- Maven Surefire Plugin for unified JUnit 5 testing across all modules -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M7</version>
+                    <configuration>
+                        <!-- Enable JUnit Platform for JUnit 5 support -->
+                        <useJUnitPlatform>true</useJUnitPlatform>
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*Tests.java</include>
+                        </includes>
+                        <testFailureIgnore>false</testFailureIgnore>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

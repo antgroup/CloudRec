@@ -42,14 +42,8 @@ func GetResource() schema.Resource {
 		Regions: []string{
 			// China Regions
 			"cn-qingdao",
-			"cn-beijing",
 			"cn-zhangjiakou",
 			"cn-huhehaote",
-			"cn-hangzhou",
-			"cn-shanghai",
-			"cn-shenzhen",
-			"cn-heyuan",
-			"cn-chengdu",
 			"cn-hongkong",
 
 			// Asia Pacific
@@ -175,7 +169,7 @@ func ListHosts(ctx context.Context, service schema.ServiceInterface, regionId *s
 		response, err := cli.ListHosts(req)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListHosts error", zap.Error(err))
-			return nil
+			return
 		}
 		if len(response.Body.Hosts) == 0 {
 			return nil
@@ -199,10 +193,10 @@ func ListHostsWithAccount(ctx context.Context, service schema.ServiceInterface, 
 	response, err := cli.ListHosts(req)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("ListHosts error", zap.Error(err))
-		return nil
+		return
 	}
 	if len(response.Body.Hosts) == 0 {
-		return nil
+		return
 	}
 
 	for _, hostInfo := range response.Body.Hosts {
@@ -231,7 +225,7 @@ func ListDatabases(ctx context.Context, service schema.ServiceInterface, regionI
 			return
 		}
 		if len(response.Body.Databases) == 0 {
-			return nil
+			return
 		}
 		databases = append(databases, response.Body.Databases...)
 		if int64(count) >= *response.Body.TotalCount {
@@ -349,9 +343,6 @@ func ListUsers(ctx context.Context, service schema.ServiceInterface, regionId *s
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListUsers error", zap.Error(err))
 			return
-		}
-		if len(response.Body.Users) == 0 {
-			return nil
 		}
 		users = append(users, response.Body.Users...)
 		if int32(count) >= *response.Body.TotalCount {

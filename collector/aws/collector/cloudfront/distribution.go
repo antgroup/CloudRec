@@ -39,7 +39,8 @@ func GetDistributionResource() schema.Resource {
 			ResourceId:   "$.Distribution.Id",
 			ResourceName: "$.Distribution.DomainName",
 		},
-		Dimension: schema.Global,
+		Regions:   []string{"ap-northeast-1", "cn-north-1"},
+		Dimension: schema.Regional,
 	}
 }
 

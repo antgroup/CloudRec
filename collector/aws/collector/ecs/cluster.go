@@ -78,15 +78,9 @@ func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res 
 
 	for _, cluster := range clusters {
 
-		services, err := listServices(ctx, client, *cluster.ClusterArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list ecs services", zap.Error(err))
-		}
+		services := listServices(ctx, client, *cluster.ClusterArn)
 
-		tasks, err := listTasks(ctx, client, *cluster.ClusterArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list ecs tasks", zap.Error(err))
-		}
+		tasks := listTasks(ctx, client, *cluster.ClusterArn)
 
 		res <- &ClusterDetail{
 			Cluster:  cluster,
@@ -122,41 +116,45 @@ func describeClusters(ctx context.Context, c *ecs.Client, clusterArns []string) 
 }
 
 // listServices retrieves all ECS service ARNs in a cluster.
-func listServices(ctx context.Context, c *ecs.Client, clusterArn string) ([]types.Service, error) {
+func listServices(ctx context.Context, c *ecs.Client, clusterArn string) []types.Service {
 	var services []types.Service
 	paginator := ecs.NewListServicesPaginator(c, &ecs.ListServicesInput{Cluster: &clusterArn})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			log.CtxLogger(ctx).Warn("failed to list ecs services", zap.Error(err))
+			return nil
 		}
 		if len(page.ServiceArns) > 0 {
 			describedServices, err := c.DescribeServices(ctx, &ecs.DescribeServicesInput{Cluster: &clusterArn, Services: page.ServiceArns, Include: []types.ServiceField{types.ServiceFieldTags}})
 			if err != nil {
-				return nil, err
+				log.CtxLogger(ctx).Warn("failed to describe ecs services", zap.Error(err))
+				return nil
 			}
 			services = append(services, describedServices.Services...)
 		}
 	}
-	return services, nil
+	return services
 }
 
 // listTasks retrieves all ECS task ARNs in a cluster.
-func listTasks(ctx context.Context, c *ecs.Client, clusterArn string) ([]types.Task, error) {
+func listTasks(ctx context.Context, c *ecs.Client, clusterArn string) []types.Task {
 	var tasks []types.Task
 	paginator := ecs.NewListTasksPaginator(c, &ecs.ListTasksInput{Cluster: &clusterArn})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			log.CtxLogger(ctx).Warn("failed to list ecs tasks", zap.Error(err))
+			return nil
 		}
 		if len(page.TaskArns) > 0 {
 			describedTasks, err := c.DescribeTasks(ctx, &ecs.DescribeTasksInput{Cluster: &clusterArn, Tasks: page.TaskArns, Include: []types.TaskField{types.TaskFieldTags}})
 			if err != nil {
-				return nil, err
+				log.CtxLogger(ctx).Warn("failed to describe ecs tasks", zap.Error(err))
+				return nil
 			}
 			tasks = append(tasks, describedTasks.Tasks...)
 		}
 	}
-	return tasks, nil
+	return tasks
 }

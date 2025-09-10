@@ -60,10 +60,8 @@ func GetIdentityPoolDetail(ctx context.Context, service schema.ServiceInterface,
 	}
 
 	for _, identityPool := range identityPools {
-		tags, err := listIdentityPoolTags(ctx, client, identityPool.IdentityPoolId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list tags for identity pool", zap.String("identityPoolId", *identityPool.IdentityPoolId), zap.Error(err))
-		}
+		tags := listIdentityPoolTags(ctx, client, identityPool.IdentityPoolId)
+
 		res <- &IdentityPoolDetail{
 			IdentityPool: identityPool,
 			Tags:         tags,
@@ -92,19 +90,15 @@ func listIdentityPools(ctx context.Context, c *cognitoidentity.Client) ([]ciType
 }
 
 // listIdentityPoolTags retrieves tags for a single identity pool.
-func listIdentityPoolTags(ctx context.Context, c *cognitoidentity.Client, identityPoolId *string) (map[string]string, error) {
+func listIdentityPoolTags(ctx context.Context, c *cognitoidentity.Client, identityPoolId *string) map[string]string {
 	input := &cognitoidentity.ListTagsForResourceInput{
 		ResourceArn: identityPoolId,
 	}
 	output, err := c.ListTagsForResource(ctx, input)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to list tags for identity pool", zap.String("identityPoolId", *identityPoolId), zap.Error(err))
-		return make(map[string]string), err
+		return make(map[string]string)
 	}
-
-	tags := make(map[string]string)
-	for key, value := range output.Tags {
-		tags[key] = value
-	}
-	return tags, nil
+	
+	return output.Tags
 }

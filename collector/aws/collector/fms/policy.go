@@ -62,23 +62,11 @@ func GetPolicyDetail(ctx context.Context, service schema.ServiceInterface, res c
 
 	for _, policy := range policies {
 
-		policyDetail, err := getPolicy(ctx, client, policy.PolicyId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get policy", zap.String("policyId", *policy.PolicyId), zap.Error(err))
-			continue
-		}
+		policyDetail := getPolicy(ctx, client, policy.PolicyId)
 
-		complianceStatus, err := listComplianceStatus(ctx, client, policy.PolicyId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list compliance status", zap.String("policyId", *policy.PolicyId), zap.Error(err))
-			continue
-		}
+		complianceStatus := listComplianceStatus(ctx, client, policy.PolicyId)
 
-		tags, err := listPolicyTags(ctx, client, policy.PolicyId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list policy tags", zap.String("policyId", *policy.PolicyId), zap.Error(err))
-			continue
-		}
+		tags := listPolicyTags(ctx, client, policy.PolicyId)
 
 		res <- &PolicyDetail{
 			Policy:           *policyDetail,
@@ -108,20 +96,20 @@ func listPolicies(ctx context.Context, c *fms.Client) ([]types.PolicySummary, er
 }
 
 // getPolicy retrieves details for a single policy.
-func getPolicy(ctx context.Context, c *fms.Client, policyId *string) (*types.Policy, error) {
+func getPolicy(ctx context.Context, c *fms.Client, policyId *string) *types.Policy {
 	input := &fms.GetPolicyInput{
 		PolicyId: policyId,
 	}
 	output, err := c.GetPolicy(ctx, input)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to get policy", zap.String("policyId", *policyId), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.Policy, nil
+	return output.Policy
 }
 
 // listComplianceStatus retrieves compliance status for a single policy.
-func listComplianceStatus(ctx context.Context, c *fms.Client, policyId *string) ([]types.PolicyComplianceStatus, error) {
+func listComplianceStatus(ctx context.Context, c *fms.Client, policyId *string) []types.PolicyComplianceStatus {
 	var complianceStatus []types.PolicyComplianceStatus
 	input := &fms.ListComplianceStatusInput{
 		PolicyId:   policyId,
@@ -133,22 +121,22 @@ func listComplianceStatus(ctx context.Context, c *fms.Client, policyId *string) 
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list compliance status", zap.String("policyId", *policyId), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		complianceStatus = append(complianceStatus, page.PolicyComplianceStatusList...)
 	}
-	return complianceStatus, nil
+	return complianceStatus
 }
 
 // listPolicyTags retrieves tags for a single policy.
-func listPolicyTags(ctx context.Context, c *fms.Client, policyId *string) (map[string]string, error) {
+func listPolicyTags(ctx context.Context, c *fms.Client, policyId *string) map[string]string {
 	input := &fms.ListTagsForResourceInput{
 		ResourceArn: policyId,
 	}
 	output, err := c.ListTagsForResource(ctx, input)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to list tags for policy", zap.String("policyId", *policyId), zap.Error(err))
-		return make(map[string]string), err
+		return make(map[string]string)
 	}
 
 	tags := make(map[string]string)
@@ -157,5 +145,5 @@ func listPolicyTags(ctx context.Context, c *fms.Client, policyId *string) (map[s
 			tags[*tag.Key] = *tag.Value
 		}
 	}
-	return tags, nil
+	return tags
 }

@@ -57,23 +57,11 @@ func GetLogGroupDetail(ctx context.Context, service schema.ServiceInterface, res
 	}
 
 	for _, lg := range logGroups {
-		metricFilters, err := describeMetricFilters(ctx, client, lg.LogGroupName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe metric filters", zap.String("loggroup", *lg.LogGroupName), zap.Error(err))
-			return err
-		}
+		metricFilters := describeMetricFilters(ctx, client, lg.LogGroupName)
 
-		policies, err := describeResourcePolicies(ctx, client)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe resource policies", zap.Error(err))
-			return err
-		}
+		policies := describeResourcePolicies(ctx, client)
 
-		tags, err := listTagsForLogGroup(ctx, client, lg.Arn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list tags for log group", zap.String("loggroup", *lg.Arn), zap.Error(err))
-			return err
-		}
+		tags := listTagsForLogGroup(ctx, client, lg.Arn)
 
 		res <- &LogGroupDetail{
 			LogGroup:         lg,
@@ -99,47 +87,47 @@ func describeLogGroups(ctx context.Context, client *cloudwatchlogs.Client) ([]ty
 	return logGroups, nil
 }
 
-func describeMetricFilters(ctx context.Context, client *cloudwatchlogs.Client, logGroupName *string) ([]types.MetricFilter, error) {
+func describeMetricFilters(ctx context.Context, client *cloudwatchlogs.Client, logGroupName *string) []types.MetricFilter {
 	var metricFilters []types.MetricFilter
 	paginator := cloudwatchlogs.NewDescribeMetricFiltersPaginator(client, &cloudwatchlogs.DescribeMetricFiltersInput{LogGroupName: logGroupName})
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to describe metric filters", zap.String("loggroup", *logGroupName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		metricFilters = append(metricFilters, output.MetricFilters...)
 	}
-	return metricFilters, nil
+	return metricFilters
 }
 
-func describeResourcePolicies(ctx context.Context, client *cloudwatchlogs.Client) ([]types.ResourcePolicy, error) {
+func describeResourcePolicies(ctx context.Context, client *cloudwatchlogs.Client) []types.ResourcePolicy {
 	var policies []types.ResourcePolicy
 	out, err := client.DescribeResourcePolicies(ctx, &cloudwatchlogs.DescribeResourcePoliciesInput{})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to describe resource policies", zap.Error(err))
-		return nil, err
+		return nil
 	}
 	policies = append(policies, out.ResourcePolicies...)
 	if out.NextToken != nil {
 		out, err = client.DescribeResourcePolicies(ctx, &cloudwatchlogs.DescribeResourcePoliciesInput{NextToken: out.NextToken})
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to describe resource policies", zap.Error(err))
-			return nil, err
+			return nil
 		}
 		policies = append(policies, out.ResourcePolicies...)
 
-		return policies, nil
+		return policies
 	}
 
-	return policies, nil
+	return policies
 }
 
-func listTagsForLogGroup(ctx context.Context, client *cloudwatchlogs.Client, logGroupArn *string) (map[string]string, error) {
+func listTagsForLogGroup(ctx context.Context, client *cloudwatchlogs.Client, logGroupArn *string) map[string]string {
 	output, err := client.ListTagsForResource(ctx, &cloudwatchlogs.ListTagsForResourceInput{ResourceArn: logGroupArn})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to list tags for log group", zap.String("loggroup", *logGroupArn), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.Tags, nil
+	return output.Tags
 }

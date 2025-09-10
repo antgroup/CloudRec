@@ -60,15 +60,9 @@ func GetCertificateDetail(ctx context.Context, service schema.ServiceInterface, 
 
 	for _, certificate := range certificates {
 
-		certificateDetail, err := describeCertificate(ctx, client, certificate.CertificateArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe certificate", zap.String("certificate", *certificate.CertificateArn), zap.Error(err))
-		}
+		certificateDetail := describeCertificate(ctx, client, certificate.CertificateArn)
 
-		tags, err := listCertificateTags(ctx, client, certificate.CertificateArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list certificate tags", zap.String("certificate", *certificate.CertificateArn), zap.Error(err))
-		}
+		tags := listCertificateTags(ctx, client, certificate.CertificateArn)
 
 		res <- &CertificateDetail{
 			Certificate: certificateDetail,
@@ -94,23 +88,25 @@ func listCertificates(ctx context.Context, c *acm.Client) ([]types.CertificateSu
 }
 
 // describeCertificate retrieves detailed information for a certificate.
-func describeCertificate(ctx context.Context, c *acm.Client, certificateArn *string) (types.CertificateDetail, error) {
+func describeCertificate(ctx context.Context, c *acm.Client, certificateArn *string) types.CertificateDetail {
 	output, err := c.DescribeCertificate(ctx, &acm.DescribeCertificateInput{
 		CertificateArn: certificateArn,
 	})
 	if err != nil {
-		return types.CertificateDetail{}, err
+		log.CtxLogger(ctx).Warn("failed to describe certificate", zap.String("certificate", *certificateArn), zap.Error(err))
+		return types.CertificateDetail{}
 	}
-	return *output.Certificate, nil
+	return *output.Certificate
 }
 
 // listCertificateTags retrieves all tags for a certificate.
-func listCertificateTags(ctx context.Context, c *acm.Client, certificateArn *string) ([]types.Tag, error) {
+func listCertificateTags(ctx context.Context, c *acm.Client, certificateArn *string) []types.Tag {
 	output, err := c.ListTagsForCertificate(ctx, &acm.ListTagsForCertificateInput{
 		CertificateArn: certificateArn,
 	})
 	if err != nil {
-		return nil, err
+		log.CtxLogger(ctx).Warn("failed to list certificate tags", zap.String("certificate", *certificateArn), zap.Error(err))
+		return nil
 	}
-	return output.Tags, nil
+	return output.Tags
 }

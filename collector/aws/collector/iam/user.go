@@ -38,7 +38,8 @@ func GetUserResource() schema.Resource {
 			ResourceId:   "$.User.Arn",
 			ResourceName: "$.User.UserName",
 		},
-		Dimension: schema.Global,
+		Regions:   []string{"ap-northeast-1"},
+		Dimension: schema.Regional,
 	}
 }
 
@@ -64,36 +65,17 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 	}
 
 	for _, user := range users {
-		attachedPolicies, err := listAttachedUserPolicies(ctx, client, user.UserName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list attached user policies", zap.Error(err))
-			return err
-		}
-		inlinePolicies, err := listUserPolicies(ctx, client, user.UserName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list user inline policies", zap.Error(err))
-			return err
-		}
-		mfaDevices, err := listMFADevices(ctx, client, user.UserName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list mfa devices", zap.Error(err))
-			return err
-		}
-		accessKeys, err := listAccessKeys(ctx, client, user.UserName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list access keys", zap.Error(err))
-			return err
-		}
-		tags, err := listUserTags(ctx, client, user.UserName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list user tags", zap.Error(err))
-			return err
-		}
-		loginProfile, err := getLoginProfile(ctx, client, user.UserName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get login profile", zap.Error(err))
-			return err
-		}
+		attachedPolicies := listAttachedUserPolicies(ctx, client, user.UserName)
+
+		inlinePolicies := listUserPolicies(ctx, client, user.UserName)
+
+		mfaDevices := listMFADevices(ctx, client, user.UserName)
+
+		accessKeys := listAccessKeys(ctx, client, user.UserName)
+
+		tags := listUserTags(ctx, client, user.UserName)
+
+		loginProfile := getLoginProfile(ctx, client, user.UserName)
 
 		res <- &UserDetail{
 			User:             user,
@@ -124,86 +106,86 @@ func listUsers(ctx context.Context, c *iam.Client) ([]types.User, error) {
 }
 
 // listAttachedUserPolicies retrieves all managed policies attached to a user.
-func listAttachedUserPolicies(ctx context.Context, c *iam.Client, userName *string) ([]types.AttachedPolicy, error) {
+func listAttachedUserPolicies(ctx context.Context, c *iam.Client, userName *string) []types.AttachedPolicy {
 	var policies []types.AttachedPolicy
 	paginator := iam.NewListAttachedUserPoliciesPaginator(c, &iam.ListAttachedUserPoliciesInput{UserName: userName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list attached user policies", zap.String("user", *userName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		policies = append(policies, page.AttachedPolicies...)
 	}
-	return policies, nil
+	return policies
 }
 
 // listUserPolicies retrieves all inline policy names for a user.
-func listUserPolicies(ctx context.Context, c *iam.Client, userName *string) ([]string, error) {
+func listUserPolicies(ctx context.Context, c *iam.Client, userName *string) []string {
 	var policies []string
 	paginator := iam.NewListUserPoliciesPaginator(c, &iam.ListUserPoliciesInput{UserName: userName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list user inline policies", zap.String("user", *userName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		policies = append(policies, page.PolicyNames...)
 	}
-	return policies, nil
+	return policies
 }
 
 // listMFADevices retrieves all MFA devices for a user.
-func listMFADevices(ctx context.Context, c *iam.Client, userName *string) ([]types.MFADevice, error) {
+func listMFADevices(ctx context.Context, c *iam.Client, userName *string) []types.MFADevice {
 	var devices []types.MFADevice
 	paginator := iam.NewListMFADevicesPaginator(c, &iam.ListMFADevicesInput{UserName: userName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list mfa devices", zap.String("user", *userName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		devices = append(devices, page.MFADevices...)
 	}
-	return devices, nil
+	return devices
 }
 
 // listAccessKeys retrieves all access key metadata for a user.
-func listAccessKeys(ctx context.Context, c *iam.Client, userName *string) ([]types.AccessKeyMetadata, error) {
+func listAccessKeys(ctx context.Context, c *iam.Client, userName *string) []types.AccessKeyMetadata {
 	var keys []types.AccessKeyMetadata
 	paginator := iam.NewListAccessKeysPaginator(c, &iam.ListAccessKeysInput{UserName: userName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list access keys", zap.String("user", *userName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		keys = append(keys, page.AccessKeyMetadata...)
 	}
-	return keys, nil
+	return keys
 }
 
 // getLoginProfile retrieves the login profile for a user.
-func getLoginProfile(ctx context.Context, c *iam.Client, userName *string) (*iam.GetLoginProfileOutput, error) {
+func getLoginProfile(ctx context.Context, c *iam.Client, userName *string) *iam.GetLoginProfileOutput {
 	output, err := c.GetLoginProfile(ctx, &iam.GetLoginProfileInput{UserName: userName})
 	if err != nil {
 		log.CtxLogger(ctx).Debug("failed to get login profile", zap.String("user", *userName), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output, nil
+	return output
 }
 
 // listUserTags retrieves all tags for a user.
-func listUserTags(ctx context.Context, c *iam.Client, userName *string) ([]types.Tag, error) {
+func listUserTags(ctx context.Context, c *iam.Client, userName *string) []types.Tag {
 	var tags []types.Tag
 	paginator := iam.NewListUserTagsPaginator(c, &iam.ListUserTagsInput{UserName: userName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list user tags", zap.String("user", *userName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		tags = append(tags, page.Tags...)
 	}
-	return tags, nil
+	return tags
 }

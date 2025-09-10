@@ -58,11 +58,8 @@ func GetTaskDefinitionDetail(ctx context.Context, service schema.ServiceInterfac
 	}
 
 	for _, taskDefinitionArn := range taskDefinitionArns {
-		taskDefinitionDetail, err := describeTaskDefinition(ctx, client, taskDefinitionArn)
-		if err != nil {
-			log.CtxLogger(ctx).Error("failed to describe ecs task definition", zap.Error(err))
-			return err
-		}
+		taskDefinitionDetail := describeTaskDefinition(ctx, client, taskDefinitionArn)
+
 		res <- taskDefinitionDetail
 	}
 
@@ -84,10 +81,11 @@ func listTaskDefinitions(ctx context.Context, c *ecs.Client) ([]string, error) {
 }
 
 // describeTaskDefinition retrieves the details for a single task definition.
-func describeTaskDefinition(ctx context.Context, c *ecs.Client, taskDefinitionArn string) (*TaskDefinitionDetail, error) {
+func describeTaskDefinition(ctx context.Context, c *ecs.Client, taskDefinitionArn string) *TaskDefinitionDetail {
 	output, err := c.DescribeTaskDefinition(ctx, &ecs.DescribeTaskDefinitionInput{TaskDefinition: &taskDefinitionArn, Include: []types.TaskDefinitionField{types.TaskDefinitionFieldTags}})
 	if err != nil {
-		return nil, err
+		log.CtxLogger(ctx).Error("failed to describe ecs task definition", zap.Error(err))
+		return nil
 	}
-	return &TaskDefinitionDetail{TaskDefinition: *output.TaskDefinition}, nil
+	return &TaskDefinitionDetail{TaskDefinition: *output.TaskDefinition}
 }

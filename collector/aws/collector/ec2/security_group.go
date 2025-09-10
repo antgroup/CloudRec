@@ -16,14 +16,14 @@
 package ec2
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/cloudrec/aws/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -84,7 +84,7 @@ func describeSecurityGroupDetails(ctx context.Context, c *ec2.Client) (securityG
 			},
 		})
 		if err != nil {
-			return nil, err
+			continue
 		}
 		securityGroupDetails = append(securityGroupDetails, SecurityGroupDetail{
 			SecurityGroup:      securityGroup,

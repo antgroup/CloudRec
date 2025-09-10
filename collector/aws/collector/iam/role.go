@@ -62,21 +62,11 @@ func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res cha
 
 	for _, role := range roles {
 
-		attachedPolicies, err := listAttachedRolePolicies(ctx, client, role.RoleName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list attached role policies", zap.String("role", *role.RoleName), zap.Error(err))
-			return err
-		}
-		inlinePolicies, err := listRolePolicies(ctx, client, role.RoleName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list role inline policies", zap.String("role", *role.RoleName), zap.Error(err))
-			return err
-		}
-		tags, err := listRoleTags(ctx, client, role.RoleName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list role tags", zap.String("role", *role.RoleName), zap.Error(err))
-			return err
-		}
+		attachedPolicies := listAttachedRolePolicies(ctx, client, role.RoleName)
+
+		inlinePolicies := listRolePolicies(ctx, client, role.RoleName)
+
+		tags := listRoleTags(ctx, client, role.RoleName)
 
 		res <- &RoleDetail{
 			Role:             role,
@@ -104,46 +94,46 @@ func listRoles(ctx context.Context, c *iam.Client) ([]types.Role, error) {
 }
 
 // listAttachedRolePolicies retrieves all managed policies attached to a role.
-func listAttachedRolePolicies(ctx context.Context, c *iam.Client, roleName *string) ([]types.AttachedPolicy, error) {
+func listAttachedRolePolicies(ctx context.Context, c *iam.Client, roleName *string) []types.AttachedPolicy {
 	var policies []types.AttachedPolicy
 	paginator := iam.NewListAttachedRolePoliciesPaginator(c, &iam.ListAttachedRolePoliciesInput{RoleName: roleName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list attached role policies", zap.String("role", *roleName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		policies = append(policies, page.AttachedPolicies...)
 	}
-	return policies, nil
+	return policies
 }
 
 // listRolePolicies retrieves all inline policy names for a role.
-func listRolePolicies(ctx context.Context, c *iam.Client, roleName *string) ([]string, error) {
+func listRolePolicies(ctx context.Context, c *iam.Client, roleName *string) []string {
 	var policies []string
 	paginator := iam.NewListRolePoliciesPaginator(c, &iam.ListRolePoliciesInput{RoleName: roleName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list role inline policies", zap.String("role", *roleName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		policies = append(policies, page.PolicyNames...)
 	}
-	return policies, nil
+	return policies
 }
 
 // listRoleTags retrieves all tags for a role.
-func listRoleTags(ctx context.Context, c *iam.Client, roleName *string) ([]types.Tag, error) {
+func listRoleTags(ctx context.Context, c *iam.Client, roleName *string) []types.Tag {
 	var tags []types.Tag
 	paginator := iam.NewListRoleTagsPaginator(c, &iam.ListRoleTagsInput{RoleName: roleName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list role tags", zap.String("role", *roleName), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		tags = append(tags, page.Tags...)
 	}
-	return tags, nil
+	return tags
 }

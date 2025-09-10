@@ -66,15 +66,9 @@ func GetDetectorDetail(ctx context.Context, service schema.ServiceInterface, res
 			continue // If we can't get the detector, we can't proceed.
 		}
 
-		administrator, err := getAdministratorAccount(ctx, client, detectorId)
-		if err != nil {
-			log.CtxLogger(ctx).Error("failed to getAdministratorAccount detectors", zap.Error(err))
-		}
+		administrator := getAdministratorAccount(ctx, client, detectorId)
 
-		tags, err := listTagsForResource(ctx, client, detectorId)
-		if err != nil {
-			log.CtxLogger(ctx).Error("failed to listTagsForResource detectors", zap.Error(err))
-		}
+		tags := listTagsForResource(ctx, client, detectorId)
 
 		res <- &DetectorDetail{
 			DetectorId:    detectorId,
@@ -112,23 +106,23 @@ func getDetector(ctx context.Context, c *guardduty.Client, detectorId string) (*
 }
 
 // getAdministratorAccount retrieves the administrator account for a detector.
-func getAdministratorAccount(ctx context.Context, c *guardduty.Client, detectorId string) (*types.Administrator, error) {
+func getAdministratorAccount(ctx context.Context, c *guardduty.Client, detectorId string) *types.Administrator {
 	output, err := c.GetAdministratorAccount(ctx, &guardduty.GetAdministratorAccountInput{DetectorId: &detectorId})
 	if err != nil {
 		// This call fails if the account is not a member, which is a normal case.
 		log.CtxLogger(ctx).Debug("failed to get administrator account", zap.String("detectorId", detectorId), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.Administrator, nil
+	return output.Administrator
 }
 
 // listTagsForResource retrieves all tags for a resource.
-func listTagsForResource(ctx context.Context, c *guardduty.Client, detectorId string) (map[string]string, error) {
+func listTagsForResource(ctx context.Context, c *guardduty.Client, detectorId string) map[string]string {
 	arn := fmt.Sprintf("arn:aws:guardduty:%s:%s:detector/%s", c.Options().Region, log.GetCloudAccountId(ctx), detectorId)
 	output, err := c.ListTagsForResource(ctx, &guardduty.ListTagsForResourceInput{ResourceArn: &arn})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to list tags for resource", zap.String("arn", arn), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.Tags, nil
+	return output.Tags
 }

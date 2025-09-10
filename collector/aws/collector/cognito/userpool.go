@@ -62,23 +62,11 @@ func GetUserPoolDetail(ctx context.Context, service schema.ServiceInterface, res
 	}
 
 	for _, userPool := range userPools {
-		userPoolClients, err := listUserPoolClients(ctx, client, userPool.Id)
-		if err != nil {
-			log.CtxLogger(ctx).Error("failed to list user pool clients", zap.String("userPoolId", *userPool.Id), zap.Error(err))
-			return err
-		}
+		userPoolClients := listUserPoolClients(ctx, client, userPool.Id)
 
-		users, err := listUsers(ctx, client, userPool.Id)
-		if err != nil {
-			log.CtxLogger(ctx).Error("failed to list users", zap.String("userPoolId", *userPool.Id), zap.Error(err))
-			return err
-		}
+		users := listUsers(ctx, client, userPool.Id)
 
-		tags, err := listUserPoolTags(ctx, client, userPool.Id)
-		if err != nil {
-			log.CtxLogger(ctx).Error("failed to list user pool tags", zap.String("userPoolId", *userPool.Id), zap.Error(err))
-			return err
-		}
+		tags := listUserPoolTags(ctx, client, userPool.Id)
 
 		res <- &UserPoolDetail{
 			UserPool:        userPool,
@@ -110,7 +98,7 @@ func listUserPools(ctx context.Context, c *cognitoidentityprovider.Client) ([]ty
 }
 
 // listUserPoolClients retrieves clients for a single user pool.
-func listUserPoolClients(ctx context.Context, c *cognitoidentityprovider.Client, userPoolId *string) ([]types.UserPoolClientDescription, error) {
+func listUserPoolClients(ctx context.Context, c *cognitoidentityprovider.Client, userPoolId *string) []types.UserPoolClientDescription {
 	var userPoolClients []types.UserPoolClientDescription
 	input := &cognitoidentityprovider.ListUserPoolClientsInput{
 		UserPoolId: userPoolId,
@@ -122,15 +110,15 @@ func listUserPoolClients(ctx context.Context, c *cognitoidentityprovider.Client,
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list user pool clients", zap.String("userPoolId", *userPoolId), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		userPoolClients = append(userPoolClients, page.UserPoolClients...)
 	}
-	return userPoolClients, nil
+	return userPoolClients
 }
 
 // listUsers retrieves users for a single user pool.
-func listUsers(ctx context.Context, c *cognitoidentityprovider.Client, userPoolId *string) ([]types.UserType, error) {
+func listUsers(ctx context.Context, c *cognitoidentityprovider.Client, userPoolId *string) []types.UserType {
 	var users []types.UserType
 	input := &cognitoidentityprovider.ListUsersInput{
 		UserPoolId: userPoolId,
@@ -142,27 +130,23 @@ func listUsers(ctx context.Context, c *cognitoidentityprovider.Client, userPoolI
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list users", zap.String("userPoolId", *userPoolId), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		users = append(users, page.Users...)
 	}
-	return users, nil
+	return users
 }
 
 // listUserPoolTags retrieves tags for a single user pool.
-func listUserPoolTags(ctx context.Context, c *cognitoidentityprovider.Client, userPoolId *string) (map[string]string, error) {
+func listUserPoolTags(ctx context.Context, c *cognitoidentityprovider.Client, userPoolId *string) map[string]string {
 	input := &cognitoidentityprovider.ListTagsForResourceInput{
 		ResourceArn: userPoolId,
 	}
 	output, err := c.ListTagsForResource(ctx, input)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to list tags for user pool", zap.String("userPoolId", *userPoolId), zap.Error(err))
-		return make(map[string]string), err
+		return make(map[string]string)
 	}
 
-	tags := make(map[string]string)
-	for key, value := range output.Tags {
-		tags[key] = value
-	}
-	return tags, nil
+	return output.Tags
 }

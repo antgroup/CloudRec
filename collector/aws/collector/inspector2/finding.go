@@ -60,10 +60,7 @@ func GetFindingDetail(ctx context.Context, service schema.ServiceInterface, res 
 	}
 
 	for _, finding := range findings {
-		tags, err := listFindingTags(ctx, client, finding.FindingArn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list finding tags", zap.String("findingArn", *finding.FindingArn), zap.Error(err))
-		}
+		tags := listFindingTags(ctx, client, finding.FindingArn)
 
 		res <- &FindingDetail{
 			Finding: finding,
@@ -93,19 +90,15 @@ func listFindings(ctx context.Context, c *inspector2.Client) ([]types.Finding, e
 }
 
 // listFindingTags retrieves tags for a single finding.
-func listFindingTags(ctx context.Context, c *inspector2.Client, findingArn *string) (map[string]string, error) {
+func listFindingTags(ctx context.Context, c *inspector2.Client, findingArn *string) map[string]string {
 	input := &inspector2.ListTagsForResourceInput{
 		ResourceArn: findingArn,
 	}
 	output, err := c.ListTagsForResource(ctx, input)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to list tags for finding", zap.String("findingArn", *findingArn), zap.Error(err))
-		return make(map[string]string), err
+		return make(map[string]string)
 	}
 
-	tags := make(map[string]string)
-	for key, value := range output.Tags {
-		tags[key] = value
-	}
-	return tags, nil
+	return output.Tags
 }

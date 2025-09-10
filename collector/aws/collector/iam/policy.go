@@ -60,16 +60,9 @@ func GetPolicyDetail(ctx context.Context, service schema.ServiceInterface, res c
 	}
 
 	for _, policy := range policies {
-		version, err := getPolicyVersion(ctx, client, policy.Arn, policy.DefaultVersionId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get policy version", zap.String("policyArn", *policy.Arn), zap.Error(err))
-			continue
-		}
-		tags, err := listPolicyTags(ctx, client, policy.Arn)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list policy tags", zap.String("policyArn", *policy.Arn), zap.Error(err))
-			continue
-		}
+		version := getPolicyVersion(ctx, client, policy.Arn, policy.DefaultVersionId)
+
+		tags := listPolicyTags(ctx, client, policy.Arn)
 
 		res <- &PolicyDetail{
 			Policy:  policy,
@@ -96,26 +89,26 @@ func listPolicies(ctx context.Context, c *iam.Client) ([]types.Policy, error) {
 }
 
 // getPolicyVersion retrieves the specified version of a policy.
-func getPolicyVersion(ctx context.Context, c *iam.Client, policyArn *string, versionId *string) (*types.PolicyVersion, error) {
+func getPolicyVersion(ctx context.Context, c *iam.Client, policyArn *string, versionId *string) *types.PolicyVersion {
 	output, err := c.GetPolicyVersion(ctx, &iam.GetPolicyVersionInput{PolicyArn: policyArn, VersionId: versionId})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to get policy version", zap.String("policyArn", *policyArn), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.PolicyVersion, nil
+	return output.PolicyVersion
 }
 
 // listPolicyTags retrieves all tags for a policy.
-func listPolicyTags(ctx context.Context, c *iam.Client, policyArn *string) ([]types.Tag, error) {
+func listPolicyTags(ctx context.Context, c *iam.Client, policyArn *string) []types.Tag {
 	var tags []types.Tag
 	paginator := iam.NewListPolicyTagsPaginator(c, &iam.ListPolicyTagsInput{PolicyArn: policyArn})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list policy tags", zap.String("policyArn", *policyArn), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		tags = append(tags, page.Tags...)
 	}
-	return tags, nil
+	return tags
 }

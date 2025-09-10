@@ -60,16 +60,9 @@ func GetRecorderDetail(ctx context.Context, service schema.ServiceInterface, res
 	}
 
 	for _, recorder := range recorders {
-		status, err := describeConfigurationRecorderStatus(ctx, client, *recorder.Name)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe config recorder status", zap.String("recorderName", *recorder.Name), zap.Error(err))
-			continue
-		}
-		deliveryChannel, err := describeDeliveryChannels(ctx, client, *recorder.Name)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe delivery channels", zap.String("recorderName", *recorder.Name), zap.Error(err))
-			continue
-		}
+		status := describeConfigurationRecorderStatus(ctx, client, *recorder.Name)
+
+		deliveryChannel := describeDeliveryChannels(ctx, client, *recorder.Name)
 
 		res <- &RecorderDetail{
 			Recorder:        recorder,
@@ -91,31 +84,31 @@ func describeConfigurationRecorders(ctx context.Context, c *configservice.Client
 }
 
 // describeConfigurationRecorderStatus retrieves the status for a single recorder.
-func describeConfigurationRecorderStatus(ctx context.Context, c *configservice.Client, recorderName string) (*types.ConfigurationRecorderStatus, error) {
+func describeConfigurationRecorderStatus(ctx context.Context, c *configservice.Client, recorderName string) *types.ConfigurationRecorderStatus {
 	output, err := c.DescribeConfigurationRecorderStatus(ctx, &configservice.DescribeConfigurationRecorderStatusInput{
 		ConfigurationRecorderNames: []string{recorderName},
 	})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to describe config recorder status", zap.String("recorderName", recorderName), zap.Error(err))
-		return nil, err
+		return nil
 	}
 	if len(output.ConfigurationRecordersStatus) > 0 {
-		return &output.ConfigurationRecordersStatus[0], nil
+		return &output.ConfigurationRecordersStatus[0]
 	}
-	return nil, nil
+	return nil
 }
 
 // describeDeliveryChannels retrieves the delivery channel for a single recorder.
-func describeDeliveryChannels(ctx context.Context, c *configservice.Client, recorderName string) (*types.DeliveryChannel, error) {
+func describeDeliveryChannels(ctx context.Context, c *configservice.Client, recorderName string) *types.DeliveryChannel {
 	output, err := c.DescribeDeliveryChannels(ctx, &configservice.DescribeDeliveryChannelsInput{
 		DeliveryChannelNames: []string{recorderName},
 	})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to describe delivery channels", zap.String("recorderName", recorderName), zap.Error(err))
-		return nil, err
+		return nil
 	}
 	if len(output.DeliveryChannels) > 0 {
-		return &output.DeliveryChannels[0], nil
+		return &output.DeliveryChannels[0]
 	}
-	return nil, nil
+	return nil
 }

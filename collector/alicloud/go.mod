@@ -14,7 +14,7 @@ require (
 	github.com/alibabacloud-go/cas-20200407/v3 v3.0.1
 	github.com/alibabacloud-go/cbn-20170912/v2 v2.2.1
 	github.com/alibabacloud-go/cloudapi-20160714/v5 v5.5.0
-	github.com/alibabacloud-go/cloudfw-20171207/v7 v7.0.4
+	github.com/alibabacloud-go/cloudfw-20171207/v8 v8.2.2
 	github.com/alibabacloud-go/cr-20181201/v2 v2.5.0
 	github.com/alibabacloud-go/cs-20151215/v5 v5.7.10
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.11
@@ -29,6 +29,7 @@ require (
 	github.com/alibabacloud-go/fc-20230330/v4 v4.1.4
 	github.com/alibabacloud-go/gpdb-20160503/v3 v3.8.2
 	github.com/alibabacloud-go/hitsdb-20200615/v5 v5.7.0
+	github.com/alibabacloud-go/hologram-20220601 v1.5.2
 	github.com/alibabacloud-go/ims-20190815/v4 v4.1.0
 	github.com/alibabacloud-go/kms-20160120/v3 v3.2.3
 	github.com/alibabacloud-go/maxcompute-20220104 v1.4.1
@@ -36,6 +37,7 @@ require (
 	github.com/alibabacloud-go/nas-20170626/v3 v3.4.0
 	github.com/alibabacloud-go/nlb-20220430/v3 v3.1.0
 	github.com/alibabacloud-go/oceanbasepro-20190901/v8 v8.2.0
+	github.com/alibabacloud-go/opensearch-20171225/v3 v3.0.1
 	github.com/alibabacloud-go/polardb-20170801/v6 v6.1.1
 	github.com/alibabacloud-go/privatelink-20200415/v5 v5.0.2
 	github.com/alibabacloud-go/r-kvstore-20150101/v5 v5.1.0
@@ -50,9 +52,10 @@ require (
 	github.com/alibabacloud-go/tablestore-20201209 v1.0.1
 	github.com/alibabacloud-go/tea v1.3.11
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.7
+	github.com/alibabacloud-go/vpcpeer-20220101/v3 v3.0.3
 	github.com/alibabacloud-go/waf-openapi-20211001/v4 v4.6.0
 	github.com/alibabacloud-go/yundun-bastionhost-20191209/v2 v2.3.0
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.48
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
 	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1
 	github.com/core-sdk v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.27.0

@@ -17,7 +17,7 @@ package cloudfw
 
 import (
 	"context"
-	cloudfw20171207 "github.com/alibabacloud-go/cloudfw-20171207/v7/client"
+	cloudfw20171207 "github.com/alibabacloud-go/cloudfw-20171207/v8/client"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -51,6 +51,7 @@ func GetDetail(ctx context.Context, service schema.ServiceInterface, res chan<- 
 
 	res <- &CloudfwConfigDetail{
 		CloudfwVersionInfo: info.Body,
+		LogStoreInfo:       describeLogStoreInfo(ctx, cli),
 	}
 
 	return nil
@@ -58,4 +59,15 @@ func GetDetail(ctx context.Context, service schema.ServiceInterface, res chan<- 
 
 type CloudfwConfigDetail struct {
 	CloudfwVersionInfo *cloudfw20171207.DescribeUserBuyVersionResponseBody
+	LogStoreInfo       *cloudfw20171207.DescribeLogStoreInfoResponseBody
+}
+
+func describeLogStoreInfo(ctx context.Context, cli *cloudfw20171207.Client) *cloudfw20171207.DescribeLogStoreInfoResponseBody {
+	resp, err := cli.DescribeLogStoreInfo()
+	if err != nil {
+		log.CtxLogger(ctx).Warn("DescribeLogStoreInfo Error", zap.Error(err))
+		return nil
+	}
+
+	return resp.Body
 }

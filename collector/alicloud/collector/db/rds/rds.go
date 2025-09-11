@@ -101,7 +101,9 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 				SQLCollectorPolicy:       describeSQLCollectorPolicy(ctx, cli, i.DBInstanceId),
 				BackupPolicy:             describeBackupPolicy(ctx, cli, i.DBInstanceId),
 				SqlLogConfig:             describeSqlLogConfig(ctx, dasCli, i.DBInstanceId),
+				Accounts:                 describeAccounts(ctx, cli, i.DBInstanceId),
 			}
+
 		}
 		if count >= int(*bd.TotalRecordCount) || len(bd.Items.DBInstance) == 0 {
 			break
@@ -122,6 +124,21 @@ type Detail struct {
 	SQLCollectorPolicy       *rds20140815.DescribeSQLCollectorPolicyResponseBody
 	BackupPolicy             *rds20140815.DescribeBackupPolicyResponseBody
 	SqlLogConfig             *das20200116.DescribeSqlLogConfigResponseBodyData
+	Accounts                 []*rds20140815.DescribeAccountsResponseBodyAccountsDBInstanceAccount
+}
+
+// This interface is used to query the account information of the RDS instance.
+func describeAccounts(ctx context.Context, cli *rds20140815.Client, id *string) []*rds20140815.DescribeAccountsResponseBodyAccountsDBInstanceAccount {
+	request := &rds20140815.DescribeAccountsRequest{
+		DBInstanceId: id,
+	}
+
+	resp, err := cli.DescribeAccounts(request)
+	if err != nil {
+		log.CtxLogger(ctx).Error("DescribeAccounts error", zap.Error(err))
+		return nil
+	}
+	return resp.Body.Accounts.DBInstanceAccount
 }
 
 // This interface is used to query the backup settings of the RDS instance.

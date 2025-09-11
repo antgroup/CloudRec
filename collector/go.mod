@@ -41,7 +41,7 @@ require (
 	github.com/alibabacloud-go/cas-20200407/v3 v3.0.1 // indirect
 	github.com/alibabacloud-go/cbn-20170912/v2 v2.2.1 // indirect
 	github.com/alibabacloud-go/cloudapi-20160714/v5 v5.5.0 // indirect
-	github.com/alibabacloud-go/cloudfw-20171207/v7 v7.0.4 // indirect
+	github.com/alibabacloud-go/cloudfw-20171207/v8 v8.2.2 // indirect
 	github.com/alibabacloud-go/cr-20181201/v2 v2.5.0 // indirect
 	github.com/alibabacloud-go/cs-20151215/v5 v5.7.10 // indirect
 	github.com/alibabacloud-go/darabonba-array v0.1.0 // indirect
@@ -56,12 +56,14 @@ require (
 	github.com/alibabacloud-go/debug v1.0.1 // indirect
 	github.com/alibabacloud-go/dms-enterprise-20181101 v1.63.0 // indirect
 	github.com/alibabacloud-go/eds-aic-20230930/v4 v4.11.5 // indirect
+	github.com/alibabacloud-go/eflo-controller-20221215/v2 v2.7.0 // indirect
 	github.com/alibabacloud-go/elasticsearch-20170613/v3 v3.0.7 // indirect
 	github.com/alibabacloud-go/endpoint-util v1.1.0 // indirect
 	github.com/alibabacloud-go/ess-20220222/v2 v2.10.1 // indirect
 	github.com/alibabacloud-go/fc-20230330/v4 v4.1.4 // indirect
 	github.com/alibabacloud-go/gpdb-20160503/v3 v3.9.1 // indirect
 	github.com/alibabacloud-go/hitsdb-20200615/v5 v5.7.0 // indirect
+	github.com/alibabacloud-go/hologram-20220601 v1.5.2 // indirect
 	github.com/alibabacloud-go/ims-20190815/v4 v4.1.1 // indirect
 	github.com/alibabacloud-go/kms-20160120/v3 v3.2.3 // indirect
 	github.com/alibabacloud-go/maxcompute-20220104 v1.4.1 // indirect
@@ -71,6 +73,7 @@ require (
 	github.com/alibabacloud-go/oceanbasepro-20190901/v8 v8.2.0 // indirect
 	github.com/alibabacloud-go/openapi-util v0.1.1 // indirect
 	github.com/alibabacloud-go/openplatform-20191219/v2 v2.0.1 // indirect
+	github.com/alibabacloud-go/opensearch-20171225/v3 v3.0.1 // indirect
 	github.com/alibabacloud-go/polardb-20170801/v6 v6.2.1 // indirect
 	github.com/alibabacloud-go/privatelink-20200415/v5 v5.0.2 // indirect
 	github.com/alibabacloud-go/r-kvstore-20150101/v5 v5.2.1 // indirect
@@ -90,9 +93,10 @@ require (
 	github.com/alibabacloud-go/tea-utils v1.3.6 // indirect
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.7 // indirect
 	github.com/alibabacloud-go/tea-xml v1.1.3 // indirect
+	github.com/alibabacloud-go/vpcpeer-20220101/v3 v3.0.3 // indirect
 	github.com/alibabacloud-go/waf-openapi-20211001/v4 v4.6.0 // indirect
 	github.com/alibabacloud-go/yundun-bastionhost-20191209/v2 v2.3.0 // indirect
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.48 // indirect
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107 // indirect
 	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1 // indirect
 	github.com/aliyun/credentials-go v1.4.5 // indirect
 	github.com/aws/aws-sdk-go v1.44.320 // indirect

@@ -17,7 +17,7 @@ package collector
 
 import (
 	"context"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/bpstudio"
+	opensearch20171225 "github.com/alibabacloud-go/opensearch-20171225/v3/client"
 	"net/http"
 	"strings"
 	"time"
@@ -31,7 +31,7 @@ import (
 	cas20200407 "github.com/alibabacloud-go/cas-20200407/v3/client"
 	cbn20170912 "github.com/alibabacloud-go/cbn-20170912/v2/client"
 	cloudapi20160714 "github.com/alibabacloud-go/cloudapi-20160714/v5/client"
-	cloudfw20171207 "github.com/alibabacloud-go/cloudfw-20171207/v7/client"
+	cloudfw20171207 "github.com/alibabacloud-go/cloudfw-20171207/v8/client"
 	cr20181201 "github.com/alibabacloud-go/cr-20181201/v2/client"
 	cs20151215 "github.com/alibabacloud-go/cs-20151215/v5/client"
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
@@ -46,6 +46,7 @@ import (
 	fc20230330 "github.com/alibabacloud-go/fc-20230330/v4/client"
 	gpdb20160503 "github.com/alibabacloud-go/gpdb-20160503/v3/client"
 	hitsdb20200615 "github.com/alibabacloud-go/hitsdb-20200615/v5/client"
+	hologram20220601 "github.com/alibabacloud-go/hologram-20220601/client"
 	ims20190815 "github.com/alibabacloud-go/ims-20190815/v4/client"
 	kms20160120 "github.com/alibabacloud-go/kms-20160120/v3/client"
 	maxcompute20220104 "github.com/alibabacloud-go/maxcompute-20220104/client"
@@ -67,19 +68,23 @@ import (
 	tablestore20201209 "github.com/alibabacloud-go/tablestore-20201209/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
+	vpcpeer20220101 "github.com/alibabacloud-go/vpcpeer-20220101/v3/client"
 	waf_openapi20211001 "github.com/alibabacloud-go/waf-openapi-20211001/v4/client"
 	yundun_bastionhost20191209 "github.com/alibabacloud-go/yundun-bastionhost-20191209/v2/client"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/actiontrail"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alikafka"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/bpstudio"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cdn"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/clickhouse"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/dbs"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/dcdn"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/dts"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/dysmsapi"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eci"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/eflo"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/eipanycast"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ens"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ga"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/hbase"
@@ -92,6 +97,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/sgw"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vpc"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/yundun-ds"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
 	ossCredentials "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 	"github.com/core-sdk/constant"
@@ -137,6 +143,7 @@ type Services struct {
 	Config          *openapi.Config
 	ECS             *ecs.Client
 	VPC             *vpc.Client
+	VpcPeer         *vpcpeer20220101.Client
 	OSS             *oss.Client
 	SLB             *slb20140515.Client
 	NLB             *nlb20220430.Client
@@ -202,6 +209,11 @@ type Services struct {
 	OOS             *oos.Client
 	MnsOpen         *mns_open.Client
 	RTC             *rtc.Client
+	Eipanycast      *eipanycast.Client
+	DBS             *dbs.Client
+	OpenSearch      *opensearch20171225.Client
+	YundunDs        *yundun_ds.Client
+	Hologram        *hologram20220601.Client
 }
 
 // Clone creates a new instance of Services with copied configuration
@@ -234,13 +246,18 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		}
 		s.ECS.SetHttpProxy(cloudAccountParam.ProxyConfig)
 		s.ECS.SetHttpsProxy(cloudAccountParam.ProxyConfig)
-	case VPC, NAT, EIP, VpnConnection:
+	case VPC, NAT, EIP, VpnConnection, PhysicalConnection:
 		s.VPC, err = vpc.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init vpc client failed", zap.Error(err))
 		}
 		s.VPC.SetHttpProxy(cloudAccountParam.ProxyConfig)
 		s.VPC.SetHttpsProxy(cloudAccountParam.ProxyConfig)
+	case VpcPeerConnection:
+		s.VpcPeer, err = createVpcPeerClient(s.Config)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init vpc peer client failed", zap.Error(err))
+		}
 	case OSS:
 		cfg := oss.LoadDefaultConfig().
 			WithCredentialsProvider(ossCredentials.NewStaticCredentialsProvider(param.AK, param.SK)).
@@ -334,7 +351,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init elasticsearch client failed", zap.Error(err))
 		}
-	case Cloudfw, CloudfwConfig:
+	case Cloudfw, CloudfwConfig, NatFirewall, VpcFirewall:
 		s.Cloudfw, err = createCloudfwClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init cloudfw client failed", zap.Error(err))
@@ -367,6 +384,11 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.CAS, err = createCasClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init cas client failed", zap.Error(err))
+		}
+	case HologramInstance:
+		s.Hologram, err = createHologramClient(param.Region, s.Config)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init hologram client failed", zap.Error(err))
 		}
 	case AnalyticDBPostgreSQL:
 		s.AdbPostgreSQL, err = CreateAdbPostgreSQLClient(param.Region, s.Config)
@@ -588,9 +610,55 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		}
 		s.RTC.SetHttpProxy(cloudAccountParam.ProxyConfig)
 		s.RTC.SetHttpsProxy(cloudAccountParam.ProxyConfig)
+	case AnycastEipAddress:
+		s.Eipanycast, err = eipanycast.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init eipanycast client failed", zap.Error(err))
+		}
+		s.Eipanycast.SetHttpProxy(cloudAccountParam.ProxyConfig)
+		s.Eipanycast.SetHttpsProxy(cloudAccountParam.ProxyConfig)
+	case DBSBackupPlan:
+		s.DBS, err = dbs.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init dbs client failed", zap.Error(err))
+		}
+		s.DBS.SetHttpProxy(cloudAccountParam.ProxyConfig)
+		s.DBS.SetHttpsProxy(cloudAccountParam.ProxyConfig)
+	case OpenSearchAppGroup:
+		s.OpenSearch, err = createOpenSearchClient(param.Region, s.Config)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init opensearch client failed", zap.Error(err))
+		}
+		s.OpenSearch.HttpProxy = &cloudAccountParam.ProxyConfig
+		s.OpenSearch.HttpsProxy = &cloudAccountParam.ProxyConfig
+	case DataHubProject:
+		s.YundunDs, err = yundun_ds.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init yundun_ds client failed", zap.Error(err))
+		}
+		s.YundunDs.SetHttpProxy(cloudAccountParam.ProxyConfig)
+		s.YundunDs.SetHttpsProxy(cloudAccountParam.ProxyConfig)
 	}
 
 	return nil
+}
+
+func createOpenSearchClient(region string, config *openapi.Config) (*opensearch20171225.Client, error) {
+	config.Endpoint = tea.String("opensearch." + region + ".aliyuncs.com")
+	client, err := opensearch20171225.NewClient(config)
+	return client, err
+}
+
+func createHologramClient(region string, config *openapi.Config) (*hologram20220601.Client, error) {
+	config.Endpoint = tea.String("hologram." + region + ".aliyuncs.com")
+	client, err := hologram20220601.NewClient(config)
+	return client, err
+}
+
+func createVpcPeerClient(config *openapi.Config) (*vpcpeer20220101.Client, error) {
+	config.Endpoint = tea.String("vpcpeer.aliyuncs.com")
+	client, err := vpcpeer20220101.NewClient(config)
+	return client, err
 }
 
 func createEfloControllerClient(region string, config *openapi.Config) (*eflo_controller20221215.Client, error) {

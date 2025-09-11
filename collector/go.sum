@@ -34,8 +34,8 @@ github.com/alibabacloud-go/cbn-20170912/v2 v2.2.1 h1:VciG/3LFpFMAh+oisNBdGMFRkX7
 github.com/alibabacloud-go/cbn-20170912/v2 v2.2.1/go.mod h1:/JzSNrPk7+tVhN+k6n6XnbcDFedMDlQmcdZCDbDSgvE=
 github.com/alibabacloud-go/cloudapi-20160714/v5 v5.5.0 h1:lBYiNZ6bIejBpsQ/0bzn+5qAJ/7YQxDaPBIg16dNCO8=
 github.com/alibabacloud-go/cloudapi-20160714/v5 v5.5.0/go.mod h1:XuSwtcfieBx32JPByleIJXFrjFg0+L4M/fl4vY1keDY=
-github.com/alibabacloud-go/cloudfw-20171207/v7 v7.0.4 h1:zXToSg+uHxE8iR5JQnpi0m1t1avlkgmS4fxEoWwuk+w=
-github.com/alibabacloud-go/cloudfw-20171207/v7 v7.0.4/go.mod h1:hVkgo5YpB1uA2sgkvc+WaXg7Cu0b6r3X6pbFodLSKDU=
+github.com/alibabacloud-go/cloudfw-20171207/v8 v8.2.2 h1:1YAw9P/PpSUhRODiZRDNsOdDMAam2glFE5IRYNeN7U4=
+github.com/alibabacloud-go/cloudfw-20171207/v8 v8.2.2/go.mod h1:KFzFiXAYIqmVIxC5VMPXS0pyyKIIZFSjl8ELx3bptYU=
 github.com/alibabacloud-go/cr-20181201/v2 v2.5.0 h1:dfhfzCsgpkC72pAwWyHUwVcjj88UIVaEcQn5dzo+heM=
 github.com/alibabacloud-go/cr-20181201/v2 v2.5.0/go.mod h1:z5UYK7JxXtSqPASUscH9EZYYcEpEl7bvijlGO/OMNSI=
 github.com/alibabacloud-go/cs-20151215/v5 v5.7.10 h1:O8TTPqF+LP2g12v+VHzet+k0miB0Q0Y8gqA58mfImss=
@@ -57,6 +57,7 @@ github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.11-0.20241012070109-f821fe2
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.11/go.mod h1:wHxkgZT1ClZdcwEVP/pDgYK/9HucsnCfMipmJgCz4xY=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.5/go.mod h1:N0ppnkOnfC/zNQZBwxEC0y53FELAgEHLY3ZBFxq1WG0=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.9/go.mod h1:kgnXaV74AVjM3ZWJu1GhyXGuCtxljJ677oUfz6MyJOE=
+github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.10/go.mod h1:kgnXaV74AVjM3ZWJu1GhyXGuCtxljJ677oUfz6MyJOE=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.11 h1:5JIs4BPVpzbgcBrgmUxBdDsMjmsHZvPbTPD1m4aB+ZQ=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.11/go.mod h1:ue0+WkdPxpCB2JP3iaG4Iawayxp72kyT5uDbozQKaW8=
 github.com/alibabacloud-go/darabonba-signature-util v0.0.7 h1:UzCnKvsjPFzApvODDNEYqBHMFt1w98wC7FOo0InLyxg=
@@ -77,6 +78,8 @@ github.com/alibabacloud-go/dms-enterprise-20181101 v1.63.0 h1:Apdv9yQiGCCIEXflTv
 github.com/alibabacloud-go/dms-enterprise-20181101 v1.63.0/go.mod h1:cvZ1NCj6SzIZFaYktjqjumqZWs5v9D1NWYLPa6HchMU=
 github.com/alibabacloud-go/eds-aic-20230930/v4 v4.11.5 h1:RapiJzitjBGYSTXnU+T4WQ1bR2BXhetHDJuLFI2/Kow=
 github.com/alibabacloud-go/eds-aic-20230930/v4 v4.11.5/go.mod h1:deHyEfxzva9RfVmCtFES4u5X4nCEPu5UPGY9aawm8hE=
+github.com/alibabacloud-go/eflo-controller-20221215/v2 v2.7.0 h1:gWbU9RrpLn+YwRCiWMOL/2UgKmuZ3Xqa6SWPV0t25u4=
+github.com/alibabacloud-go/eflo-controller-20221215/v2 v2.7.0/go.mod h1:9mZf3f2MQl8jEVX7CPBp0wD8Uxh6ifCyWqRZvtqfnA8=
 github.com/alibabacloud-go/elasticsearch-20170613/v3 v3.0.7 h1:2Zxu1vcJjKYWVPOVzX78XKUh8n9barS93wEjplDgm0M=
 github.com/alibabacloud-go/elasticsearch-20170613/v3 v3.0.7/go.mod h1:HI2qtJgklfDIqwp/cQtA6N/sqJ5MunZm171CD8G1rxk=
 github.com/alibabacloud-go/endpoint-util v1.1.0 h1:r/4D3VSw888XGaeNpP994zDUaxdgTSHBbVfZlzf6b5Q=
@@ -89,6 +92,8 @@ github.com/alibabacloud-go/gpdb-20160503/v3 v3.9.1 h1:2CqAgj9E4U4J13bH9E8GFSVu1+
 github.com/alibabacloud-go/gpdb-20160503/v3 v3.9.1/go.mod h1:i+t0ATCILswwgBg9DB5GPQuczyao1qQba7IQtTIHyQM=
 github.com/alibabacloud-go/hitsdb-20200615/v5 v5.7.0 h1:9mwuIW/rqKLtOY24h8fUV5coTyuWtthlutPRhpsodsE=
 github.com/alibabacloud-go/hitsdb-20200615/v5 v5.7.0/go.mod h1:7XxuhyBkfanHW9Z+WYeIl5RzHiyjaKlWEBOyuZsBtDE=
+github.com/alibabacloud-go/hologram-20220601 v1.5.2 h1:YaIrFL0Lcr3pB8Gs+N0/m180jj8PBsUUgNPBolfLvTc=
+github.com/alibabacloud-go/hologram-20220601 v1.5.2/go.mod h1:3bmJMXvgYI8NA+xhTz+F5ShKe1vctbofsTXTYdhLn8g=
 github.com/alibabacloud-go/ims-20190815/v4 v4.1.1 h1:E3OsuOjoab9yRqH6bRIfn8PMVJVAD2/YIGM+tlO1MkM=
 github.com/alibabacloud-go/ims-20190815/v4 v4.1.1/go.mod h1:H/QvAHJsT/QWJlClNu6kuH0xkcoSwd12RXUozNqNgbo=
 github.com/alibabacloud-go/kms-20160120/v3 v3.2.3 h1:vamGcYQFwXVqR6RWcrVTTqlIXZVsYjaA7pZbx+Xw6zw=
@@ -109,6 +114,8 @@ github.com/alibabacloud-go/openapi-util v0.1.1 h1:ujGErJjG8ncRW6XtBBMphzHTvCxn4D
 github.com/alibabacloud-go/openapi-util v0.1.1/go.mod h1:/UehBSE2cf1gYT43GV4E+RxTdLRzURImCYY0aRmlXpw=
 github.com/alibabacloud-go/openplatform-20191219/v2 v2.0.1 h1:L0TIjr9Qh/SLVc1yPhFkcB9+9SbCNK/jPq4ZKB5zmnc=
 github.com/alibabacloud-go/openplatform-20191219/v2 v2.0.1/go.mod h1:EKxBRDLcMzwl4VLF/1WJwlByZZECJawPXUvinKMsTTs=
+github.com/alibabacloud-go/opensearch-20171225/v3 v3.0.1 h1:98ZRWd4x68yI/8YaCSynMCkdEXhgBOSSM4iCNXYjJAc=
+github.com/alibabacloud-go/opensearch-20171225/v3 v3.0.1/go.mod h1:UkC3rqLfWDV8Yrh05es1xQLKhDCm0aMbFCt2zjcv+fw=
 github.com/alibabacloud-go/polardb-20170801/v6 v6.2.1 h1:LfgPob59IS/5LiuSG/ql2OYunEVBiWKGV9xYF5PwZZM=
 github.com/alibabacloud-go/polardb-20170801/v6 v6.2.1/go.mod h1:8nrKus2JvJI5GnHjMd/9Z1p3zRYuYRwF1cjUoh/LYdA=
 github.com/alibabacloud-go/privatelink-20200415/v5 v5.0.2 h1:Q1blQASdbaHQl3+B+oZA5gncgA544JaOmiiOel6MazE=
@@ -169,12 +176,14 @@ github.com/alibabacloud-go/tea-xml v1.1.1/go.mod h1:Rq08vgCcCAjHyRi/M7xlHKUykZCE
 github.com/alibabacloud-go/tea-xml v1.1.2/go.mod h1:Rq08vgCcCAjHyRi/M7xlHKUykZCEtyBy9+DPF6GgEu8=
 github.com/alibabacloud-go/tea-xml v1.1.3 h1:7LYnm+JbOq2B+T/B0fHC4Ies4/FofC4zHzYtqw7dgt0=
 github.com/alibabacloud-go/tea-xml v1.1.3/go.mod h1:Rq08vgCcCAjHyRi/M7xlHKUykZCEtyBy9+DPF6GgEu8=
+github.com/alibabacloud-go/vpcpeer-20220101/v3 v3.0.3 h1:1cyjEvGi8k7FLyG6lnQ+8upcwp2EAj5amMmqaSqCW5A=
+github.com/alibabacloud-go/vpcpeer-20220101/v3 v3.0.3/go.mod h1:JrkdjEnjNUBRiE8Cv43HNutGS2XotatQwNmcRSSD0FU=
 github.com/alibabacloud-go/waf-openapi-20211001/v4 v4.6.0 h1:EqM0Qrr5FNQnvGJqMBay8tP1iZn+/c2UY1udwIJFRBQ=
 github.com/alibabacloud-go/waf-openapi-20211001/v4 v4.6.0/go.mod h1:YjOyPQgmplf6PgOkd/9Zd602tivv4qRoOCRp6wqeQT4=
 github.com/alibabacloud-go/yundun-bastionhost-20191209/v2 v2.3.0 h1:RYfgIZpqduMttIJ2y0xmW+qfa++IhGSX1LDr0UMuMzs=
 github.com/alibabacloud-go/yundun-bastionhost-20191209/v2 v2.3.0/go.mod h1:QbDQASLD+9PzzoLU/IFnMRV3mfWm2pcxJaOiWP2crzs=
-github.com/aliyun/alibaba-cloud-sdk-go v1.63.48 h1:f57dtSI1BJfF5FO7JJ7ljMh79Ae64nbbDfUOey5PBa0=
-github.com/aliyun/alibaba-cloud-sdk-go v1.63.48/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
+github.com/aliyun/alibaba-cloud-sdk-go v1.63.107 h1:qagvUyrgOnBIlVRQWOyCZGVKUIYbMBdGdJ104vBpRFU=
+github.com/aliyun/alibaba-cloud-sdk-go v1.63.107/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
 github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1 h1:sOhpJdR/+lbQniznp3cYSfwQlXbVkT0ccuiZScBrI6Y=
 github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1/go.mod h1:FTzydeQVmR24FI0D6XWUOMKckjXehM/jgMn1xC+DA9M=
 github.com/aliyun/credentials-go v1.1.2/go.mod h1:ozcZaMR5kLM7pwtCMEpVmQ242suV6qTJya2bDq4X1Tw=

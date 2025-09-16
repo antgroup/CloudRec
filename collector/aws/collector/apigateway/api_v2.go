@@ -62,26 +62,14 @@ func GetAPIV2Detail(ctx context.Context, service schema.ServiceInterface, res ch
 
 	for _, api := range apis {
 
-		stages, err := getStages(ctx, client, api.ApiId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get stages", zap.String("apiId", *api.ApiId), zap.Error(err))
-		}
+		stages := getStages(ctx, client, api.ApiId)
 
-		authorizers, err := getAuthorizers(ctx, client, api.ApiId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get authorizers", zap.String("apiId", *api.ApiId), zap.Error(err))
-		}
-
-		tags, err := getTags(ctx, client, api.ApiId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get tags", zap.String("apiId", *api.ApiId), zap.Error(err))
-		}
+		authorizers := getAuthorizers(ctx, client, api.ApiId)
 
 		res <- &APIV2Detail{
 			API:         api,
 			Stages:      stages,
 			Authorizers: authorizers,
-			Tags:        tags,
 		}
 	}
 
@@ -101,33 +89,25 @@ func describeAPIs(ctx context.Context, c *apigatewayv2.Client) ([]types.Api, err
 }
 
 // getStages retrieves all stages for a single API.
-func getStages(ctx context.Context, c *apigatewayv2.Client, apiId *string) ([]types.Stage, error) {
+func getStages(ctx context.Context, c *apigatewayv2.Client, apiId *string) []types.Stage {
 	output, err := c.GetStages(ctx, &apigatewayv2.GetStagesInput{
 		ApiId: apiId,
 	})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to get stages", zap.String("apiId", *apiId), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.Items, nil
+	return output.Items
 }
 
 // getAuthorizers retrieves all authorizers for a single API.
-func getAuthorizers(ctx context.Context, c *apigatewayv2.Client, apiId *string) ([]types.Authorizer, error) {
+func getAuthorizers(ctx context.Context, c *apigatewayv2.Client, apiId *string) []types.Authorizer {
 	output, err := c.GetAuthorizers(ctx, &apigatewayv2.GetAuthorizersInput{
 		ApiId: apiId,
 	})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to get authorizers", zap.String("apiId", *apiId), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.Items, nil
-}
-
-// getTags retrieves tags for a single API.
-func getTags(ctx context.Context, c *apigatewayv2.Client, apiId *string) (map[string]string, error) {
-	// For now, we'll return an empty map as tags are optional
-	// In a real implementation, you would need to construct the correct ARN format
-	// and handle the GetTags API call properly
-	return make(map[string]string), nil
+	return output.Items
 }

@@ -38,7 +38,8 @@ func GetRepositoryResource() schema.Resource {
 			ResourceId:   "$.Repository.RepositoryName",
 			ResourceName: "$.Repository.RepositoryName",
 		},
-		Dimension: schema.Global,
+		Regions:   []string{"ap-northeast-1", "cn-north-1"},
+		Dimension: schema.Regional,
 	}
 }
 

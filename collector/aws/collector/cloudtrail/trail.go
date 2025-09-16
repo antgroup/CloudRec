@@ -61,20 +61,11 @@ func GetTrailDetail(ctx context.Context, service schema.ServiceInterface, res ch
 	}
 
 	for _, trail := range trails {
-		status, err := getTrailStatus(ctx, client, trail.TrailARN)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get trail status", zap.String("trailARN", *trail.TrailARN), zap.Error(err))
-		}
+		status := getTrailStatus(ctx, client, trail.TrailARN)
 
-		eventSelectors, err := getEventSelectors(ctx, client, trail.TrailARN)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to get event selectors", zap.String("trailARN", *trail.TrailARN), zap.Error(err))
-		}
+		eventSelectors := getEventSelectors(ctx, client, trail.TrailARN)
 
-		tags, err := listTags(ctx, client, trail.TrailARN)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list tags", zap.String("trailARN", *trail.TrailARN), zap.Error(err))
-		}
+		tags := listTags(ctx, client, trail.TrailARN)
 
 		res <- &TrailDetail{
 			Trail:          trail,
@@ -97,38 +88,38 @@ func describeTrails(ctx context.Context, c *cloudtrail.Client) ([]types.Trail, e
 }
 
 // getTrailStatus retrieves the status for a single trail.
-func getTrailStatus(ctx context.Context, c *cloudtrail.Client, trailARN *string) (*cloudtrail.GetTrailStatusOutput, error) {
+func getTrailStatus(ctx context.Context, c *cloudtrail.Client, trailARN *string) *cloudtrail.GetTrailStatusOutput {
 	output, err := c.GetTrailStatus(ctx, &cloudtrail.GetTrailStatusInput{Name: trailARN})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to get trail status", zap.String("trailARN", *trailARN), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output, nil
+	return output
 }
 
 // getEventSelectors retrieves the event selectors for a single trail.
-func getEventSelectors(ctx context.Context, c *cloudtrail.Client, trailARN *string) ([]types.EventSelector, error) {
+func getEventSelectors(ctx context.Context, c *cloudtrail.Client, trailARN *string) []types.EventSelector {
 	output, err := c.GetEventSelectors(ctx, &cloudtrail.GetEventSelectorsInput{TrailName: trailARN})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to get event selectors", zap.String("trailARN", *trailARN), zap.Error(err))
-		return nil, err
+		return nil
 	}
-	return output.EventSelectors, nil
+	return output.EventSelectors
 }
 
 // listTags retrieves all tags for a trail.
-func listTags(ctx context.Context, c *cloudtrail.Client, trailARN *string) ([]types.Tag, error) {
+func listTags(ctx context.Context, c *cloudtrail.Client, trailARN *string) []types.Tag {
 	var tags []types.Tag
 	paginator := cloudtrail.NewListTagsPaginator(c, &cloudtrail.ListTagsInput{ResourceIdList: []string{*trailARN}})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("failed to list cloudtrail tags", zap.String("trailARN", *trailARN), zap.Error(err))
-			return nil, err
+			return nil
 		}
 		if len(page.ResourceTagList) > 0 {
 			tags = append(tags, page.ResourceTagList[0].TagsList...)
 		}
 	}
-	return tags, nil
+	return tags
 }

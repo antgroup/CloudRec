@@ -60,14 +60,10 @@ func GetTableDetail(ctx context.Context, service schema.ServiceInterface, res ch
 
 	for _, tableName := range tableNames {
 
-		table, err := describeTable(ctx, client, tableName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe dynamodb table", zap.String("tableName", tableName), zap.Error(err))
-		}
-		continuousBackups, err := describeContinuousBackups(ctx, client, tableName)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe continuous backups", zap.String("tableName", tableName), zap.Error(err))
-		}
+		table := describeTable(ctx, client, tableName)
+
+		continuousBackups := describeContinuousBackups(ctx, client, tableName)
+
 		res <- &TableDetail{
 			Table:             table,
 			ContinuousBackups: continuousBackups,
@@ -92,19 +88,21 @@ func listTables(ctx context.Context, c *dynamodb.Client) ([]string, error) {
 }
 
 // describeTable retrieves the details for a single table.
-func describeTable(ctx context.Context, c *dynamodb.Client, tableName string) (*types.TableDescription, error) {
+func describeTable(ctx context.Context, c *dynamodb.Client, tableName string) *types.TableDescription {
 	output, err := c.DescribeTable(ctx, &dynamodb.DescribeTableInput{TableName: &tableName})
 	if err != nil {
-		return nil, err
+		log.CtxLogger(ctx).Error("failed to describe dynamodb table", zap.Error(err))
+		return nil
 	}
-	return output.Table, nil
+	return output.Table
 }
 
 // describeContinuousBackups retrieves the continuous backup details for a single table.
-func describeContinuousBackups(ctx context.Context, c *dynamodb.Client, tableName string) (*types.ContinuousBackupsDescription, error) {
+func describeContinuousBackups(ctx context.Context, c *dynamodb.Client, tableName string) *types.ContinuousBackupsDescription {
 	output, err := c.DescribeContinuousBackups(ctx, &dynamodb.DescribeContinuousBackupsInput{TableName: &tableName})
 	if err != nil {
-		return nil, err
+		log.CtxLogger(ctx).Error("failed to describe dynamodb continuous backups", zap.Error(err))
+		return nil
 	}
-	return output.ContinuousBackupsDescription, nil
+	return output.ContinuousBackupsDescription
 }

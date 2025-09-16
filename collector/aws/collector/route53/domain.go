@@ -40,7 +40,8 @@ func GetDomainResource() schema.Resource {
 			ResourceName: "$.DomainSummary.DomainName",
 			Address:      "",
 		},
-		Dimension: schema.Global,
+		Regions:   []string{"ap-northeast-1", "cn-north-1"},
+		Dimension: schema.Regional,
 	}
 }
 

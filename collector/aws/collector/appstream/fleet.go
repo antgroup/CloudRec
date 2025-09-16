@@ -56,20 +56,27 @@ func GetFleetDetail(ctx context.Context, service schema.ServiceInterface, res ch
 	}
 
 	for _, fleet := range fleets {
-		tags, err := client.ListTagsForResource(ctx, &appstream.ListTagsForResourceInput{
-			ResourceArn: fleet.Arn,
-		})
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to list tags for appstream fleet", zap.String("arn", *fleet.Arn), zap.Error(err))
-		}
+
+		tags := listTagsForResource(ctx, client, fleet.Arn)
 
 		res <- &FleetDetail{
 			Fleet: fleet,
-			Tags:  tags.Tags,
+			Tags:  tags,
 		}
 	}
 
 	return nil
+}
+
+func listTagsForResource(ctx context.Context, client *appstream.Client, arn *string) map[string]string {
+	out, err := client.ListTagsForResource(ctx, &appstream.ListTagsForResourceInput{
+		ResourceArn: arn,
+	})
+	if err != nil {
+		log.CtxLogger(ctx).Warn("failed to list tags for appstream fleet", zap.String("arn", *arn), zap.Error(err))
+		return nil
+	}
+	return out.Tags
 }
 
 func describeFleets(ctx context.Context, c *appstream.Client) ([]types.Fleet, error) {

@@ -56,10 +56,7 @@ func GetVpcEndpointServiceDetail(ctx context.Context, service schema.ServiceInte
 	}
 
 	for _, vpcEndpointService := range services {
-		allowedPrincipals, err := describeVpcEndpointServicePermissions(ctx, client, vpcEndpointService.ServiceId)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("failed to describe vpc endpoint service permissions", zap.String("serviceId", *vpcEndpointService.ServiceId), zap.Error(err))
-		}
+		allowedPrincipals := describeVpcEndpointServicePermissions(ctx, client, vpcEndpointService.ServiceId)
 
 		res <- &VpcEndpointServiceDetail{
 			Service:           vpcEndpointService,
@@ -91,7 +88,7 @@ func describeVpcEndpointServices(ctx context.Context, c *ec2.Client) ([]types.Se
 	return services, nil
 }
 
-func describeVpcEndpointServicePermissions(ctx context.Context, c *ec2.Client, id *string) ([]types.AllowedPrincipal, error) {
+func describeVpcEndpointServicePermissions(ctx context.Context, c *ec2.Client, id *string) []types.AllowedPrincipal {
 	var allowedPrincipals []types.AllowedPrincipal
 
 	permissions, err := c.DescribeVpcEndpointServicePermissions(ctx, &ec2.DescribeVpcEndpointServicePermissionsInput{
@@ -113,5 +110,5 @@ func describeVpcEndpointServicePermissions(ctx context.Context, c *ec2.Client, i
 		allowedPrincipals = append(allowedPrincipals, permissions.AllowedPrincipals...)
 	}
 
-	return permissions.AllowedPrincipals, nil
+	return permissions.AllowedPrincipals
 }

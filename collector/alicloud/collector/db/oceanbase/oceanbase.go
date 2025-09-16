@@ -83,6 +83,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 				InstanceSSL:       describeInstanceSSL(ctx, cli, i.InstanceId),
 				TenantEncryptions: describeTenantEncryption(ctx, cli, i.InstanceId),
 				BackupSet:         describeDataBackupSet(ctx, cli, i.InstanceId),
+				Tenants:           describeTenants(ctx, cli, i.InstanceId),
 			}
 		}
 
@@ -102,6 +103,80 @@ type Detail struct {
 	InstanceSSL       *oceanbasepro20190901.DescribeInstanceSSLResponseBodyInstanceSSL
 	TenantEncryptions []*oceanbasepro20190901.DescribeTenantEncryptionResponseBodyTenantEncryptions
 	BackupSet         bool
+	Tenants           []*Tenant
+}
+
+type Tenant struct {
+	Tenant                 *oceanbasepro20190901.DescribeTenantResponseBodyTenant
+	TenantSecurityIpGroups []*oceanbasepro20190901.DescribeTenantSecurityIpGroupsResponseBodySecurityIpGroups
+}
+
+// describeTenants describe all tenant information
+func describeTenants(ctx context.Context, cli *oceanbasepro20190901.Client, instanceId *string) (tenants []*Tenant) {
+	request := &oceanbasepro20190901.DescribeTenantsRequest{
+		InstanceId: instanceId,
+	}
+
+	var tenantList []*oceanbasepro20190901.DescribeTenantsResponseBodyTenants
+	for {
+		resp, err := cli.DescribeTenants(request)
+		if err != nil {
+			log.CtxLogger(ctx).Error("DescribeTenants error", zap.Error(err))
+			return
+		}
+		tenantList = append(tenantList, resp.Body.Tenants...)
+
+		if int32(len(tenantList)) >= *resp.Body.TotalCount || len(resp.Body.Tenants) == 0 {
+			break
+		}
+
+		request.PageNumber = tea.Int32(*request.PageNumber + 1)
+	}
+
+	if len(tenantList) == 0 {
+		return
+	}
+
+	for _, tenant := range tenantList {
+		tenants = append(tenants, &Tenant{
+			Tenant:                 describeTenant(ctx, cli, instanceId, tenant.TenantId),
+			TenantSecurityIpGroups: describeTenantSecurityIpGroups(ctx, cli, instanceId, tenant.TenantId),
+		})
+	}
+
+	return tenants
+}
+
+// describeTenantSecurityIpGroups describe specific tenant security ip groups
+func describeTenantSecurityIpGroups(ctx context.Context, cli *oceanbasepro20190901.Client, instanceId *string, tenantId *string) []*oceanbasepro20190901.DescribeTenantSecurityIpGroupsResponseBodySecurityIpGroups {
+	request := &oceanbasepro20190901.DescribeTenantSecurityIpGroupsRequest{
+		InstanceId: instanceId,
+		TenantId:   tenantId,
+	}
+
+	resp, err := cli.DescribeTenantSecurityIpGroups(request)
+	if err != nil {
+		log.CtxLogger(ctx).Error("DescribeTenantSecurityIpGroupsWithOptions error", zap.Error(err))
+		return nil
+	}
+
+	return resp.Body.SecurityIpGroups
+}
+
+// describeTenant describe specific tenant
+func describeTenant(ctx context.Context, cli *oceanbasepro20190901.Client, instanceId *string, tenantId *string) *oceanbasepro20190901.DescribeTenantResponseBodyTenant {
+	request := &oceanbasepro20190901.DescribeTenantRequest{
+		InstanceId: instanceId,
+		TenantId:   tenantId,
+	}
+
+	resp, err := cli.DescribeTenant(request)
+	if err != nil {
+		log.CtxLogger(ctx).Error("DescribeTenant error", zap.Error(err))
+		return nil
+	}
+
+	return resp.Body.Tenant
 }
 
 // View IP Security Whitelist Group List

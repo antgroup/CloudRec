@@ -30,7 +30,7 @@ import (
 func GetMSEResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:       collector.MSE,
-		ResourceTypeName:   "MSE",
+		ResourceTypeName:   "MSE Gateway",
 		ResourceGroupType:  constant.MIDDLEWARE,
 		Desc:               "https://api.aliyun.com/product/mse",
 		ResourceDetailFunc: GetInstanceDetail,

@@ -88,7 +88,7 @@ func GetBastionhostDetail(ctx context.Context, service schema.ServiceInterface, 
 			InstanceAttribute: instanceAttribute,
 		}
 	}
-	
+
 	return nil
 }
 

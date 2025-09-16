@@ -17,7 +17,7 @@ package cloudfw
 
 import (
 	"context"
-	cloudfw20171207 "github.com/alibabacloud-go/cloudfw-20171207/v7/client"
+	cloudfw20171207 "github.com/alibabacloud-go/cloudfw-20171207/v8/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"

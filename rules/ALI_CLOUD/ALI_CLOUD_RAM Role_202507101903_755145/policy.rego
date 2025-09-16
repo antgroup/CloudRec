@@ -5,7 +5,7 @@ default risk := false
 risk if {
     exist_Policies != null
     count(allow_sts) > 0
-    uncovered_by_deny == true
+    not covered_by_deny
 }
 messages contains message if {
     risk == true
@@ -19,8 +19,6 @@ messages contains message if {
 exist_Policies := input.Policies
 
 sensitive_actions := ["*", "*:*", "ecs:*", "rds:*", "oss:*", "ram:*", "*:List*","*:Put*","ram:Create*","ram:Attach*"]
-read_only_actions := []
-# full_access_actions := ["*", "*:*", "ecs:*", "rds:*", "oss:*", "ram:*"]
 full_access_resource := "*"
 
 allow_sts contains {"Action":action,"Resource":resource} if {
@@ -50,9 +48,6 @@ get_str_to_array(ActionResource) := result if {
 get_full_access_actions(action_all) := actions if {
     actions := [action | action := action_all[_]; action in sensitive_actions]
 }
-#else if {
-#    actions := [action | action := action_all[_]; action in sensitive_actions]
-#}
 
 get_full_access_resource(resource_all) := resource if {
     full_access_resource in resource_all
@@ -76,7 +71,7 @@ deny_sts contains {"Action":action, "Resource":resource} if {
     resource := resource_all[_]
 }
 
-uncovered_by_deny if {
+covered_by_deny if {
     every action_resource in allow_sts {
         some sts in deny_sts
         pattern_resource := replace(sts.Resource,"*",".*")

@@ -321,7 +321,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init oceanbasepro client failed", zap.Error(err))
 		}
-	case Elasticsearch:
+	case Elasticsearch, ElasticsearchLogstash:
 		s.Elasticsearch, err = createElasticsearchClient(param.Region, s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init elasticsearch client failed", zap.Error(err))

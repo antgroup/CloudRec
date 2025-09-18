@@ -30,7 +30,7 @@ import (
 // GetRuleGroupResource returns AWS Network Firewall Rule Group resource definition
 func GetRuleGroupResource() schema.Resource {
 	return schema.Resource{
-		ResourceType:       collector.NetworkFirewall,
+		ResourceType:       collector.NetworkFirewallRuleGroup,
 		ResourceTypeName:   "Network Firewall Rule Group",
 		ResourceGroupType:  constant.NET,
 		Desc:               "https://docs.aws.amazon.com/network-firewall/latest/APIReference/API_RuleGroup.html",

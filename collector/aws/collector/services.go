@@ -177,7 +177,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.CLB = initCLBClient(cfg)
 	case FSxFileSystem:
 		s.FSx = initFSxClient(cfg)
-	case AccountSettings, UserGroup, Role, User:
+	case AccountSettings, UserGroup, Role, User, IAMPolicy:
 		s.IAM = initIAMClient(cfg)
 	case RDS:
 		s.RDS = initRDSClient(cfg)
@@ -235,13 +235,13 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.CognitoIdentity = initCognitoIdentityClient(cfg)
 	case FMS:
 		s.FMS = initFMSClient(cfg)
-	case Inspector2:
+	case Inspector2Coverage, Inspector2Finding:
 		s.Inspector2 = initInspector2Client(cfg)
 	case SecurityHub:
 		s.SecurityHub = initSecurityHubClient(cfg)
 	case MacieFinding, MacieJob, MacieSession:
 		s.Macie = initMacieClient(cfg)
-	case NetworkFirewall:
+	case NetworkFirewall, NetworkFirewallRuleGroup:
 		s.NetworkFirewall = initNetworkFirewallClient(cfg)
 	case OpenSearch:
 		s.OpenSearch = initOpenSearchClient(cfg)

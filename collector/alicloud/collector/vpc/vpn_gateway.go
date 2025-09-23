@@ -26,16 +26,16 @@ import (
 	"go.uber.org/zap"
 )
 
-func GetVPNConnectionResource() schema.Resource {
+func GetVPNGatewayResource() schema.Resource {
 	return schema.Resource{
-		ResourceType:       collector.VpnConnection,
-		ResourceTypeName:   collector.VpnConnection,
+		ResourceType:       collector.VPNGateway,
+		ResourceTypeName:   collector.VPNGateway,
 		ResourceGroupType:  constant.NET,
 		Desc:               `https://api.aliyun.com/product/Vpc`,
-		ResourceDetailFunc: GetVpnConnectionDetail,
+		ResourceDetailFunc: GetVPNGatewayDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.VpnConnection.VpnConnectionId",
-			ResourceName: "$.VpnConnection.Name",
+			ResourceId:   "$.VpnGateway.VpnGatewayId",
+			ResourceName: "$.VpnGateway.Name",
 		},
 		Regions: []string{
 			"cn-qingdao",
@@ -74,33 +74,39 @@ func GetVPNConnectionResource() schema.Resource {
 	}
 }
 
-type VPNConnectionDetail struct {
-	VpnConnection vpc.VpnConnectionInDescribeVpnConnections
+type VPNGatewayDetail struct {
+	VpnGateway      vpc.VpnGateway
+	VpnRouteEntries []vpc.VpnRouteEntry
 }
 
-func GetVpnConnectionDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
+func GetVPNGatewayDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).VPC
 
-	request := vpc.CreateDescribeVpnConnectionsRequest()
+	request := vpc.CreateDescribeVpnGatewaysRequest()
 	request.PageSize = requests.NewInteger(50)
 	request.PageNumber = requests.NewInteger(1)
 
 	count := 0
 	for {
-		response, err := cli.DescribeVpnConnections(request)
+		response, err := cli.DescribeVpnGateways(request)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("DescribeVpnConnections error", zap.Error(err))
+			log.CtxLogger(ctx).Warn("DescribeVpnGateways error", zap.Error(err))
 			return err
 		}
 
-		for _, conn := range response.VpnConnections.VpnConnection {
-			detail := &VPNConnectionDetail{
-				VpnConnection: conn,
+		for _, gateway := range response.VpnGateways.VpnGateway {
+
+			// Get VPN route entries
+			vpnRouteEntries := getVpnRouteEntries(ctx, cli, gateway.VpnGatewayId)
+
+			detail := &VPNGatewayDetail{
+				VpnGateway:      gateway,
+				VpnRouteEntries: vpnRouteEntries,
 			}
 			res <- detail
 		}
 
-		count += len(response.VpnConnections.VpnConnection)
+		count += len(response.VpnGateways.VpnGateway)
 		if count >= response.TotalCount {
 			break
 		}
@@ -109,4 +115,30 @@ func GetVpnConnectionDetail(ctx context.Context, service schema.ServiceInterface
 	}
 
 	return nil
+}
+
+func getVpnRouteEntries(ctx context.Context, cli *vpc.Client, vpnGatewayId string) (vpnRouteEntries []vpc.VpnRouteEntry) {
+	request := vpc.CreateDescribeVpnRouteEntriesRequest()
+	request.VpnGatewayId = vpnGatewayId
+	request.PageSize = requests.NewInteger(50)
+	request.PageNumber = requests.NewInteger(1)
+
+	count := 0
+	for {
+		response, err := cli.DescribeVpnRouteEntries(request)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("DescribeVpnRouteEntries error", zap.Error(err), zap.String("vpnGatewayId", vpnGatewayId))
+			return nil
+		}
+		vpnRouteEntries = append(vpnRouteEntries, response.VpnRouteEntries.VpnRouteEntry...)
+
+		count += len(response.VpnRouteEntries.VpnRouteEntry)
+		if count >= response.TotalCount {
+			break
+		}
+
+		request.PageNumber = requests.NewInteger(response.PageNumber + 1)
+	}
+
+	return vpnRouteEntries
 }

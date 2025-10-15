@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["身份安全"],"code":"HUAWEI_CLOUD_IAM User_202510141935_975233","context":null,"description":"ROOT账号拥有对华为云账户下所有资源（如云服务器ECS、对象存储OBS、数据库RDS等）的完全控制权限。一旦AK/SK泄露，攻击者将获得等同于主账号的权限，可以随意创建、修改、删除任何资源。","level":"High","link":null,"linkedDataList":null,"name":"ROOT账号存在AK","platform":"HUAWEI_CLOUD","resourceType":"IAM User"}

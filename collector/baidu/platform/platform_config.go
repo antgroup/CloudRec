@@ -49,6 +49,7 @@ func GetPlatformConfig() *schema.Platform {
 			iam.GetResource(),
 			cce.GetResource(),
 			cce.GetRBACResource(),
+			cce.GetNodeResource(),
 			redis.GetResource(),
 			ccr.GetResource(),
 			bls.GetResource(),

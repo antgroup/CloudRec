@@ -72,7 +72,11 @@ func GetNodeDetail(ctx context.Context, service schema.ServiceInterface, res cha
 		}
 		for _, cluster := range response.ClusterPage.ClusterList {
 			total++
-			listInstances(ctx, client, cluster.Spec.ClusterID, res)
+			err := listInstances(ctx, client, cluster.Spec.ClusterID, res)
+			if err != nil {
+				log.CtxLogger(ctx).Warn("listInstances error", zap.Error(err))
+				return err
+			}
 		}
 		if total >= response.ClusterPage.TotalCount {
 			break

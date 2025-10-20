@@ -17,10 +17,11 @@ package collector
 
 import (
 	"context"
-	"github.com/core-sdk/log"
-	"go.uber.org/zap"
 	"net"
 	"time"
+
+	"github.com/core-sdk/log"
+	"go.uber.org/zap"
 
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/schema"
@@ -41,7 +42,7 @@ import (
 	nat "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/nat/v2"
 	rds "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/rds/v3"
 	sfs "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/sfsturbo/v1"
-	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2"
+	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3"
 )
 
 func ConfigBaseAuth(ak string, sk string) *basic.Credentials {
@@ -140,6 +141,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			s.OBS, err = s.OBSClient()
 		case ECS:
 			s.ECS, err = s.ECSClient(param.Region)
+			s.VPC, err = s.VPCClient(param.Region)
 		case IAMUser:
 			s.IAM, err = s.IAMClient()
 		case VPC, SecurityGroup:

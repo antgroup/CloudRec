@@ -24,7 +24,9 @@ import (
 	eip "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/eip/v2"
 	elb "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/elb/v3"
 	iam "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3"
-	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2"
+
+	// vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2"
+	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3"
 )
 
 func ConfigBaseAuthForPrivate(projectId, ak, sk, endpoint string) *basic.Credentials {

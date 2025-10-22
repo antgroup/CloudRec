@@ -17,6 +17,7 @@ package elasticloadbalancing
 
 import (
 	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2_2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	types2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -59,8 +60,9 @@ type ELBDetail struct {
 
 func GetELBDetail(ctx context.Context, iService schema.ServiceInterface, res chan<- any) error {
 	elbClient := iService.(*collector.Services).ELB
+	ec2Client := iService.(*collector.Services).EC2
 
-	ELBDetails, err := describeELBDetails(ctx, elbClient)
+	ELBDetails, err := describeELBDetails(ctx, elbClient, ec2Client)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("describeELBDetails error", zap.Error(err))
 		return err
@@ -73,8 +75,8 @@ func GetELBDetail(ctx context.Context, iService schema.ServiceInterface, res cha
 	return nil
 }
 
-func describeELBDetails(ctx context.Context, c *elasticloadbalancingv2.Client) (ELBDetails []ELBDetail, err error) {
-	elbs, err := describeELBs(ctx, c)
+func describeELBDetails(ctx context.Context, elbClient *elasticloadbalancingv2.Client, ec2Client *ec2_2.Client) (ELBDetails []ELBDetail, err error) {
+	elbs, err := describeELBs(ctx, elbClient)
 	if err != nil {
 		return nil, err
 	}
@@ -82,13 +84,13 @@ func describeELBDetails(ctx context.Context, c *elasticloadbalancingv2.Client) (
 	for _, elb := range elbs {
 		ELBDetails = append(ELBDetails, ELBDetail{
 			ELB: elb,
-			VPC: ec2.DescribeVPCDetailsByFilters(ctx, ec2_2.NewFromConfig(aws.Config{Region: c.Options().Region, Credentials: c.Options().Credentials}), []types2.Filter{
+			VPC: ec2.DescribeVPCDetailsByFilters(ctx, ec2Client, []types2.Filter{
 				{
 					Name:   aws.String("vpc-id"),
 					Values: []string{*elb.VpcId},
 				},
 			}),
-			SecurityGroups: ec2.DescribeSecurityGroupDetailsByFilters(ctx, ec2_2.NewFromConfig(aws.Config{Region: c.Options().Region, Credentials: c.Options().Credentials}), []types2.Filter{
+			SecurityGroups: ec2.DescribeSecurityGroupDetailsByFilters(ctx, ec2Client, []types2.Filter{
 				{
 					Name:   aws.String("group-id"),
 					Values: elb.SecurityGroups,
@@ -100,7 +102,9 @@ func describeELBDetails(ctx context.Context, c *elasticloadbalancingv2.Client) (
 }
 
 func describeELBs(ctx context.Context, c *elasticloadbalancingv2.Client) (elbs []types.LoadBalancer, err error) {
-	input := &elasticloadbalancingv2.DescribeLoadBalancersInput{}
+	input := &elasticloadbalancingv2.DescribeLoadBalancersInput{
+		PageSize: aws.Int32(400),
+	}
 	output, err := c.DescribeLoadBalancers(ctx, input)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("DescribeLoadBalancers error", zap.Error(err))

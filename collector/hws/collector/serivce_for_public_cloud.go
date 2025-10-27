@@ -46,8 +46,8 @@ import (
 	rdsRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/rds/v3/region"
 	sfs "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/sfsturbo/v1"
 	sfsRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/sfsturbo/v1/region"
-	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2"
-	vpcRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2/region"
+	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3"
+	vpcRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3/region"
 )
 
 func (s *Services) OBSClient() (*obs.ObsClient, error) {

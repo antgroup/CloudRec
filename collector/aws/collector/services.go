@@ -19,6 +19,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -67,11 +69,11 @@ import (
 	"github.com/aws/smithy-go/logging"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"time"
 )
 
 // Services contains regional client of AWS services
 type Services struct {
+	Region string
 	EC2                     *ec2.Client
 	IAM                     *iam.Client
 	S3                      *s3.Client
@@ -173,6 +175,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.ElastiCache = initElastiCacheClient(cfg)
 	case ELB:
 		s.ELB = initELBClient(cfg)
+		s.EC2 = initEC2Client(cfg)
 	case CLB:
 		s.CLB = initCLBClient(cfg)
 	case FSxFileSystem:

@@ -24,7 +24,7 @@ import (
 	"github.com/cloudrec/hws/collector/eip"
 	"github.com/cloudrec/hws/collector/elb"
 	"github.com/cloudrec/hws/collector/evs"
-	"github.com/cloudrec/hws/collector/gaussdb"
+	gaussDB "github.com/cloudrec/hws/collector/gaussdb"
 	"github.com/cloudrec/hws/collector/iam"
 	"github.com/cloudrec/hws/collector/lts"
 	"github.com/cloudrec/hws/collector/nat"

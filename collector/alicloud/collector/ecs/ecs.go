@@ -87,6 +87,7 @@ type Detail struct {
 	SecurityGroups      []*SecurityGroup
 	Disks               []ecs.Disk
 	NetworkInterfaceSet []ecs.NetworkInterfaceSet
+	InstanceRamRole     ecs.InstanceRamRoleSet
 }
 
 func ListEcsResource(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -111,6 +112,7 @@ func ListEcsResource(ctx context.Context, service schema.ServiceInterface, res c
 				PublicAddress:       queryPublicAddress(i),
 				Disks:               describeDisks(ctx, cli, i.InstanceId),
 				NetworkInterfaceSet: describeNetworkInterfaces(ctx, cli, i.InstanceId),
+				InstanceRamRole:     describeInstanceRamRole(ctx, cli, i.InstanceId),
 			}
 
 			res <- d
@@ -123,6 +125,21 @@ func ListEcsResource(ctx context.Context, service schema.ServiceInterface, res c
 	}
 
 	return nil
+}
+
+func describeInstanceRamRole(ctx context.Context, cli *ecs.Client, id string) ecs.InstanceRamRoleSet {
+	req := ecs.CreateDescribeInstanceRamRoleRequest()
+	req.Scheme = "HTTPS"
+	req.QueryParams["product"] = "Ecs"
+	req.SetHTTPSInsecure(true)
+	req.InstanceIds = "[\"" + id + "\"]"
+
+	response, err := cli.DescribeInstanceRamRole(req)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("DescribeInstanceRamRole error", zap.Error(err))
+		return ecs.InstanceRamRoleSet{}
+	}
+	return response.InstanceRamRoleSets.InstanceRamRoleSet[0]
 }
 
 func queryPublicAddress(i ecs.Instance) string {

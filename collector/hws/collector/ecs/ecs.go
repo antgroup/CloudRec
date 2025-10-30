@@ -17,14 +17,15 @@ package ecs
 
 import (
 	"context"
-	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2"
+	"fmt"
 
+	"github.com/cloudrec/hws/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"github.com/cloudrec/hws/collector"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
-	vpcModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2/model"
+	ecsModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
+	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3"
+	vpcModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3/model"
 	"go.uber.org/zap"
 )
 
@@ -44,8 +45,8 @@ func GetInstanceResource() schema.Resource {
 }
 
 type InstanceDetail struct {
-	ServerDetail  model.ServerDetail
-	SecurityGroup []*vpcModel.SecurityGroup
+	ServerDetail  ecsModel.ServerDetail
+	SecurityGroup []*vpcModel.SecurityGroupInfo
 }
 
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -54,7 +55,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 
 	limit := int32(50)
 	offset := int32(1)
-	request := &model.ListServersDetailsRequest{
+	request := &ecsModel.ListServersDetailsRequest{
 		Limit:  &limit,
 		Offset: &offset,
 	}
@@ -69,7 +70,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 			ecs.OSEXTSRVATTRuserData = nil
 			res <- &InstanceDetail{
 				ServerDetail:  ecs,
-				SecurityGroup: showSecurityGroup(ctx, vpcClient, ecs.SecurityGroups),
+				SecurityGroup: getSecurityGroup(ecs.SecurityGroups, vpcClient),
 			}
 		}
 
@@ -82,15 +83,17 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 	return nil
 }
 
-func showSecurityGroup(ctx context.Context, cli *vpc.VpcClient, SecurityGroups []model.ServerSecurityGroup) (SecurityGroup []*vpcModel.SecurityGroup) {
-	for _, securityGroup := range SecurityGroups {
-		request := &vpcModel.ShowSecurityGroupRequest{SecurityGroupId: securityGroup.Id}
-		response, err := cli.ShowSecurityGroup(request)
+func getSecurityGroup(securityGroups []ecsModel.ServerSecurityGroup, client *vpc.VpcClient) []*vpcModel.SecurityGroupInfo {
+	var result []*vpcModel.SecurityGroupInfo
+	for _, securityGroup := range securityGroups {
+		request := &vpcModel.ShowSecurityGroupRequest{}
+		request.SecurityGroupId = securityGroup.Id
+		response, err := client.ShowSecurityGroup(request)
+		result = append(result, response.SecurityGroup)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("ShowSecurityGroup error", zap.Error(err))
-			return
+			log.GetWLogger().Error(fmt.Sprintf("get SecurityGroup error: %s", err.Error()))
+			return nil
 		}
-		SecurityGroup = append(SecurityGroup, response.SecurityGroup)
 	}
-	return
+	return result
 }

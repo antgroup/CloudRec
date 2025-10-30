@@ -22,6 +22,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/actiontrail"
 	"github.com/cloudrec/alicloud/collector/apig"
 	"github.com/cloudrec/alicloud/collector/arms"
+	"github.com/cloudrec/alicloud/collector/bpstudio"
 	"github.com/cloudrec/alicloud/collector/cas"
 	"github.com/cloudrec/alicloud/collector/cdn"
 	"github.com/cloudrec/alicloud/collector/cen"
@@ -29,6 +30,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/cloudcenter"
 	"github.com/cloudrec/alicloud/collector/cloudfw"
 	"github.com/cloudrec/alicloud/collector/cloudstoragegateway"
+	"github.com/cloudrec/alicloud/collector/datahub"
 	"github.com/cloudrec/alicloud/collector/db/AnalyticDB/adbmysql"
 	"github.com/cloudrec/alicloud/collector/db/AnalyticDB/adbpostgresql"
 	"github.com/cloudrec/alicloud/collector/db/clickhouse"
@@ -47,12 +49,14 @@ import (
 	"github.com/cloudrec/alicloud/collector/ecp"
 	"github.com/cloudrec/alicloud/collector/ecs"
 	"github.com/cloudrec/alicloud/collector/eflo"
+	"github.com/cloudrec/alicloud/collector/eipanycast"
 	"github.com/cloudrec/alicloud/collector/elasticsearch"
 	"github.com/cloudrec/alicloud/collector/ens"
 	"github.com/cloudrec/alicloud/collector/ess"
 	"github.com/cloudrec/alicloud/collector/fc"
 	"github.com/cloudrec/alicloud/collector/ga"
 	"github.com/cloudrec/alicloud/collector/hitsdb"
+	"github.com/cloudrec/alicloud/collector/hologram"
 	"github.com/cloudrec/alicloud/collector/ims"
 	"github.com/cloudrec/alicloud/collector/kafka"
 	"github.com/cloudrec/alicloud/collector/kms"
@@ -61,15 +65,19 @@ import (
 	"github.com/cloudrec/alicloud/collector/loadbalance/nlb"
 	"github.com/cloudrec/alicloud/collector/loadbalance/slb"
 	"github.com/cloudrec/alicloud/collector/maxcompute"
+	"github.com/cloudrec/alicloud/collector/mns"
 	"github.com/cloudrec/alicloud/collector/mse"
 	"github.com/cloudrec/alicloud/collector/nas"
 	"github.com/cloudrec/alicloud/collector/ons"
+	"github.com/cloudrec/alicloud/collector/oos"
+	"github.com/cloudrec/alicloud/collector/opensearch"
 	"github.com/cloudrec/alicloud/collector/oss"
 	"github.com/cloudrec/alicloud/collector/pl"
 	"github.com/cloudrec/alicloud/collector/ram"
 	"github.com/cloudrec/alicloud/collector/redis"
 	"github.com/cloudrec/alicloud/collector/resourcecenter"
 	"github.com/cloudrec/alicloud/collector/rocketmq"
+	"github.com/cloudrec/alicloud/collector/rtc"
 	"github.com/cloudrec/alicloud/collector/sls"
 	"github.com/cloudrec/alicloud/collector/sms"
 	"github.com/cloudrec/alicloud/collector/swas"
@@ -79,6 +87,7 @@ import (
 	"github.com/cloudrec/alicloud/collector/vpc"
 	"github.com/cloudrec/alicloud/collector/vpc/eip"
 	"github.com/cloudrec/alicloud/collector/vpc/nat"
+	"github.com/cloudrec/alicloud/collector/vpcpeer"
 	"github.com/cloudrec/alicloud/collector/waf"
 	"github.com/cloudrec/alicloud/collector/yundun"
 	"github.com/core-sdk/constant"
@@ -132,6 +141,8 @@ func GetPlatformConfig() *schema.Platform {
 			resourcecenter.GeCloudCenterResource(),
 			ddos.GetDDoSBGPResource(),
 			cloudfw.GetCloudFWConfigResource(),
+			cloudfw.GetNatFWResource(),
+			cloudfw.GetVpcFWResource(),
 			cloudcenter.GetSasConfigResource(),
 			cloudcenter.GetCloudCenterResource(),
 			cloudstoragegateway.GetCloudStorageGatewayResource(),
@@ -145,7 +156,6 @@ func GetPlatformConfig() *schema.Platform {
 			ecs.GetSecurityGroupData(),
 			ecs.GetImagesResource(),
 			ecs.GetSnapshotsResource(),
-			vpc.GetVPCResource(),
 			nat.GetNatResource(),
 			oss.GetBucketResource(),
 			slb.GetSLBResource(),
@@ -207,14 +217,26 @@ func GetPlatformConfig() *schema.Platform {
 			ecp.GetInstanceResource(),
 			swas.GetInstanceResource(),
 			vpc.GetVPNConnectionResource(),
+			vpc.GetVPNGatewayResource(),
+			vpc.GetVPCResource(),
+			vpcpeer.GetVpcPeerConnectionResource(),
+			vpc.GetPhysicalConnectionResource(),
 			ga.GetAcceleratorResource(),
-			eflo.GetNodeResource(),
+			eflo.GetClusterResource(),
 			ons.GetInstanceResource(),
 			dcdn.GetDCDNDomainResource(),
 			dcdn.GetDCDNIpaDomainResource(),
 			vod.GetVODDomainResource(),
 			sms.GetSMSTemplateResource(),
 			live.GetLiveDomainResource(),
+			bpstudio.GetBPStudioApplicationResource(),
+			mns.GetMessageServiceQueueResource(),
+			oos.GetOOSApplicationResource(),
+			rtc.GetRTCApplicationResource(),
+			eipanycast.GetAnycastEipAddressResource(),
+			hologram.GetHologramInstanceResource(),
+			datahub.GetDataHubProjectResource(),
+			opensearch.GetAppGroupResource(),
 		},
 
 		Service:        &collector.Services{},

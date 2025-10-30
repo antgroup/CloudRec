@@ -26,6 +26,7 @@ const (
 	EIP            = "EIP"
 	IAM            = "IAM"
 	CCE            = "CCE"
+	CCE_NODE       = "CCE_NODE"
 	Redis          = "Redis"
 	CCR            = "CCR"
 	BLS            = "BLS"

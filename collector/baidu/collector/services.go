@@ -17,6 +17,7 @@ package collector
 
 import (
 	"fmt"
+
 	"github.com/baidubce/bce-sdk-go/services/appblb"
 	"github.com/baidubce/bce-sdk-go/services/bcc"
 	"github.com/baidubce/bce-sdk-go/services/blb"
@@ -31,8 +32,9 @@ import (
 	"github.com/baidubce/bce-sdk-go/services/scs"
 	"github.com/baidubce/bce-sdk-go/services/vpc"
 	"github.com/baidubce/bce-sdk-go/services/vpn"
-  
+
 	"time"
+
 	"github.com/cloudrec/baidu/customsdk/cce"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
@@ -141,7 +143,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.GetWLogger().Warn(fmt.Sprintf("init iam client failed, err: %s", err))
 		}
 		s.IAMClient = iamClient
-	case CCE:
+	case CCE, CCE_NODE:
 		cceClient, err := v2.NewClient(param.AK, param.SK, param.Region)
 		if err != nil {
 			log.GetWLogger().Warn(fmt.Sprintf("init cce client failed, err: %s", err))

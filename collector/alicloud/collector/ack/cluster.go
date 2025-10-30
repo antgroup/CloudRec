@@ -42,8 +42,9 @@ func GetClusterResource() schema.Resource {
 }
 
 type Detail struct {
-	Cluster            *cs20151215.DescribeClustersV1ResponseBodyClusters
-	AssociatedResource []*cs20151215.DescribeClusterResourcesResponseBody
+	Cluster                 *cs20151215.DescribeClustersV1ResponseBodyClusters
+	AssociatedResource      []*cs20151215.DescribeClusterResourcesResponseBody
+	ClusterKubeconfigStates []*cs20151215.ListClusterKubeconfigStatesResponseBodyStates
 }
 
 func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -63,8 +64,9 @@ func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res 
 		count += len(resp.Body.Clusters)
 		for i := 0; i < len(resp.Body.Clusters); i++ {
 			res <- Detail{
-				Cluster:            resp.Body.Clusters[i],
-				AssociatedResource: describeClusterResources(ctx, cli, resp.Body.Clusters[i].ClusterId),
+				Cluster:                 resp.Body.Clusters[i],
+				AssociatedResource:      describeClusterResources(ctx, cli, resp.Body.Clusters[i].ClusterId),
+				ClusterKubeconfigStates: listClusterKubeconfigStates(ctx, cli, resp.Body.Clusters[i].ClusterId),
 			}
 		}
 		if count >= int(*resp.Body.PageInfo.TotalCount) || len(resp.Body.Clusters) == 0 {
@@ -74,6 +76,28 @@ func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res 
 		request.PageNumber = tea.Int64(page)
 	}
 	return nil
+}
+
+func listClusterKubeconfigStates(ctx context.Context, cli *cs20151215.Client, id *string) (states []*cs20151215.ListClusterKubeconfigStatesResponseBodyStates) {
+	request := &cs20151215.ListClusterKubeconfigStatesRequest{}
+
+	count := 0
+	for {
+		out, err := cli.ListClusterKubeconfigStates(id, request)
+		if err != nil {
+			log.CtxLogger(ctx).Error("ListClusterKubeconfigStates error", zap.Error(err))
+			return nil
+		}
+		states = append(states, out.Body.States...)
+
+		count += len(out.Body.States)
+		if count >= int(*out.Body.Page.TotalCount) || len(out.Body.States) == 0 {
+			break
+		}
+		request.PageNumber = tea.Int32(*out.Body.Page.PageNumber + 1)
+	}
+
+	return states
 }
 
 func describeClusterResources(ctx context.Context, cli *cs20151215.Client, id *string) []*cs20151215.DescribeClusterResourcesResponseBody {

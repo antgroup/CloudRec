@@ -30,7 +30,7 @@ import (
 // GetFindingResource returns AWS Inspector2 finding resource definition
 func GetFindingResource() schema.Resource {
 	return schema.Resource{
-		ResourceType:       collector.Inspector2,
+		ResourceType:       collector.Inspector2Finding,
 		ResourceTypeName:   "Inspector2 Finding",
 		ResourceGroupType:  constant.SECURITY,
 		Desc:               "https://docs.aws.amazon.com/inspector/v2/APIReference/API_ListFindings.html",

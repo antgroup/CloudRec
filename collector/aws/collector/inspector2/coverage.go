@@ -30,7 +30,7 @@ import (
 // GetCoverageResource returns AWS Inspector2 coverage resource definition
 func GetCoverageResource() schema.Resource {
 	return schema.Resource{
-		ResourceType:       collector.Inspector2,
+		ResourceType:       collector.Inspector2Coverage,
 		ResourceTypeName:   "Inspector2 Coverage",
 		ResourceGroupType:  constant.SECURITY,
 		Desc:               "https://docs.aws.amazon.com/inspector/v2/APIReference/API_ListCoverage.html",

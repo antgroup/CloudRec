@@ -27,7 +27,7 @@ import (
 )
 
 type Detail struct {
-	User         api.UserModel
+	User         *api.GetUserResult
 	LoginProfile *api.GetUserLoginProfileResult
 	AccessKeys   []api.AccessKeyModel
 	Policies     []api.PolicyModel
@@ -59,7 +59,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 
 	for _, user := range users.Users {
 		detail := Detail{
-			User:         user,
+			User:         getUserDetail(ctx, client, user.Name),
 			LoginProfile: getUserLoginProfile(ctx, client, user.Name),
 			AccessKeys:   getUserAccessKey(ctx, client, user.Name),
 			Policies:     getUserPolicies(ctx, client, user.Name),
@@ -68,6 +68,15 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 		res <- detail
 	}
 	return nil
+}
+
+func getUserDetail(ctx context.Context, client *iam.Client, name string) *api.GetUserResult {
+	getUserResult, err := client.GetUser(name)
+	if err != nil {
+		log.CtxLogger(ctx).Error("GetUser error", zap.Error(err))
+		return nil
+	}
+	return getUserResult
 }
 
 func getUserLoginProfile(ctx context.Context, client *iam.Client, name string) *api.GetUserLoginProfileResult {

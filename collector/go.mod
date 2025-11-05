@@ -160,7 +160,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/wafv2 v1.55.5 // indirect
 	github.com/aws/smithy-go v1.22.5 // indirect
-	github.com/baidubce/bce-sdk-go v0.9.229 // indirect
+	github.com/baidubce/bce-sdk-go v0.9.251 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

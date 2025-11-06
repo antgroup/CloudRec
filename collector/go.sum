@@ -315,8 +315,8 @@ github.com/aws/aws-sdk-go-v2/service/wafv2 v1.55.5 h1:Fqt5dudTu1FxJXxrcLxKmnSPVu
 github.com/aws/aws-sdk-go-v2/service/wafv2 v1.55.5/go.mod h1:SGymgXOuZBAnbdEO2NAPUHOXU2swMyT0+nHD1VlNxhk=
 github.com/aws/smithy-go v1.22.5 h1:P9ATCXPMb2mPjYBgueqJNCA5S9UfktsW0tTxi+a7eqw=
 github.com/aws/smithy-go v1.22.5/go.mod h1:t1ufH5HMublsJYulve2RKmHDC15xu1f26kHCp/HgceI=
-github.com/baidubce/bce-sdk-go v0.9.229 h1:oL+YlYDqeMrE6NHgPhkI+4T2geeIHz4PFVivvQ0ysug=
-github.com/baidubce/bce-sdk-go v0.9.229/go.mod h1:zbYJMQwE4IZuyrJiFO8tO8NbtYiKTFTbwh4eIsqjVdg=
+github.com/baidubce/bce-sdk-go v0.9.251 h1:gjNzXhu9FtHjwPZqmXtCiOJnX8TbpwvpjTY6mWzl/uM=
+github.com/baidubce/bce-sdk-go v0.9.251/go.mod h1:zbYJMQwE4IZuyrJiFO8tO8NbtYiKTFTbwh4eIsqjVdg=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/clbanning/mxj v1.8.4 h1:HuhwZtbyvyOw+3Z1AowPkU87JkJUSv751ELWaiTpj8I=
 github.com/clbanning/mxj v1.8.4/go.mod h1:BVjHeAH+rl9rs6f+QIpeRl0tfu10SXn1pUSa5PVGJng=

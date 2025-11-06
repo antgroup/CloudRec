@@ -54,6 +54,7 @@ github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.11-0.20241012070109-f821fe2
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.11/go.mod h1:wHxkgZT1ClZdcwEVP/pDgYK/9HucsnCfMipmJgCz4xY=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.5/go.mod h1:N0ppnkOnfC/zNQZBwxEC0y53FELAgEHLY3ZBFxq1WG0=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.9/go.mod h1:kgnXaV74AVjM3ZWJu1GhyXGuCtxljJ677oUfz6MyJOE=
+github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.10/go.mod h1:kgnXaV74AVjM3ZWJu1GhyXGuCtxljJ677oUfz6MyJOE=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.11 h1:5JIs4BPVpzbgcBrgmUxBdDsMjmsHZvPbTPD1m4aB+ZQ=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.11/go.mod h1:ue0+WkdPxpCB2JP3iaG4Iawayxp72kyT5uDbozQKaW8=
 github.com/alibabacloud-go/darabonba-signature-util v0.0.7 h1:UzCnKvsjPFzApvODDNEYqBHMFt1w98wC7FOo0InLyxg=

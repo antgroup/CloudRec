@@ -111,6 +111,10 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.GetWLogger().Error(fmt.Sprintf("failed to initialize CLB client in region:%s, err:%s", param.Region, err.Error()))
 		}
+		s.VPC, err = createVPCClient(param.Region, s.Credential)
+		if err != nil {
+			log.GetWLogger().Error(fmt.Sprintf("failed to initialize VPC client in region:%s, err:%s", param.Region, err.Error()))
+		}
 	case CDB:
 		s.CDB, err = createCDBClient(param.Region, s.Credential)
 		if err != nil {

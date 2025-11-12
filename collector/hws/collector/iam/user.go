@@ -18,10 +18,10 @@ package iam
 import (
 	"context"
 
+	"github.com/cloudrec/hws/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"github.com/cloudrec/hws/collector"
 	iam "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/model"
 	"go.uber.org/zap"
@@ -46,6 +46,7 @@ type UserDetail struct {
 	User                 model.KeystoneListUsersResult
 	UserAttribute        *model.ShowUserResult
 	Credentials          *[]model.Credentials
+	CredentialsDetail 	[]*model.ShowCredential
 	UserGroups           []*UserGroup
 	LoginProtects        *model.LoginProtectResult
 	DomainPasswordPolicy *model.PasswordPolicyResult
@@ -67,10 +68,12 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 	}
 
 	for _, user := range *response.Users {
+		credentials, CredentialsDetail := listPermanentAccessKeys(ctx, cli, user.Id)
 		res <- &UserDetail{
 			User:                 user,
 			UserAttribute:        showUser(ctx, cli, user.Id),
-			Credentials:          listPermanentAccessKeys(ctx, cli, user.Id),
+			Credentials:          credentials,
+			CredentialsDetail:    CredentialsDetail,
 			DomainPasswordPolicy: getDomainPasswordPolicy(ctx, cli, user.DomainId),
 			LoginProtects:        showUserLoginProtect(ctx, cli, user.Id),
 		}
@@ -79,16 +82,34 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 	return nil
 }
 
-func listPermanentAccessKeys(ctx context.Context, cli *iam.IamClient, id string) (credentials *[]model.Credentials) {
+func listPermanentAccessKeys(ctx context.Context, cli *iam.IamClient, id string) (*[]model.Credentials, []*model.ShowCredential) {
 	request := &model.ListPermanentAccessKeysRequest{}
 	request.UserId = &id
 	response, err := cli.ListPermanentAccessKeys(request)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("ListPermanentAccessKeys error", zap.Error(err))
-		return
+		return nil, nil
 	}
 
-	return response.Credentials
+	var credentialsDetail []*model.ShowCredential
+	for _, credential := range *response.Credentials{
+		credentialDetail := showPermanentAccessKey(ctx, cli, credential.Access)
+		credentialsDetail = append(credentialsDetail, credentialDetail)
+	}
+
+	return response.Credentials, credentialsDetail
+}
+
+func showPermanentAccessKey(ctx context.Context, cli *iam.IamClient, AccessKey string)(*model.ShowCredential){
+	request := &model.ShowPermanentAccessKeyRequest{}
+	request.AccessKey = AccessKey
+	response, err := cli.ShowPermanentAccessKey(request)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("ShowPermanentAccessKey error", zap.Error(err))
+		return nil
+	}
+
+	return response.Credential
 }
 
 func getDomainPasswordPolicy(ctx context.Context, cli *iam.IamClient, domainId string) *model.PasswordPolicyResult {

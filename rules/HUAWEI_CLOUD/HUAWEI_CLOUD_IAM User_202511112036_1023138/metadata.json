@@ -1,0 +1,1 @@
+{"advice":null,"categoryList":["身份安全"],"code":"HUAWEI_CLOUD_IAM User_202511112036_1023138","context":null,"description":"RAM用户长期未使用的AccessKey仍具有效权限，若被泄露或滥用可能导致非授权访问、数据泄露或资源滥用，且违反凭证生命周期管理安全原则。","level":"Medium","link":null,"linkedDataList":null,"name":"IAM 用户 AK 超过一年未使用","platform":"HUAWEI_CLOUD","resourceType":"IAM User"}

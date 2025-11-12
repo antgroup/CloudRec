@@ -18,12 +18,13 @@ package clb
 import (
 	"context"
 
+	"github.com/cloudrec/tencent/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"github.com/cloudrec/tencent/collector"
 	clb "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/clb/v20180317"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
+	vpc "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/v20170312"
 	"go.uber.org/zap"
 )
 
@@ -47,10 +48,13 @@ type LBDetail struct {
 	LoadBalancer clb.LoadBalancer
 	Listeners    []*clb.ListenerBackend
 	SecureGroups []*string
+	SecurityGroupDetail []*vpc.SecurityGroupPolicySet
 }
 
 func ListCLBResource(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
-	cli := service.(*collector.Services).CLB
+	services := service.(*collector.Services)
+	clbClient := services.CLB
+	vpcClient := services.VPC
 
 	request := clb.NewDescribeLoadBalancersRequest()
 	request.Limit = common.Int64Ptr(100)
@@ -58,7 +62,7 @@ func ListCLBResource(ctx context.Context, service schema.ServiceInterface, res c
 
 	var count uint64
 	for {
-		response, err := cli.DescribeLoadBalancers(request)
+		response, err := clbClient.DescribeLoadBalancers(request)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeLoadBalancers error", zap.Error(err))
 			return err
@@ -66,8 +70,9 @@ func ListCLBResource(ctx context.Context, service schema.ServiceInterface, res c
 		for _, lb := range response.Response.LoadBalancerSet {
 			d := &LBDetail{
 				LoadBalancer: *lb,
-				Listeners:    describeTargets(ctx, cli, lb.LoadBalancerId),
+				Listeners:    describeTargets(ctx, clbClient, lb.LoadBalancerId),
 				SecureGroups: lb.SecureGroups,
+				SecurityGroupDetail: describeSecurityGroups(ctx, vpcClient, lb.SecureGroups),
 			}
 			res <- d
 		}
@@ -92,4 +97,23 @@ func describeTargets(ctx context.Context, cli *clb.Client, LoadBalancerId *strin
 		return
 	}
 	return response.Response.Listeners
+}
+
+func describeSecurityGroups(ctx context.Context, cli *vpc.Client, securityGroupIds []*string) []*vpc.SecurityGroupPolicySet {
+
+	var securityGroupInfo []*vpc.SecurityGroupPolicySet
+	for _, securityGroupId := range securityGroupIds {
+		request := vpc.NewDescribeSecurityGroupPoliciesRequest()
+		request.SecurityGroupId = securityGroupId
+
+		response, err := cli.DescribeSecurityGroupPolicies(request)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("Describe SecurityGroupPolicies error", zap.Error(err))
+			return nil
+		}
+
+		securityGroupInfo = append(securityGroupInfo, response.Response.SecurityGroupPolicySet)
+	}
+
+	return securityGroupInfo
 }

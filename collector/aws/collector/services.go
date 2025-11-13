@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -432,15 +433,7 @@ func buildConfigWithRegion(region string, ak string, sk string) (aws.Config, err
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ak, sk, "")),
 		config.WithRegion(region),
 		config.WithRetryMode(aws.RetryModeAdaptive), //https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html
-		// https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-retries-timeouts.html
-		//config.WithRetryer(func() aws.Retryer {
-		//	return retry.NewStandard(
-		//		func(o *retry.StandardOptions) {
-		//			o.MaxAttempts = 5
-		//			o.MaxBackoff = 60 * time.Second
-		//
-		//		})
-		//}),
+
 	)
 	if err != nil {
 		log.GetWLogger().Error(fmt.Sprintf("fail to build config, %v", err))
@@ -448,4 +441,19 @@ func buildConfigWithRegion(region string, ak string, sk string) (aws.Config, err
 	}
 
 	return cfg, nil
+}
+
+// customRetryer returns a custom retryer,
+// if the Adaptive retry mode cannot meet the requirements,
+// you can use custom retryer to config.WithRetryer(customRetryer())
+//
+// https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-retries-timeouts.html
+func customRetryer() func() aws.Retryer {
+	return func() aws.Retryer {
+		return retry.NewStandard(
+			func(o *retry.StandardOptions) {
+				o.MaxAttempts = 5
+				o.MaxBackoff = 60 * time.Second
+			})
+	}
 }

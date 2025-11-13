@@ -73,7 +73,7 @@ import (
 
 // Services contains regional client of AWS services
 type Services struct {
-	Region string
+	Region                  string
 	EC2                     *ec2.Client
 	IAM                     *iam.Client
 	S3                      *s3.Client
@@ -431,6 +431,16 @@ func buildConfigWithRegion(region string, ak string, sk string) (aws.Config, err
 		config.WithClientLogMode(aws.LogRetries|aws.LogRequest),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ak, sk, "")),
 		config.WithRegion(region),
+		config.WithRetryMode(aws.RetryModeAdaptive), //https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html
+		// https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-retries-timeouts.html
+		//config.WithRetryer(func() aws.Retryer {
+		//	return retry.NewStandard(
+		//		func(o *retry.StandardOptions) {
+		//			o.MaxAttempts = 5
+		//			o.MaxBackoff = 60 * time.Second
+		//
+		//		})
+		//}),
 	)
 	if err != nil {
 		log.GetWLogger().Error(fmt.Sprintf("fail to build config, %v", err))

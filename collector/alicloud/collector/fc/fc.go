@@ -17,9 +17,7 @@ package fc
 
 import (
 	"context"
-	"fmt"
 	fc20230330 "github.com/alibabacloud-go/fc-20230330/v4/client"
-	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -35,8 +33,8 @@ func GetFCResource() schema.Resource {
 		Desc:               "https://api.aliyun.com/product/FC",
 		ResourceDetailFunc: GetInstanceDetail,
 		RowField: schema.RowField{
-			ResourceId:   "$.ResourceId",
-			ResourceName: "$.ResourceName",
+			ResourceId:   "$.Function.functionId",
+			ResourceName: "$.Function.functionName",
 		},
 		Regions: []string{
 			"cn-qingdao",
@@ -68,52 +66,49 @@ func GetFCResource() schema.Resource {
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	services := service.(*collector.Services)
 	cli := services.FC
-	domain := describeCustomDomain(ctx, cli)
 
 	function := describeFunction(ctx, cli)
-
-	if len(domain) == 0 && len(function) == 0 {
-		log.CtxLogger(ctx).Info("no fc resource found")
-		return nil
-	}
-
-	res <- Detail{
-		ResourceId:   fmt.Sprintf("fc_%s_%s", *cli.RegionId, services.CloudAccountId),
-		ResourceName: fmt.Sprintf("fc_%s_%s", *cli.RegionId, services.CloudAccountId),
-		Domain:       domain,
-		Function:     function,
+	for _, f := range function {
+		res <- Detail{
+			Function: f,
+			Triggers: describeTriggers(ctx, cli, f.FunctionName),
+		}
 	}
 
 	return nil
 }
 
 type Detail struct {
-	ResourceId string
-
-	ResourceName string
-
-	// Custom domain name information
-	Domain []*fc20230330.CustomDomain
 
 	// Function Information
-	Function []*fc20230330.Function
+	Function *fc20230330.Function
+
+	Triggers []*fc20230330.Trigger
 }
 
-func describeCustomDomain(ctx context.Context, cli *fc20230330.Client) []*fc20230330.CustomDomain {
-	listCustomDomainsRequest := &fc20230330.ListCustomDomainsRequest{}
-	runtime := &util.RuntimeOptions{}
-	headers := make(map[string]*string)
-
-	result, err := cli.ListCustomDomainsWithOptions(listCustomDomainsRequest, headers, runtime)
+func describeTriggers(ctx context.Context, cli *fc20230330.Client, name *string) (triggers []*fc20230330.Trigger) {
+	request := &fc20230330.ListTriggersRequest{}
+	resp, err := cli.ListTriggers(name, request)
 	if err != nil {
-		log.CtxLogger(ctx).Warn("ListCustomDomainsWithOptions error", zap.Error(err))
+		log.CtxLogger(ctx).Warn("ListTriggersWithOptions error", zap.Error(err))
 		return nil
 	}
+	triggers = append(triggers, resp.Body.Triggers...)
 
-	return result.Body.CustomDomains
+	for resp.Body.NextToken != nil {
+		request.NextToken = resp.Body.NextToken
+		resp, err = cli.ListTriggers(name, request)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("ListTriggersWithOptions error", zap.Error(err))
+			return nil
+		}
+		triggers = append(triggers, resp.Body.Triggers...)
+	}
+
+	return resp.Body.Triggers
 }
 
-func describeFunction(ctx context.Context, cli *fc20230330.Client) []*fc20230330.Function {
+func describeFunction(ctx context.Context, cli *fc20230330.Client) (functions []*fc20230330.Function) {
 	listFunctionsRequest := &fc20230330.ListFunctionsRequest{}
 	headers := make(map[string]*string)
 
@@ -121,6 +116,17 @@ func describeFunction(ctx context.Context, cli *fc20230330.Client) []*fc20230330
 	if err != nil {
 		log.CtxLogger(ctx).Warn("ListFunctionsWithOptions error", zap.Error(err))
 		return nil
+	}
+	functions = append(functions, result.Body.Functions...)
+
+	if result.Body.NextToken != nil {
+		listFunctionsRequest.NextToken = result.Body.NextToken
+		result, err = cli.ListFunctionsWithOptions(listFunctionsRequest, headers, collector.RuntimeObject)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("ListFunctionsWithOptions error", zap.Error(err))
+			return nil
+		}
+		functions = append(functions, result.Body.Functions...)
 	}
 
 	return result.Body.Functions

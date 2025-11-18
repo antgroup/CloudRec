@@ -17,6 +17,7 @@ package ram
 
 import (
 	"context"
+	ims20190815 "github.com/alibabacloud-go/ims-20190815/v4/client"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
@@ -43,7 +44,7 @@ func GetRAMUserResource() schema.Resource {
 type UserDetail struct {
 	User                 ram.User
 	UserDetail           ram.User
-	LoginProfile         ram.LoginProfile
+	LoginProfile         *ims20190815.GetLoginProfileResponseBodyLoginProfile
 	Groups               []ram.Group
 	ConsoleLogin         bool
 	Policies             []PolicyDetail
@@ -64,6 +65,7 @@ type AccessKeyDetail struct {
 
 func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).RAM
+	imsCli := service.(*collector.Services).IMS
 
 	request := ram.CreateListUsersRequest()
 	request.Scheme = "https"
@@ -80,13 +82,14 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 				User:       i,
 				UserDetail: getUser(ctx, cli, i.UserName),
 				//Groups:           groups,
-				LoginProfile:         getLoginProfile(ctx, cli, i.UserName),
+				LoginProfile:         getLoginProfile(ctx, imsCli, i.UserName),
 				Policies:             listAttachedPolicies(ctx, cli, i.UserName, []ram.Group{}),
 				AccessKeys:           accessKeys,
 				ExistActiveAccessKey: existActiveAccessKey(accessKeys),
 			}
 
-			d.ConsoleLogin = d.LoginProfile.CreateDate != ""
+			d.ConsoleLogin = d.LoginProfile != nil && d.LoginProfile.Status != nil && *d.LoginProfile.Status == "Active"
+
 			res <- d
 		}
 		if !response.IsTruncated {
@@ -142,16 +145,17 @@ func getUser(ctx context.Context, cli *ram.Client, username string) (user ram.Us
 	return response.User
 }
 
-func getLoginProfile(ctx context.Context, cli *ram.Client, username string) (LoginProfile ram.LoginProfile) {
-	request := ram.CreateGetLoginProfileRequest()
-	request.Scheme = "https"
-	request.UserName = username
+func getLoginProfile(ctx context.Context, cli *ims20190815.Client, username string) (LoginProfile *ims20190815.GetLoginProfileResponseBodyLoginProfile) {
+	request := &ims20190815.GetLoginProfileRequest{
+		UserPrincipalName: &username,
+	}
+
 	response, err := cli.GetLoginProfile(request)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("GetLoginProfile error", zap.Error(err))
 		return
 	}
-	return response.LoginProfile
+	return response.Body.LoginProfile
 }
 
 // query ram user policies

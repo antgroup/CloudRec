@@ -281,6 +281,10 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ram client failed", zap.Error(err))
 		}
+		s.IMS, err = createImsClient(param.Region, s.Config)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("init ims client failed", zap.Error(err))
+		}
 		s.RAM.SetHttpProxy(cloudAccountParam.ProxyConfig)
 		s.RAM.SetHttpsProxy(cloudAccountParam.ProxyConfig)
 	case Account:

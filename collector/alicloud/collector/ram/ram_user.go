@@ -88,7 +88,7 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 				ExistActiveAccessKey: existActiveAccessKey(accessKeys),
 			}
 
-			d.ConsoleLogin = *d.LoginProfile.Status == "Active"
+			d.ConsoleLogin = d.LoginProfile != nil && d.LoginProfile.Status != nil && *d.LoginProfile.Status == "Active"
 
 			res <- d
 		}

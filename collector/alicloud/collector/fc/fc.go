@@ -90,7 +90,7 @@ func describeTriggers(ctx context.Context, cli *fc20230330.Client, name *string)
 	request := &fc20230330.ListTriggersRequest{}
 	resp, err := cli.ListTriggers(name, request)
 	if err != nil {
-		log.CtxLogger(ctx).Warn("ListTriggersWithOptions error", zap.Error(err))
+		log.CtxLogger(ctx).Warn("ListTriggers error", zap.Error(err))
 		return nil
 	}
 	triggers = append(triggers, resp.Body.Triggers...)
@@ -99,13 +99,13 @@ func describeTriggers(ctx context.Context, cli *fc20230330.Client, name *string)
 		request.NextToken = resp.Body.NextToken
 		resp, err = cli.ListTriggers(name, request)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("ListTriggersWithOptions error", zap.Error(err))
+			log.CtxLogger(ctx).Warn("ListTriggers error", zap.Error(err))
 			return nil
 		}
 		triggers = append(triggers, resp.Body.Triggers...)
 	}
 
-	return resp.Body.Triggers
+	return triggers
 }
 
 func describeFunction(ctx context.Context, cli *fc20230330.Client) (functions []*fc20230330.Function) {
@@ -129,5 +129,5 @@ func describeFunction(ctx context.Context, cli *fc20230330.Client) (functions []
 		functions = append(functions, result.Body.Functions...)
 	}
 
-	return result.Body.Functions
+	return functions
 }

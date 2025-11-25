@@ -77,6 +77,7 @@ require (
 	github.com/alibabacloud-go/polardb-20170801/v6 v6.2.1 // indirect
 	github.com/alibabacloud-go/privatelink-20200415/v5 v5.0.2 // indirect
 	github.com/alibabacloud-go/r-kvstore-20150101/v5 v5.2.1 // indirect
+	github.com/alibabacloud-go/ram-20150501/v2 v2.2.0 // indirect
 	github.com/alibabacloud-go/rds-20140815/v6 v6.1.0 // indirect
 	github.com/alibabacloud-go/resourcecenter-20221201 v1.4.0 // indirect
 	github.com/alibabacloud-go/rocketmq-20220801 v1.5.3 // indirect

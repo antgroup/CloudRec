@@ -119,6 +119,8 @@ github.com/alibabacloud-go/privatelink-20200415/v5 v5.0.2 h1:Q1blQASdbaHQl3+B+oZ
 github.com/alibabacloud-go/privatelink-20200415/v5 v5.0.2/go.mod h1:V0IO3YXVmAulyfrbiiLHbc/Di/qTrcOboCtrh74oyA4=
 github.com/alibabacloud-go/r-kvstore-20150101/v5 v5.1.0 h1:ygzVt4ZhNEbbxgS3zLpOn/JTIW+aefjyGnLXPV4pFIg=
 github.com/alibabacloud-go/r-kvstore-20150101/v5 v5.1.0/go.mod h1:pBZ26+fecHNO6IGqf0GhiCcChD7gCaFXONwSrTVFtJM=
+github.com/alibabacloud-go/ram-20150501/v2 v2.2.0 h1:Rj11zNIANgtGuQUmE4+q1tccKpbcAZQxBQnalF7MLQk=
+github.com/alibabacloud-go/ram-20150501/v2 v2.2.0/go.mod h1:fFp3ySh7WB4po5MLXRcp+SyB31gIoeNCxXBhmcA4uCU=
 github.com/alibabacloud-go/rds-20140815/v6 v6.1.0 h1:bUqhxIi7R6Xr7V+8XTTqKj4uy/Z++OF/bfKCkEcKUUo=
 github.com/alibabacloud-go/rds-20140815/v6 v6.1.0/go.mod h1:VTFX9drjX/CDZfmPx3++V0L6LSXGKvPIUMvpz9rtJg0=
 github.com/alibabacloud-go/resourcecenter-20221201 v1.4.0 h1:BdD9fNcizCe4XhrqDGE1QhduvhHwyZUqBqPhUTUdTGw=

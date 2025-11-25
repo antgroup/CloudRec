@@ -17,7 +17,8 @@ package ram
 
 import (
 	"context"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
+	ram20150501 "github.com/alibabacloud-go/ram-20150501/v2/client"
+	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -41,45 +42,69 @@ func GetGroupResource() schema.Resource {
 }
 
 type GroupDetail struct {
-	Group    ram.Group
+	Group    *ram20150501.ListGroupsResponseBodyGroupsGroup
 	Policies []PolicyDetail
 }
 
 func GetGroupDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).RAM
 
-	request := ram.CreateListGroupsRequest()
-	request.Scheme = "https"
+	request := &ram20150501.ListGroupsRequest{}
 	for {
-		response, err := cli.ListGroups(request)
+		response, err := cli.ListGroupsWithOptions(request, collector.RuntimeObject)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListGroups error", zap.Error(err))
 			return err
 		}
-		for _, i := range response.Groups.Group {
-			d := GroupDetail{
-				Group:    i,
-				Policies: listPoliciesForGroup(ctx, cli, i.GroupName),
+		if response.Body.Groups != nil && response.Body.Groups.Group != nil {
+			for _, i := range response.Body.Groups.Group {
+				d := GroupDetail{
+					Group:    i,
+					Policies: listPoliciesForGroup(ctx, cli, tea.StringValue(i.GroupName)),
+				}
+				res <- d
 			}
-			res <- d
 		}
-		if !response.IsTruncated {
+		if response.Body.IsTruncated == nil || !tea.BoolValue(response.Body.IsTruncated) {
 			break
 		}
-		request.Marker = response.Marker
+		request.Marker = response.Body.Marker
 	}
 	return nil
 }
 
-func listPoliciesForGroup(ctx context.Context, cli *ram.Client, name string) (policies []PolicyDetail) {
-	request := ram.CreateListPoliciesForGroupRequest()
-	request.Scheme = "https"
-	request.GroupName = name
-	response, err := cli.ListPoliciesForGroup(request)
+func listPoliciesForGroup(ctx context.Context, cli *ram20150501.Client, name string) (policies []PolicyDetail) {
+	request := &ram20150501.ListPoliciesForGroupRequest{
+		GroupName: tea.String(name),
+	}
+	response, err := cli.ListPoliciesForGroupWithOptions(request, collector.RuntimeObject)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("ListPoliciesForGroup error", zap.Error(err))
 		return
 	}
 
-	return getPolicyDetails(ctx, cli, response.Policies.Policy, "Group:"+name)
+	return getPolicyDetailsForGroup(ctx, cli, response.Body.Policies.Policy, "Group:"+name)
+}
+
+func getPolicyDetailsForGroup(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForGroupResponseBodyPoliciesPolicy, source string) (policies []PolicyDetail) {
+	for i := 0; i < len(policy); i++ {
+		if policy[i].PolicyName != nil && policy[i].PolicyType != nil {
+			r := &ram20150501.GetPolicyRequest{
+				PolicyName: policy[i].PolicyName,
+				PolicyType: policy[i].PolicyType,
+			}
+			resp, err := cli.GetPolicyWithOptions(r, collector.RuntimeObject)
+			if err != nil {
+				log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
+				continue
+			}
+			p := PolicyDetail{
+				Policy:               resp.Body.Policy,
+				DefaultPolicyVersion: resp.Body.DefaultPolicyVersion,
+				Source:               source,
+			}
+			policies = append(policies, p)
+		}
+	}
+	return policies
 }

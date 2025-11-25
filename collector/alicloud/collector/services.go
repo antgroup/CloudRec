@@ -646,7 +646,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 }
 
 func createRamClient(region string, config *openapi.Config) (_result *ram20150501.Client, _err error) {
-	config.Endpoint = tea.String("ims.aliyuncs.com")
+	config.Endpoint = tea.String("ram.aliyuncs.com")
 	_result = &ram20150501.Client{}
 	_result, _err = ram20150501.NewClient(config)
 	_result.RegionId = tea.String(region)

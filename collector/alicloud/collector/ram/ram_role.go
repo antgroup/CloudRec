@@ -17,7 +17,9 @@ package ram
 
 import (
 	"context"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
+
+	ram20150501 "github.com/alibabacloud-go/ram-20150501/v2/client"
+	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -41,82 +43,91 @@ func GetRAMRoleResource() schema.Resource {
 }
 
 type RoleDetail struct {
-	Role     ram.Role
+	Role     *ram20150501.GetRoleResponseBodyRole
 	Policies []PolicyDetail
 }
 
 func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).RAM
 
-	request := ram.CreateListRolesRequest()
-	request.Scheme = "https"
+	request := &ram20150501.ListRolesRequest{}
 
 	for {
-		response, err := cli.ListRoles(request)
+		response, err := cli.ListRolesWithOptions(request, collector.RuntimeObject)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListRoles error", zap.Error(err))
 			return err
 		}
-		for _, role := range response.Roles.Role {
-			d := RoleDetail{
-				Role:     getRole(ctx, cli, role.RoleName),
-				Policies: listPoliciesForRole(ctx, cli, role.RoleName),
+		if response.Body.Roles != nil && response.Body.Roles.Role != nil {
+			for _, role := range response.Body.Roles.Role {
+				if role.RoleName != nil {
+					d := RoleDetail{
+						Role:     getRole(ctx, cli, *role.RoleName),
+						Policies: listPoliciesForRole(ctx, cli, *role.RoleName),
+					}
+					res <- d
+				}
 			}
-
-			res <- d
 		}
-		if !response.IsTruncated {
+		if response.Body.IsTruncated == nil || !*response.Body.IsTruncated {
 			break
 		}
-		request.Marker = response.Marker
+		if response.Body.Marker != nil {
+			request.Marker = response.Body.Marker
+		}
 	}
 
 	return nil
 }
 
-func getRole(ctx context.Context, cli *ram.Client, name string) ram.Role {
-	request := ram.CreateGetRoleRequest()
-	request.RoleName = name
-	request.Scheme = "https"
-	getRoleResponse, err := cli.GetRole(request)
+func getRole(ctx context.Context, cli *ram20150501.Client, name string) *ram20150501.GetRoleResponseBodyRole {
+	request := &ram20150501.GetRoleRequest{
+		RoleName: tea.String(name),
+	}
+	getRoleResponse, err := cli.GetRoleWithOptions(request, collector.RuntimeObject)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("GetRole error", zap.Error(err))
-		return ram.Role{}
+		return nil
 	}
-	return getRoleResponse.Role
+	return getRoleResponse.Body.Role
 }
 
-func listPoliciesForRole(ctx context.Context, cli *ram.Client, name string) (policies []PolicyDetail) {
-	request := ram.CreateListPoliciesForRoleRequest()
-	request.Scheme = "https"
-	request.RoleName = name
-	response, err := cli.ListPoliciesForRole(request)
+func listPoliciesForRole(ctx context.Context, cli *ram20150501.Client, name string) (policies []PolicyDetail) {
+	request := &ram20150501.ListPoliciesForRoleRequest{
+		RoleName: tea.String(name),
+	}
+	response, err := cli.ListPoliciesForRoleWithOptions(request, collector.RuntimeObject)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("ListPoliciesForRole error", zap.Error(err))
 		return nil
 	}
 
-	return getPolicyDetails(ctx, cli, response.Policies.Policy, "Role:"+name)
+	if response.Body.Policies != nil && response.Body.Policies.Policy != nil {
+		return getPolicyDetails(ctx, cli, response.Body.Policies.Policy, "Role:"+name)
+	}
+	return nil
 }
 
-func getPolicyDetails(ctx context.Context, cli *ram.Client, policy []ram.Policy, source string) (policies []PolicyDetail) {
+func getPolicyDetails(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForRoleResponseBodyPoliciesPolicy, source string) (policies []PolicyDetail) {
 
 	for i := 0; i < len(policy); i++ {
-		r := ram.CreateGetPolicyRequest()
-		r.Scheme = "https"
-		r.PolicyName = policy[i].PolicyName
-		r.PolicyType = policy[i].PolicyType
-		resp, err := cli.GetPolicy(r)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
-			continue
+		if policy[i].PolicyName != nil && policy[i].PolicyType != nil {
+			r := &ram20150501.GetPolicyRequest{
+				PolicyName: policy[i].PolicyName,
+				PolicyType: policy[i].PolicyType,
+			}
+			resp, err := cli.GetPolicyWithOptions(r, collector.RuntimeObject)
+			if err != nil {
+				log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
+				continue
+			}
+			p := PolicyDetail{
+				Policy:               resp.Body.Policy,
+				DefaultPolicyVersion: resp.Body.DefaultPolicyVersion,
+				Source:               source,
+			}
+			policies = append(policies, p)
 		}
-		p := PolicyDetail{
-			Policy:               resp.Policy,
-			DefaultPolicyVersion: resp.DefaultPolicyVersion,
-			Source:               source,
-		}
-		policies = append(policies, p)
 	}
 
 	return policies

@@ -57,6 +57,7 @@ import (
 	polardb20170801 "github.com/alibabacloud-go/polardb-20170801/v6/client"
 	privatelink20200415 "github.com/alibabacloud-go/privatelink-20200415/v5/client"
 	r_kvstore20150101 "github.com/alibabacloud-go/r-kvstore-20150101/v5/client"
+	ram20150501 "github.com/alibabacloud-go/ram-20150501/v2/client"
 	rds20140815 "github.com/alibabacloud-go/rds-20140815/v6/client"
 	resourcecenter20221201 "github.com/alibabacloud-go/resourcecenter-20221201/client"
 	rocketmq20220801 "github.com/alibabacloud-go/rocketmq-20220801/client"
@@ -92,7 +93,6 @@ import (
 	mns_open "github.com/aliyun/alibaba-cloud-sdk-go/services/mns-open"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ons"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/oos"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/ram"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/rtc"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/sgw"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
@@ -148,7 +148,7 @@ type Services struct {
 	SLB             *slb20140515.Client
 	NLB             *nlb20220430.Client
 	ALB             *alb20200616.Client
-	RAM             *ram.Client
+	RAM             *ram20150501.Client
 	IMS             *ims20190815.Client
 	Actiontrail     *actiontrail.Client
 	Alikafka        *alikafka.Client
@@ -277,7 +277,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.CtxLogger(ctx).Warn("init vpc client failed", zap.Error(err))
 		}
 	case RAMUser, RAMRole, RMAGroup:
-		s.RAM, err = ram.NewClientWithAccessKey(param.Region, param.AK, param.SK)
+		s.RAM, err = createRamClient("cn-hangzhou", s.Config)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ram client failed", zap.Error(err))
 		}
@@ -285,8 +285,6 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ims client failed", zap.Error(err))
 		}
-		s.RAM.SetHttpProxy(cloudAccountParam.ProxyConfig)
-		s.RAM.SetHttpsProxy(cloudAccountParam.ProxyConfig)
 	case Account:
 		s.IMS, err = createImsClient("cn-hangzhou", s.Config)
 		if err != nil {
@@ -645,6 +643,14 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 	}
 
 	return nil
+}
+
+func createRamClient(region string, config *openapi.Config) (_result *ram20150501.Client, _err error) {
+	config.Endpoint = tea.String("ram.aliyuncs.com")
+	_result = &ram20150501.Client{}
+	_result, _err = ram20150501.NewClient(config)
+	_result.RegionId = tea.String(region)
+	return _result, _err
 }
 
 func createOpenSearchClient(region string, config *openapi.Config) (*opensearch20171225.Client, error) {

@@ -1,0 +1,1 @@
+{"advice":"Root账号具有最高权限，不应生成和使用Access Key，删除不使用的AK","categoryList":["身份安全"],"code":"TENCENT_CLOUD_CAM User_202511121131_514344","context":"实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。","description":"检查ROOT账号下存在活跃AK，则认为实例不符合这条规则。","level":"High","link":null,"linkedDataList":null,"name":"腾讯云-CAM-ROOT账号存在AK","platform":"TENCENT_CLOUD","resourceType":"CAM User"}

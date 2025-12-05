@@ -1,0 +1,1 @@
+{"advice":"该账号AK权限过大，根据业务场景配置权限最小化，以及删除不使用的AK。","categoryList":["身份安全","数据保护"],"code":"TENCENT_CLOUD_CAM User_202512041838_656258","context":null,"description":"检查账号下存在活跃AK且权限为*，则认为实例不符合这条规则。","level":"High","link":null,"linkedDataList":null,"name":"【OB】【腾讯云】AK权限过大","platform":"TENCENT_CLOUD","resourceType":"CAM User"}

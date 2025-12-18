@@ -142,6 +142,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		case ECS:
 			s.ECS, err = s.ECSClient(param.Region)
 			s.VPC, err = s.VPCClient(param.Region)
+			s.EVS, err = s.EVSClient(param.Region)
 		case IAMUser:
 			s.IAM, err = s.IAMClient()
 		case VPC, SecurityGroup:

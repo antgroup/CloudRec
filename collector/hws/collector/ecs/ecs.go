@@ -24,6 +24,8 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	ecsModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
+	evs "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/evs/v2"
+	evsModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/evs/v2/model"
 	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3"
 	vpcModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3/model"
 	"go.uber.org/zap"
@@ -45,13 +47,17 @@ func GetInstanceResource() schema.Resource {
 }
 
 type InstanceDetail struct {
+	RegionId      string
 	ServerDetail  ecsModel.ServerDetail
 	SecurityGroup []*vpcModel.SecurityGroupInfo
+	Volumes       []evsModel.VolumeDetail
 }
 
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
-	client := service.(*collector.Services).ECS
-	vpcClient := service.(*collector.Services).VPC
+	services := service.(*collector.Services)
+	ecsClient := services.ECS
+	evsClient := services.EVS
+	vpcClient := services.VPC
 
 	limit := int32(50)
 	offset := int32(1)
@@ -60,7 +66,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 		Offset: &offset,
 	}
 	for {
-		response, err := client.ListServersDetails(request)
+		response, err := ecsClient.ListServersDetails(request)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListServersDetails error", zap.Error(err))
 			return err
@@ -69,8 +75,10 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 		for _, ecs := range *response.Servers {
 			ecs.OSEXTSRVATTRuserData = nil
 			res <- &InstanceDetail{
+				RegionId:      services.Region,
 				ServerDetail:  ecs,
 				SecurityGroup: getSecurityGroup(ecs.SecurityGroups, vpcClient),
+				Volumes:       getVolume(ecs.OsExtendedVolumesvolumesAttached, evsClient),
 			}
 		}
 
@@ -94,6 +102,22 @@ func getSecurityGroup(securityGroups []ecsModel.ServerSecurityGroup, client *vpc
 			log.GetWLogger().Error(fmt.Sprintf("get SecurityGroup error: %s", err.Error()))
 			return nil
 		}
+	}
+	return result
+}
+
+func getVolume(volumes []ecsModel.ServerExtendVolumeAttachment, client *evs.EvsClient) []evsModel.VolumeDetail {
+	var result []evsModel.VolumeDetail
+	for _, volume := range volumes {
+		request := &evsModel.ListVolumesRequest{}
+		idRequest := volume.Id
+		request.Id = &idRequest
+		response, err := client.ListVolumes(request)
+		if err != nil {
+			log.GetWLogger().Error(fmt.Sprintf("list volumes error: %s", err.Error()))
+			return nil
+		}
+		result = append(result, (*response.Volumes)[0])
 	}
 	return result
 }

@@ -22,7 +22,8 @@ import (
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3/model"
+	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3"
+	vpcModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3/model"
 	"go.uber.org/zap"
 )
 
@@ -42,13 +43,16 @@ func GetSecurityGroupResource() schema.Resource {
 }
 
 type SecurityGroupDetail struct {
-	SecurityGroup model.SecurityGroup
+	Region      string
+	SecurityGroup vpcModel.SecurityGroup
+	SecurityGroupDetail *vpcModel.SecurityGroupInfo
 }
 
 func GetSecurityGroupDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
-	cli := service.(*collector.Services).VPC
+	services := service.(*collector.Services)
+	cli := services.VPC
 
-	request := &model.ListSecurityGroupsRequest{}
+	request := &vpcModel.ListSecurityGroupsRequest{}
 	for {
 		response, err := cli.ListSecurityGroups(request)
 		if err != nil {
@@ -58,7 +62,9 @@ func GetSecurityGroupDetail(ctx context.Context, service schema.ServiceInterface
 
 		for _, securityGroup := range *response.SecurityGroups {
 			res <- &SecurityGroupDetail{
+				Region:      services.Region,
 				SecurityGroup: securityGroup,
+				SecurityGroupDetail: getSecurityGroupRules(ctx, securityGroup, cli),
 			}
 		}
 
@@ -71,4 +77,15 @@ func GetSecurityGroupDetail(ctx context.Context, service schema.ServiceInterface
 		request.Marker = &lastSecurityGroup.Id
 	}
 	return nil
+}
+
+func getSecurityGroupRules(ctx context.Context, securityGroup vpcModel.SecurityGroup, client *vpc.VpcClient) *vpcModel.SecurityGroupInfo {
+	request := &vpcModel.ShowSecurityGroupRequest{}
+	request.SecurityGroupId = securityGroup.Id
+	response, err := client.ShowSecurityGroup(request)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("get SecurityGroup error", zap.Error(err))
+		return nil
+	}
+	return response.SecurityGroup
 }

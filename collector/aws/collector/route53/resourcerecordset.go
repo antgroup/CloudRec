@@ -85,19 +85,13 @@ func describeDomainRRDetails(ctx context.Context, c *route53.Client) (domainRRDe
 }
 
 func listResourceRecordSets(ctx context.Context, c *route53.Client, hostZone types.HostedZone) (resourceRecordSets []types.ResourceRecordSet) {
-
 	input := &route53.ListResourceRecordSetsInput{
 		HostedZoneId: hostZone.Id,
 	}
-	output, err := c.ListResourceRecordSets(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("listResourceRecordSets error", zap.Error(err))
-		return nil
-	}
-	resourceRecordSets = append(resourceRecordSets, output.ResourceRecordSets...)
-	for output.IsTruncated {
-		input.StartRecordIdentifier = output.NextRecordIdentifier
-		output, err = c.ListResourceRecordSets(ctx, input)
+	paginator := route53.NewListResourceRecordSetsPaginator(c, input)
+
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("listResourceRecordSets error", zap.Error(err))
 			return nil

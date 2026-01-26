@@ -97,6 +97,8 @@ func listResourceRecordSets(ctx context.Context, c *route53.Client, hostZone typ
 	resourceRecordSets = append(resourceRecordSets, output.ResourceRecordSets...)
 	for output.IsTruncated {
 		input.StartRecordIdentifier = output.NextRecordIdentifier
+		input.StartRecordName = output.NextRecordName
+		input.StartRecordType = output.NextRecordType
 		output, err = c.ListResourceRecordSets(ctx, input)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("listResourceRecordSets error", zap.Error(err))

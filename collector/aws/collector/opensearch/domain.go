@@ -17,9 +17,12 @@ package opensearch
 
 import (
 	"context"
+	ec2Sdk "github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/opensearch"
 	"github.com/aws/aws-sdk-go-v2/service/opensearch/types"
 	"github.com/cloudrec/aws/collector"
+	"github.com/cloudrec/aws/collector/ec2"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
@@ -45,11 +48,15 @@ func GetDomainResource() schema.Resource {
 // DomainDetail aggregates all information for a single OpenSearch domain.
 type DomainDetail struct {
 	DomainStatus *types.DomainStatus
+	// SecurityGroups includes detailed ingress/egress rules for linked OpenSearch VPC security groups.
+	SecurityGroups []ec2.SecurityGroupDetail
 }
 
 // GetDomainDetail fetches the details for all OpenSearch domains in a region.
 func GetDomainDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
-	client := service.(*collector.Services).OpenSearch
+	services := service.(*collector.Services)
+	client := services.OpenSearch
+	ec2Client := services.EC2
 
 	domains, err := listDomains(ctx, client)
 	if err != nil {
@@ -59,8 +66,13 @@ func GetDomainDetail(ctx context.Context, service schema.ServiceInterface, res c
 
 	for _, domain := range domains {
 		describeOutput := describeDomain(ctx, client, domain)
+		if describeOutput == nil || describeOutput.DomainStatus == nil {
+			continue
+		}
+		securityGroups := describeDomainSecurityGroups(ctx, ec2Client, describeOutput.DomainStatus.VPCOptions)
 		res <- DomainDetail{
-			DomainStatus: describeOutput.DomainStatus,
+			DomainStatus:   describeOutput.DomainStatus,
+			SecurityGroups: securityGroups,
 		}
 	}
 	return nil
@@ -91,4 +103,21 @@ func describeDomain(ctx context.Context, client *opensearch.Client, domain types
 	}
 
 	return describeOutput
+}
+
+func describeDomainSecurityGroups(ctx context.Context, ec2Client *ec2Sdk.Client, vpc *types.VPCDerivedInfo) []ec2.SecurityGroupDetail {
+	if ec2Client == nil || vpc == nil || len(vpc.SecurityGroupIds) == 0 {
+		return nil
+	}
+
+	return ec2.DescribeSecurityGroupDetailsByFilters(ctx, ec2Client, []ec2Types.Filter{
+		{
+			Name:   stringPtr("group-id"),
+			Values: vpc.SecurityGroupIds,
+		},
+	})
+}
+
+func stringPtr(v string) *string {
+	return &v
 }

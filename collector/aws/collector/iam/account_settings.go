@@ -17,6 +17,8 @@ package iam
 
 import (
 	"context"
+	accessanalyzerSvc "github.com/aws/aws-sdk-go-v2/service/accessanalyzer"
+	accessanalyzerTypes "github.com/aws/aws-sdk-go-v2/service/accessanalyzer/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/cloudrec/aws/collector"
@@ -50,14 +52,17 @@ type AccountSettingsDetail struct {
 
 	AccountId string
 
+	AccessAnalyzers []accessanalyzerTypes.AnalyzerSummary
+
 	// todo
 	//EnabledFeatures []types.FeatureType
 }
 
 func GetAccountSettingsDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
-	client := service.(*collector.Services).IAM
+	services := service.(*collector.Services)
+	client := services.IAM
 
-	accountSettingsDetail, err := describeAccountSettingsDetail(ctx, client)
+	accountSettingsDetail, err := describeAccountSettingsDetail(ctx, client, services.AccessAnalyzer)
 	if err != nil {
 		log.CtxLogger(ctx).Warn("describeAccountSettingsDetail error", zap.Error(err))
 		return err
@@ -68,7 +73,7 @@ func GetAccountSettingsDetail(ctx context.Context, service schema.ServiceInterfa
 	return nil
 }
 
-func describeAccountSettingsDetail(ctx context.Context, c *iam.Client) (AccountSettingsDetail, error) {
+func describeAccountSettingsDetail(ctx context.Context, c *iam.Client, aaClient *accessanalyzerSvc.Client) (AccountSettingsDetail, error) {
 
 	passwordPolicy, err := getAccountPasswordPolicy(ctx, c)
 	if err != nil {
@@ -83,10 +88,28 @@ func describeAccountSettingsDetail(ctx context.Context, c *iam.Client) (AccountS
 	}
 
 	return AccountSettingsDetail{
-		PasswordPolicy: passwordPolicy,
-		AccountSummary: accountSummary,
-		AccountId:      log.GetCloudAccountId(ctx),
+		PasswordPolicy:  passwordPolicy,
+		AccountSummary:  accountSummary,
+		AccountId:       log.GetCloudAccountId(ctx),
+		AccessAnalyzers: listAccessAnalyzers(ctx, aaClient),
 	}, nil
+}
+
+func listAccessAnalyzers(ctx context.Context, client *accessanalyzerSvc.Client) []accessanalyzerTypes.AnalyzerSummary {
+	if client == nil {
+		return nil
+	}
+	var analyzers []accessanalyzerTypes.AnalyzerSummary
+	paginator := accessanalyzerSvc.NewListAnalyzersPaginator(client, &accessanalyzerSvc.ListAnalyzersInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("list access analyzers error", zap.Error(err))
+			return analyzers
+		}
+		analyzers = append(analyzers, page.Analyzers...)
+	}
+	return analyzers
 }
 
 func getAccountSummary(ctx context.Context, c *iam.Client) (map[string]int32, error) {

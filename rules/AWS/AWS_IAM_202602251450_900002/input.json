@@ -1,0 +1,1 @@
+{"User":{"UserName":"admin-user","Arn":"arn:aws:iam::123456789012:user/admin-user"},"AttachedPolicies":[{"PolicyName":"AdministratorAccess"}],"AccessKeys":[{"AccessKeyId":"AKIAEXAMPLE","Status":"Active"}],"MFADevices":[]}

@@ -1,0 +1,27 @@
+{
+  "DBInstance": {
+    "DBInstanceIdentifier": "rds-prod",
+    "PubliclyAccessible": true,
+    "Endpoint": {
+      "Port": 3306
+    }
+  },
+  "VPCSecurityGroups": [
+    {
+      "GroupId": "sg-rds-open",
+      "IpPermissions": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 3306,
+          "ToPort": 3306,
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": []
+        }
+      ]
+    }
+  ]
+}

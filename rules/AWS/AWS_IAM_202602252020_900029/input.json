@@ -1,0 +1,1 @@
+{"User":{"UserName":"old-key-user","Arn":"arn:aws:iam::123456789012:user/old-key-user"},"AccessKeys":[{"Metadata":{"AccessKeyId":"AKIAOLD","Status":"Active","CreateDate":"2025-01-01T00:00:00Z"},"LastUsed":null}]}

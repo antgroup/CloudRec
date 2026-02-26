@@ -1,0 +1,1 @@
+{"AccountId":"123456789012","PasswordPolicy":{"MinimumPasswordLength":8,"RequireSymbols":false,"RequireNumbers":true,"RequireUppercaseCharacters":true,"RequireLowercaseCharacters":true}}

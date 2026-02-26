@@ -49,9 +49,14 @@ type UserDetail struct {
 	AttachedPolicies []types.AttachedPolicy
 	InlinePolicies   []string
 	MFADevices       []types.MFADevice
-	AccessKeys       []types.AccessKeyMetadata
+	AccessKeys       []AccessKeyDetail
 	LoginProfile     *iam.GetLoginProfileOutput
 	Tags             []types.Tag
+}
+
+type AccessKeyDetail struct {
+	Metadata types.AccessKeyMetadata
+	LastUsed *types.AccessKeyLastUsed
 }
 
 // GetUserDetail fetches the details for all IAM users.
@@ -151,8 +156,8 @@ func listMFADevices(ctx context.Context, c *iam.Client, userName *string) []type
 }
 
 // listAccessKeys retrieves all access key metadata for a user.
-func listAccessKeys(ctx context.Context, c *iam.Client, userName *string) []types.AccessKeyMetadata {
-	var keys []types.AccessKeyMetadata
+func listAccessKeys(ctx context.Context, c *iam.Client, userName *string) []AccessKeyDetail {
+	var keys []AccessKeyDetail
 	paginator := iam.NewListAccessKeysPaginator(c, &iam.ListAccessKeysInput{UserName: userName})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
@@ -160,9 +165,29 @@ func listAccessKeys(ctx context.Context, c *iam.Client, userName *string) []type
 			log.CtxLogger(ctx).Warn("failed to list access keys", zap.String("user", *userName), zap.Error(err))
 			return nil
 		}
-		keys = append(keys, page.AccessKeyMetadata...)
+		for _, key := range page.AccessKeyMetadata {
+			lastUsed := getAccessKeyLastUsed(ctx, c, key.AccessKeyId)
+			keys = append(keys, AccessKeyDetail{
+				Metadata: key,
+				LastUsed: lastUsed,
+			})
+		}
 	}
 	return keys
+}
+
+func getAccessKeyLastUsed(ctx context.Context, c *iam.Client, accessKeyId *string) *types.AccessKeyLastUsed {
+	if accessKeyId == nil || *accessKeyId == "" {
+		return nil
+	}
+	output, err := c.GetAccessKeyLastUsed(ctx, &iam.GetAccessKeyLastUsedInput{
+		AccessKeyId: accessKeyId,
+	})
+	if err != nil {
+		log.CtxLogger(ctx).Debug("failed to get access key last used", zap.String("accessKeyId", *accessKeyId), zap.Error(err))
+		return nil
+	}
+	return output.AccessKeyLastUsed
 }
 
 // getLoginProfile retrieves the login profile for a user.

@@ -1,0 +1,10 @@
+{
+  "CacheCluster": {
+    "CacheClusterId": "redis-prod-01",
+    "ARN": "arn:aws:elasticache:ap-southeast-1:123456789012:cluster:redis-prod-01",
+    "Engine": "redis",
+    "TransitEncryptionEnabled": false,
+    "AuthTokenEnabled": true
+  },
+  "SecurityGroups": []
+}

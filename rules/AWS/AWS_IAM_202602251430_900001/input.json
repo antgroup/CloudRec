@@ -1,0 +1,15 @@
+{
+  "User": {
+    "UserName": "admin-user",
+    "Arn": "arn:aws:iam::123456789012:user/admin-user"
+  },
+  "AttachedPolicies": [
+    {
+      "PolicyName": "AdministratorAccess",
+      "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+    }
+  ],
+  "InlinePolicies": [],
+  "MFADevices": [],
+  "AccessKeys": []
+}

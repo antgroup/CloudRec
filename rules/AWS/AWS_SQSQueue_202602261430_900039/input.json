@@ -1,0 +1,21 @@
+{
+  "Url": "https://sqs.ap-southeast-1.amazonaws.com/123456789012/order-events",
+  "Name": "order-events",
+  "Region": "ap-southeast-1",
+  "Attributes": {},
+  "Policy": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": "*",
+        "Action": [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage"
+        ],
+        "Resource": "arn:aws:sqs:ap-southeast-1:123456789012:order-events"
+      }
+    ]
+  },
+  "Tags": {}
+}

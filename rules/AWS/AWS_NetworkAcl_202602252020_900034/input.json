@@ -1,0 +1,1 @@
+{"Name":"acl-admin-open","ACL":{"NetworkAclId":"acl-xyz","Entries":[{"Egress":false,"RuleAction":"allow","Protocol":"6","CidrBlock":"0.0.0.0/0","PortRange":{"From":22,"To":22}}]}}

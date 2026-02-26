@@ -1,0 +1,13 @@
+{
+  "Cluster": {
+    "Name": "prod-eks",
+    "Arn": "arn:aws:eks:ap-southeast-1:123456789012:cluster/prod-eks",
+    "ResourcesVpcConfig": {
+      "EndpointPublicAccess": true,
+      "EndpointPrivateAccess": true,
+      "PublicAccessCidrs": [
+        "0.0.0.0/0"
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "Function": {
+    "FunctionName": "order-webhook",
+    "FunctionArn": "arn:aws:lambda:ap-southeast-1:123456789012:function:order-webhook"
+  },
+  "URLConfigs": [
+    {
+      "AuthType": "NONE",
+      "FunctionUrl": "https://abcde.lambda-url.ap-southeast-1.on.aws/"
+    }
+  ],
+  "Policy": null,
+  "Tags": {}
+}

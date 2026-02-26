@@ -1,0 +1,1 @@
+{"Bucket":{"Name":"partial-pab-bucket"},"PublicAccessBlock":{"PublicAccessBlockConfiguration":{"BlockPublicAcls":true,"IgnorePublicAcls":true,"BlockPublicPolicy":false,"RestrictPublicBuckets":true}}}

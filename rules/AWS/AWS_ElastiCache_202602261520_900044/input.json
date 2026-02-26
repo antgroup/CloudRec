@@ -1,0 +1,33 @@
+{
+  "CacheCluster": {
+    "CacheClusterId": "redis-prod-03",
+    "Engine": "redis"
+  },
+  "SecurityGroups": [
+    {
+      "SecurityGroup": {
+        "GroupId": "sg-redis-open"
+      },
+      "SecurityGroupRules": [
+        {
+          "IsEgress": false,
+          "IpProtocol": "tcp",
+          "FromPort": 6379,
+          "ToPort": 6379,
+          "CidrIpv4": "0.0.0.0/0"
+        }
+      ]
+    }
+  ],
+  "NetworkExposure": {
+    "CacheSubnetGroupName": "redis-subnet-group",
+    "SubnetIDs": [
+      "subnet-111",
+      "subnet-222"
+    ],
+    "VpcID": "vpc-abc123",
+    "HasPublicSubnet": true,
+    "HasInternetGatewayRoute": true,
+    "HasEgressOnlyGatewayIPv6": false
+  }
+}

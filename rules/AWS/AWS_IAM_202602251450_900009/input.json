@@ -1,0 +1,1 @@
+{"Role":{"RoleName":"admin-role","Arn":"arn:aws:iam::123456789012:role/admin-role","AssumeRolePolicyDocument":"{\"Version\":\"2012-10-17\",\"Statement\":[{\"Principal\":{\"AWS\":\"*\"},\"Action\":\"sts:AssumeRole\"}]}"},"AttachedPolicies":[{"PolicyName":"AdministratorAccess"}]}

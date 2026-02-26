@@ -1,0 +1,1 @@
+{"DomainStatus":{"DomainName":"vpc-search","VPCOptions":{"SecurityGroupIds":["sg-os"]}},"SecurityGroups":[{"SecurityGroup":{"GroupId":"sg-os","IpPermissions":[{"IpProtocol":"tcp","FromPort":443,"ToPort":443,"IpRanges":[{"CidrIp":"0.0.0.0/0"}]}]}}]}

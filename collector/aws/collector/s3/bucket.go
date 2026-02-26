@@ -56,6 +56,9 @@ type BucketDetail struct {
 
 	// LoggingEnabled
 	LoggingEnabled *types.LoggingEnabled
+
+	// PublicAccessBlock
+	PublicAccessBlock *s3.GetPublicAccessBlockOutput
 }
 
 func GetBucketDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
@@ -81,13 +84,26 @@ func describeBucketDetails(ctx context.Context, c *s3.Client) (bucketDetails []B
 	}
 	for _, bucket := range buckets {
 		bucketDetails = append(bucketDetails, BucketDetail{
-			Bucket:         bucket,
-			Policy:         getBucketPolicy(ctx, c, bucket),
-			Versioning:     getVersioning(ctx, c, bucket),
-			LoggingEnabled: getLoggingEnabled(ctx, c, bucket),
+			Bucket:            bucket,
+			Policy:            getBucketPolicy(ctx, c, bucket),
+			Versioning:        getVersioning(ctx, c, bucket),
+			LoggingEnabled:    getLoggingEnabled(ctx, c, bucket),
+			PublicAccessBlock: getPublicAccessBlock(ctx, c, bucket),
 		})
 	}
 	return bucketDetails, nil
+}
+
+func getPublicAccessBlock(ctx context.Context, c *s3.Client, bucket types.Bucket) *s3.GetPublicAccessBlockOutput {
+	input := &s3.GetPublicAccessBlockInput{
+		Bucket: bucket.Name,
+	}
+	output, err := c.GetPublicAccessBlock(ctx, input)
+	if err != nil {
+		// cloud be NoSuchPublicAccessBlockConfiguration error
+		return nil
+	}
+	return output
 }
 
 func getLoggingEnabled(ctx context.Context, c *s3.Client, bucket types.Bucket) *types.LoggingEnabled {

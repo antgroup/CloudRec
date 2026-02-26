@@ -17,6 +17,7 @@ package iam
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/cloudrec/aws/collector"
@@ -24,6 +25,7 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
+	"net/url"
 )
 
 // GetRoleResource returns a Role Resource
@@ -45,10 +47,23 @@ func GetRoleResource() schema.Resource {
 
 // RoleDetail aggregates all information for a single IAM role.
 type RoleDetail struct {
-	Role             types.Role
-	AttachedPolicies []types.AttachedPolicy
-	InlinePolicies   []string
-	Tags             []types.Tag
+	Role                    types.Role
+	AttachedPolicies        []types.AttachedPolicy
+	AttachedPolicyDocuments []ManagedPolicyDocument
+	InlinePolicies          []string
+	InlinePolicyDocuments   []InlinePolicyDocument
+	Tags                    []types.Tag
+}
+
+type ManagedPolicyDocument struct {
+	PolicyArn  string
+	PolicyName string
+	Document   map[string]interface{}
+}
+
+type InlinePolicyDocument struct {
+	PolicyName string
+	Document   map[string]interface{}
 }
 
 // GetRoleDetail fetches the details for all IAM roles.
@@ -64,16 +79,20 @@ func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res cha
 	for _, role := range roles {
 
 		attachedPolicies := listAttachedRolePolicies(ctx, client, role.RoleName)
+		attachedPolicyDocuments := listAttachedRolePolicyDocuments(ctx, client, attachedPolicies)
 
 		inlinePolicies := listRolePolicies(ctx, client, role.RoleName)
+		inlinePolicyDocuments := listRolePolicyDocuments(ctx, client, role.RoleName, inlinePolicies)
 
 		tags := listRoleTags(ctx, client, role.RoleName)
 
 		res <- &RoleDetail{
-			Role:             role,
-			AttachedPolicies: attachedPolicies,
-			InlinePolicies:   inlinePolicies,
-			Tags:             tags,
+			Role:                    role,
+			AttachedPolicies:        attachedPolicies,
+			AttachedPolicyDocuments: attachedPolicyDocuments,
+			InlinePolicies:          inlinePolicies,
+			InlinePolicyDocuments:   inlinePolicyDocuments,
+			Tags:                    tags,
 		}
 	}
 
@@ -137,4 +156,89 @@ func listRoleTags(ctx context.Context, c *iam.Client, roleName *string) []types.
 		tags = append(tags, page.Tags...)
 	}
 	return tags
+}
+
+func listAttachedRolePolicyDocuments(ctx context.Context, c *iam.Client, policies []types.AttachedPolicy) []ManagedPolicyDocument {
+	docs := make([]ManagedPolicyDocument, 0, len(policies))
+	for _, p := range policies {
+		if p.PolicyArn == nil || *p.PolicyArn == "" {
+			continue
+		}
+
+		policyOutput, err := c.GetPolicy(ctx, &iam.GetPolicyInput{PolicyArn: p.PolicyArn})
+		if err != nil || policyOutput == nil || policyOutput.Policy == nil || policyOutput.Policy.DefaultVersionId == nil {
+			if err != nil {
+				log.CtxLogger(ctx).Warn("failed to get attached role policy", zap.String("policyArn", *p.PolicyArn), zap.Error(err))
+			}
+			continue
+		}
+
+		versionOutput, err := c.GetPolicyVersion(ctx, &iam.GetPolicyVersionInput{
+			PolicyArn: p.PolicyArn,
+			VersionId: policyOutput.Policy.DefaultVersionId,
+		})
+		if err != nil || versionOutput == nil || versionOutput.PolicyVersion == nil || versionOutput.PolicyVersion.Document == nil {
+			if err != nil {
+				log.CtxLogger(ctx).Warn("failed to get attached role policy version", zap.String("policyArn", *p.PolicyArn), zap.Error(err))
+			}
+			continue
+		}
+
+		doc := parsePolicyDocument(*versionOutput.PolicyVersion.Document)
+		if doc == nil {
+			continue
+		}
+
+		docItem := ManagedPolicyDocument{
+			PolicyArn: *p.PolicyArn,
+			Document:  doc,
+		}
+		if p.PolicyName != nil {
+			docItem.PolicyName = *p.PolicyName
+		}
+		docs = append(docs, docItem)
+	}
+	return docs
+}
+
+func listRolePolicyDocuments(ctx context.Context, c *iam.Client, roleName *string, inlinePolicyNames []string) []InlinePolicyDocument {
+	docs := make([]InlinePolicyDocument, 0, len(inlinePolicyNames))
+	for _, policyName := range inlinePolicyNames {
+		output, err := c.GetRolePolicy(ctx, &iam.GetRolePolicyInput{
+			RoleName:   roleName,
+			PolicyName: &policyName,
+		})
+		if err != nil || output == nil || output.PolicyDocument == nil {
+			if err != nil {
+				log.CtxLogger(ctx).Warn("failed to get inline role policy", zap.String("role", *roleName), zap.String("policyName", policyName), zap.Error(err))
+			}
+			continue
+		}
+
+		doc := parsePolicyDocument(*output.PolicyDocument)
+		if doc == nil {
+			continue
+		}
+		docs = append(docs, InlinePolicyDocument{
+			PolicyName: policyName,
+			Document:   doc,
+		})
+	}
+	return docs
+}
+
+func parsePolicyDocument(raw string) map[string]interface{} {
+	decoded, err := url.QueryUnescape(raw)
+	if err != nil {
+		decoded = raw
+	}
+
+	var doc map[string]interface{}
+	if err := json.Unmarshal([]byte(decoded), &doc); err == nil {
+		return doc
+	}
+	if err := json.Unmarshal([]byte(raw), &doc); err == nil {
+		return doc
+	}
+	return nil
 }

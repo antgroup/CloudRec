@@ -1,0 +1,1 @@
+{"User":{"UserName":"console-user","Arn":"arn:aws:iam::123456789012:user/console-user"},"LoginProfile":{"LoginProfile":{"UserName":"console-user"}},"MFADevices":[]}

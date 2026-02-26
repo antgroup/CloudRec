@@ -1,0 +1,1 @@
+{"User":{"UserName":"stale-user","Arn":"arn:aws:iam::123456789012:user/stale-user","PasswordLastUsed":"2025-01-01T00:00:00Z"},"AccessKeys":[{"Metadata":{"AccessKeyId":"AKIASTALE","Status":"Active","CreateDate":"2024-10-01T00:00:00Z"},"LastUsed":{"LastUsedDate":"2025-01-01T00:00:00Z"}}]}

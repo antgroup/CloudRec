@@ -1,0 +1,24 @@
+{
+  "Topic": {
+    "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:ops-alert"
+  },
+  "Attributes": {},
+  "Policy": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "*"
+        },
+        "Action": [
+          "sns:Publish",
+          "sns:Subscribe"
+        ],
+        "Resource": "arn:aws:sns:ap-southeast-1:123456789012:ops-alert"
+      }
+    ]
+  },
+  "Subscriptions": [],
+  "Tags": []
+}

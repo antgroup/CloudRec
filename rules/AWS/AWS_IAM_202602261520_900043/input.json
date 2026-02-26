@@ -1,0 +1,17 @@
+{
+  "Role": {
+    "RoleName": "ops-admin-role",
+    "Arn": "arn:aws:iam::123456789012:role/ops-admin-role",
+    "AssumeRolePolicyDocument": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::210987654321:root\"},\"Action\":\"sts:AssumeRole\"}]}"
+  },
+  "AttachedPolicies": [
+    {
+      "PolicyName": "AdministratorAccess",
+      "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+    }
+  ],
+  "AttachedPolicyDocuments": [],
+  "InlinePolicies": [],
+  "InlinePolicyDocuments": [],
+  "Tags": []
+}

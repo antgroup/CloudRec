@@ -1,0 +1,1 @@
+{"SecurityGroup":{"GroupId":"sg-default","GroupName":"default","IpPermissions":[{"IpProtocol":"tcp","FromPort":22,"ToPort":22,"IpRanges":[{"CidrIp":"0.0.0.0/0"}]}],"IpPermissionsEgress":[{"IpProtocol":"-1","FromPort":null,"ToPort":null,"IpRanges":[{"CidrIp":"0.0.0.0/0"}]}]}}

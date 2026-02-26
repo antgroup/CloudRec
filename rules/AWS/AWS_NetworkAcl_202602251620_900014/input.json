@@ -1,0 +1,1 @@
+{"Name":"acl-prod","ACL":{"NetworkAclId":"acl-123","Entries":[{"Egress":false,"RuleAction":"allow","Protocol":"-1","CidrBlock":"0.0.0.0/0"}]}}

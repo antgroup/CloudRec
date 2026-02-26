@@ -174,6 +174,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.EFS = initEFSClient(cfg)
 	case ElastiCache:
 		s.ElastiCache = initElastiCacheClient(cfg)
+		s.EC2 = initEC2Client(cfg)
 	case ELB:
 		s.ELB = initELBClient(cfg)
 		s.EC2 = initEC2Client(cfg)
@@ -183,6 +184,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.FSx = initFSxClient(cfg)
 	case AccountSettings, UserGroup, Role, User, IAMPolicy:
 		s.IAM = initIAMClient(cfg)
+		s.AccessAnalyzer = initAccessAnalyzerClient(cfg)
 	case RDS:
 		s.RDS = initRDSClient(cfg)
 		s.EC2 = initEC2Client(cfg)
@@ -249,6 +251,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		s.NetworkFirewall = initNetworkFirewallClient(cfg)
 	case OpenSearch:
 		s.OpenSearch = initOpenSearchClient(cfg)
+		s.EC2 = initEC2Client(cfg)
 	}
 
 	return nil

@@ -240,5 +240,8 @@ func parsePolicyDocument(raw string) map[string]interface{} {
 	if err := json.Unmarshal([]byte(raw), &doc); err == nil {
 		return doc
 	}
+	log.GetWLogger().Warn("failed to unmarshal IAM policy document",
+		zap.Int("rawLength", len(raw)),
+		zap.Int("decodedLength", len(decoded)))
 	return nil
 }

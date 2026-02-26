@@ -17,6 +17,7 @@ package elasticache
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2Sdk "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -115,7 +116,7 @@ func describeClusterSecurityGroups(ctx context.Context, ec2Client *ec2Sdk.Client
 
 	return ec2.DescribeSecurityGroupDetailsByFilters(ctx, ec2Client, []ec2Types.Filter{
 		{
-			Name:   stringPtr("group-id"),
+			Name:   aws.String("group-id"),
 			Values: groupIDs,
 		},
 	})
@@ -198,17 +199,17 @@ func describeClusterNetworkExposure(ctx context.Context, cacheClient *elasticach
 
 func subnetHasInternetRoute(ctx context.Context, ec2Client *ec2Sdk.Client, subnetID, vpcID string) (bool, bool) {
 	routeTables := describeRouteTablesByFilters(ctx, ec2Client, []ec2Types.Filter{{
-		Name:   stringPtr("association.subnet-id"),
+		Name:   aws.String("association.subnet-id"),
 		Values: []string{subnetID},
 	}})
 	if len(routeTables) == 0 && vpcID != "" {
 		routeTables = describeRouteTablesByFilters(ctx, ec2Client, []ec2Types.Filter{
 			{
-				Name:   stringPtr("vpc-id"),
+				Name:   aws.String("vpc-id"),
 				Values: []string{vpcID},
 			},
 			{
-				Name:   stringPtr("association.main"),
+				Name:   aws.String("association.main"),
 				Values: []string{"true"},
 			},
 		})
@@ -250,10 +251,6 @@ func describeRouteTablesByFilters(ctx context.Context, ec2Client *ec2Sdk.Client,
 		routeTables = append(routeTables, output.RouteTables...)
 	}
 	return routeTables
-}
-
-func stringPtr(v string) *string {
-	return &v
 }
 
 func describeCacheClusters(ctx context.Context, c *elasticache.Client) (cacheClusters []types.CacheCluster, err error) {

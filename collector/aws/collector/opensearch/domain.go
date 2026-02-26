@@ -17,6 +17,7 @@ package opensearch
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2Sdk "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/opensearch"
@@ -112,12 +113,8 @@ func describeDomainSecurityGroups(ctx context.Context, ec2Client *ec2Sdk.Client,
 
 	return ec2.DescribeSecurityGroupDetailsByFilters(ctx, ec2Client, []ec2Types.Filter{
 		{
-			Name:   stringPtr("group-id"),
+			Name:   aws.String("group-id"),
 			Values: vpc.SecurityGroupIds,
 		},
 	})
-}
-
-func stringPtr(v string) *string {
-	return &v
 }

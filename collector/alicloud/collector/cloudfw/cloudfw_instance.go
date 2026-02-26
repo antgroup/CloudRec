@@ -75,7 +75,15 @@ func GetInstanceDetail(ctx context.Context, cancel context.CancelFunc, service s
 				req.PageSize = tea.String(strconv.Itoa(size))
 				detail.Policies = append(detail.Policies, bd.Policys...)
 
-				if bd.TotalCount == nil || strconv.Itoa(count) >= *bd.TotalCount {
+				if bd.TotalCount == nil {
+					break
+				}
+				totalCount, err := strconv.Atoi(*bd.TotalCount)
+				if err != nil {
+					log.CtxLogger(ctx).Warn("failed to parse TotalCount", zap.String("totalCount", *bd.TotalCount), zap.Error(err))
+					break
+				}
+				if count >= totalCount || len(bd.Policys) == 0 {
 					break
 				}
 

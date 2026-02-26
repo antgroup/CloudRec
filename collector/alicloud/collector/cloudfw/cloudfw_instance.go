@@ -42,6 +42,12 @@ func GetCloudFWResource() schema.Resource {
 func GetInstanceDetail(ctx context.Context, cancel context.CancelFunc, service schema.ServiceInterface, res chan<- any) error {
 
 	cli := service.(*collector.Services).Cloudfw
+
+	// Collect Internet boundary firewall assets by DescribeAssetList.
+	detail := &Detail{
+		Assets: describeAssetList(ctx, cli),
+	}
+
 	direction := []string{"in", "out"}
 	for _, d := range direction {
 		page := 1
@@ -67,15 +73,10 @@ func GetInstanceDetail(ctx context.Context, cancel context.CancelFunc, service s
 				bd := resp.Body
 				count += len(bd.Policys)
 				req.PageSize = tea.String(strconv.Itoa(size))
-				for i := 0; i < len(bd.Policys); i++ {
-					res <- Detail{
-						Policy: bd.Policys[i],
-					}
-				}
+				detail.Policies = append(detail.Policies, bd.Policys...)
 
 				if bd.TotalCount == nil || strconv.Itoa(count) >= *bd.TotalCount {
-					cancel()
-					return nil
+					break
 				}
 
 				page += 1
@@ -85,9 +86,43 @@ func GetInstanceDetail(ctx context.Context, cancel context.CancelFunc, service s
 		}
 	}
 
+	res <- detail
+
 	return nil
 }
 
 type Detail struct {
-	Policy *cloudfw20171207.DescribeControlPolicyResponseBodyPolicys
+	Policies []*cloudfw20171207.DescribeControlPolicyResponseBodyPolicys
+	Assets   []*cloudfw20171207.DescribeAssetListResponseBodyAssets
+}
+
+func describeAssetList(ctx context.Context, cli *cloudfw20171207.Client) (assets []*cloudfw20171207.DescribeAssetListResponseBodyAssets) {
+	page := 1
+	pageSize := 50
+	var collected int32 = 0
+
+	for {
+		request := &cloudfw20171207.DescribeAssetListRequest{
+			CurrentPage: tea.String(strconv.Itoa(page)),
+			PageSize:    tea.String(strconv.Itoa(pageSize)),
+		}
+
+		resp, err := cli.DescribeAssetListWithOptions(request, collector.RuntimeObject)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("describe asset list error", zap.Error(err))
+			return assets
+		}
+		if resp == nil || resp.Body == nil {
+			return assets
+		}
+
+		assets = append(assets, resp.Body.Assets...)
+		collected += int32(len(resp.Body.Assets))
+
+		if resp.Body.TotalCount == nil || collected >= *resp.Body.TotalCount || len(resp.Body.Assets) == 0 {
+			return assets
+		}
+
+		page += 1
+	}
 }

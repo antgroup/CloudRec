@@ -16,13 +16,14 @@
 package iam
 
 import (
-	"github.com/core-sdk/constant"
-	"github.com/core-sdk/log"
-	"github.com/core-sdk/schema"
 	"context"
+
 	"github.com/baidubce/bce-sdk-go/services/iam"
 	"github.com/baidubce/bce-sdk-go/services/iam/api"
 	"github.com/cloudrec/baidu/collector"
+	"github.com/core-sdk/constant"
+	"github.com/core-sdk/log"
+	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
 
@@ -56,6 +57,16 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 		log.CtxLogger(ctx).Error("ListUser error", zap.Error(err))
 		return err
 	}
+
+	// add the root user detail first
+	rootDetail := Detail{
+		User:         getUserDetail(ctx, client, "root"),
+		LoginProfile: getUserLoginProfile(ctx, client, "root"),
+		AccessKeys:   getUserAccessKey(ctx, client, "root"),
+		Policies:     getUserPolicies(ctx, client, "root"),
+		Groups:       getUserGroups(ctx, client, "root"),
+	}
+	res <- rootDetail	
 
 	for _, user := range users.Users {
 		detail := Detail{

@@ -25,10 +25,12 @@ import (
 	"github.com/cloudrec/baidu/collector/ccr"
 	"github.com/cloudrec/baidu/collector/cfw"
 	"github.com/cloudrec/baidu/collector/eip"
+	"github.com/cloudrec/baidu/collector/eni"
 	"github.com/cloudrec/baidu/collector/iam"
 	"github.com/cloudrec/baidu/collector/rds"
 	"github.com/cloudrec/baidu/collector/redis"
 	"github.com/cloudrec/baidu/collector/vpc"
+	"github.com/cloudrec/baidu/collector/vpc/acl"
 	"github.com/cloudrec/baidu/collector/vpc/security_group"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/schema"
@@ -40,6 +42,8 @@ func GetPlatformConfig() *schema.Platform {
 		Resources: []schema.Resource{
 			security_group.GetResource(),
 			vpc.GetResource(),
+			acl.GetResource(),
+			eni.GetResource(),
 			blb.GetResource(),
 			blb.GetAppBLBResource(),
 			bcc.GetResource(),

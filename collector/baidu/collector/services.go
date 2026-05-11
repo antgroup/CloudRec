@@ -27,6 +27,7 @@ import (
 	"github.com/baidubce/bce-sdk-go/services/cfw"
 	"github.com/baidubce/bce-sdk-go/services/eccr"
 	"github.com/baidubce/bce-sdk-go/services/eip"
+	"github.com/baidubce/bce-sdk-go/services/eni"
 	"github.com/baidubce/bce-sdk-go/services/iam"
 	"github.com/baidubce/bce-sdk-go/services/rds"
 	"github.com/baidubce/bce-sdk-go/services/scs"
@@ -57,6 +58,7 @@ type Services struct {
 	CFWClient       *cfw.Client
 	VPNClient       *vpn.Client
 	CCECustomClient *cce.Client
+	ENIClient       *eni.Client
 }
 
 // Clone creates a new instance of Services
@@ -100,12 +102,23 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.GetWLogger().Warn(fmt.Sprintf("init sg client failed, err: %s", err))
 		}
 		s.BCCClient = SgClient
-	case VPC:
+	case VPC, ACL:
 		vpcClient, err := vpc.NewClient(param.AK, param.SK, param.Region)
 		if err != nil {
 			log.GetWLogger().Warn(fmt.Sprintf("init vpc client failed, err: %s", err))
 		}
 		s.VPCClient = vpcClient
+	case ENI:
+		vpcClient, err := vpc.NewClient(param.AK, param.SK, param.Region)
+		if err != nil {
+			log.GetWLogger().Warn(fmt.Sprintf("init vpc client failed, err: %s", err))
+		}
+		s.VPCClient = vpcClient
+		eniClient, err := eni.NewClient(param.AK, param.SK, param.Region)
+		if err != nil {
+			log.GetWLogger().Warn(fmt.Sprintf("init eni client failed, err: %s", err))
+		}
+		s.ENIClient = eniClient
 	case BLB:
 		blbClient, err := blb.NewClient(param.AK, param.SK, param.Region)
 		if err != nil {

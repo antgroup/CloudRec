@@ -18,11 +18,11 @@ CloudRec is an open source multi-cloud security posture management (CSPM) platfo
 CloudRec Lite is a lightweight local CSPM experience for small and mid-sized
 teams that need fast cloud risk discovery without operating another platform.
 
-<p align="center">
+<div align="center">
   <a href="doc/videos/cloudrec-lite-promo.mp4">
     <img src="doc/images/cloudrec-lite-promo-cover.png" alt="CloudRec Lite product demo" width="720">
   </a>
-</p>
+</div>
 
 ---
 

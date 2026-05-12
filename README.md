@@ -14,11 +14,12 @@ CloudRec is an open source multi-cloud security posture management (CSPM) platfo
 
 ## CloudRec Lite
 
-CloudRec Lite is the lightweight, local-first CSPM experience for small and
-mid-sized teams that need fast cloud risk discovery without operating another
-platform. It focuses on one practical loop: collect cloud assets, run policy
-checks, understand the risky resource path, and open a local dashboard in
-minutes.
+CloudRec Lite is a brand-new CloudRec edition built around one CLI that
+completes the whole lightweight CSPM workflow. It is local-first by default and
+designed for small and mid-sized teams that need fast cloud risk discovery
+without operating another platform. The loop is intentionally compact: collect
+cloud assets, run policy checks, understand the risky resource path, export
+results, and open a local dashboard in minutes.
 
 <div align="center">
   <a href="doc/videos/cloudrec-lite-promo.mp4" aria-label="Watch the CloudRec Lite demo video">
@@ -31,8 +32,9 @@ minutes.
 CloudRec Lite is designed for teams that want a faster starting point before
 running a full CSPM platform:
 
-- **Single local workflow**: run discovery, risk inspection, export, and Web
-  review from a local command line.
+- **One CLI for everything**: credentials, discovery, risk inspection, asset
+  and finding queries, export, rule quality checks, and local Web review are
+  all driven from the same command line.
 - **No server stack required**: keep scan results in local storage and open an
   embedded read-only dashboard when you need to investigate.
 - **Asset-aware findings**: connect risks back to impacted resources, regions,

@@ -13,6 +13,17 @@
 
 CloudRec is an open source multi-cloud security posture management (CSPM) platform designed to help organizations improve the security of their cloud environments. CloudRec provides an open and scalable cloud assets collection framework and an OPA-based rule management engine. Based on CloudRec, you can easily implement comprehensive asset collection, real-time security inspection, and risk event operation in an enterprise cloud environment.
 
+## CloudRec Lite
+
+CloudRec Lite is a lightweight local CSPM experience for small and mid-sized
+teams that need fast cloud risk discovery without operating another platform.
+
+<div align="center">
+  <a href="doc/videos/cloudrec-lite-promo.mp4">
+    <img src="doc/images/cloudrec-lite-promo-cover.png" alt="CloudRec Lite product demo" width="720">
+  </a>
+</div>
+
 ---
 
 # Features
@@ -132,4 +143,3 @@ To check detailed guidelines for new contributions, please refer (https://www.cl
 # 📜 LICENSE
 
 This project uses the Apache-2.0 LICENSE, the full text of which is available in the LICENSE document. Commercial use is subject to supplementary terms.
-

@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.alb_202501081111_769125",
+  "name": "阿里云-ALB-端口未配置ACL直接对公网开放",
+  "version": "legacy",
+  "description": "ALB端口开放未配置ACL，直接对公网开放",
+  "severity": "low",
+  "provider": "alicloud",
+  "service": "alb",
+  "asset_type": "alb",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "alb"
+  ],
+  "query": "data.alb_open_to_pub_without_acl_2100001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "确认公网负载均衡监听是否必须开放；如非必要请关闭公网监听或改为内网实例，确需开放时配置 ACL/安全组/WAF，仅允许可信来源和必要端口。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_ALB_202501081111_769125",
+    "context": null,
+    "description": "ALB端口开放未配置ACL，直接对公网开放",
+    "level": "Low",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-ALB-端口未配置ACL直接对公网开放",
+    "platform": "ALI_CLOUD",
+    "resourceType": "ALB"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "resource_type": "cloudfw",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "Policy": {
+      "Destination": "zVo",
+      "ModifyTime": 1705923946,
+      "Description": "7J6Pvc",
+      "HitLastTime": 1756259366,
+      "SourceType": "H59lb",
+      "DestPort": "QUL",
+      "DnsResult": "",
+      "DestinationType": "aFxKI",
+      "Direction": "gK",
+      "Source": "vZI",
+      "SpreadCnt": 1,
+      "DestPortType": "LWg4",
+      "Proto": "RSA",
+      "HitTimes": 1060305749,
+      "DestinationGroupType": "hB",
+      "DestinationGroupCidrs": [
+        "DVY16KqIx",
+        "203.0.113.10/32",
+        "203.0.113.10/32",
+        "203.0.113.10/32",
+        "0.0.0.0/0",
+        "203.0.113.10/32",
+        "hzxo9NBtQ"
+      ],
+      "SourceGroupType": "1I",
+      "Release": "Njd0",
+      "SourceGroupCidrs": [
+        "PduHlANuR",
+        "0.0.0.0/0",
+        "0.0.0.0/0",
+        "10.0.0.0/8",
+        "10.0.0.0/8",
+        "0.0.0.0/0",
+        "HvYnDwKlB"
+      ],
+      "DestPortGroup": "",
+      "Order": 4,
+      "ApplicationName": "",
+      "IpVersion": 4,
+      "CreateTime": 1705923946,
+      "ApplicationNameList": [
+        "4T0",
+        "FBm"
+      ],
+      "DnsResultTime": 0,
+      "AclAction": "u09",
+      "DomainResolveType": "",
+      "AclUuid": "PVeLyjDUwuTsdcQl1ka24ao6m6OVIcAxnmh6",
+      "RepeatType": "6oTKcNvLJ",
+      "ApplicationId": "j"
+    }
+  }
+}

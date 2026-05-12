@@ -17,6 +17,7 @@ package ram
 
 import (
 	"context"
+	"sync"
 
 	ram20150501 "github.com/alibabacloud-go/ram-20150501/v2/client"
 	"github.com/alibabacloud-go/tea/tea"
@@ -51,6 +52,7 @@ func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res cha
 	cli := service.(*collector.Services).RAM
 
 	request := &ram20150501.ListRolesRequest{}
+	policyCache := newPolicyDetailCache()
 
 	for {
 		response, err := cli.ListRolesWithOptions(request, collector.RuntimeObject)
@@ -58,15 +60,12 @@ func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res cha
 			log.CtxLogger(ctx).Warn("ListRoles error", zap.Error(err))
 			return err
 		}
+		if response == nil || response.Body == nil {
+			return nil
+		}
 		if response.Body.Roles != nil && response.Body.Roles.Role != nil {
-			for _, role := range response.Body.Roles.Role {
-				if role.RoleName != nil {
-					d := RoleDetail{
-						Role:     getRole(ctx, cli, *role.RoleName),
-						Policies: listPoliciesForRole(ctx, cli, *role.RoleName),
-					}
-					res <- d
-				}
+			if err := collectRoleDetails(ctx, cli, response.Body.Roles.Role, policyCache, res); err != nil {
+				return err
 			}
 		}
 		if response.Body.IsTruncated == nil || !*response.Body.IsTruncated {
@@ -80,6 +79,43 @@ func GetRoleDetail(ctx context.Context, service schema.ServiceInterface, res cha
 	return nil
 }
 
+func collectRoleDetails(ctx context.Context, cli *ram20150501.Client, roles []*ram20150501.ListRolesResponseBodyRolesRole, policyCache *policyDetailCache, res chan<- any) error {
+	sem := make(chan struct{}, ramDetailConcurrency)
+	var wg sync.WaitGroup
+
+	for _, role := range roles {
+		if role == nil || role.RoleName == nil {
+			continue
+		}
+		select {
+		case <-ctx.Done():
+			wg.Wait()
+			return ctx.Err()
+		case sem <- struct{}{}:
+		}
+
+		wg.Add(1)
+		go func(role *ram20150501.ListRolesResponseBodyRolesRole) {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			name := tea.StringValue(role.RoleName)
+			d := RoleDetail{
+				Role:     getRole(ctx, cli, name),
+				Policies: listPoliciesForRole(ctx, cli, name, policyCache),
+			}
+
+			select {
+			case <-ctx.Done():
+			case res <- d:
+			}
+		}(role)
+	}
+
+	wg.Wait()
+	return ctx.Err()
+}
+
 func getRole(ctx context.Context, cli *ram20150501.Client, name string) *ram20150501.GetRoleResponseBodyRole {
 	request := &ram20150501.GetRoleRequest{
 		RoleName: tea.String(name),
@@ -89,10 +125,13 @@ func getRole(ctx context.Context, cli *ram20150501.Client, name string) *ram2015
 		log.CtxLogger(ctx).Warn("GetRole error", zap.Error(err))
 		return nil
 	}
+	if getRoleResponse == nil || getRoleResponse.Body == nil {
+		return nil
+	}
 	return getRoleResponse.Body.Role
 }
 
-func listPoliciesForRole(ctx context.Context, cli *ram20150501.Client, name string) (policies []PolicyDetail) {
+func listPoliciesForRole(ctx context.Context, cli *ram20150501.Client, name string, policyCache *policyDetailCache) (policies []PolicyDetail) {
 	request := &ram20150501.ListPoliciesForRoleRequest{
 		RoleName: tea.String(name),
 	}
@@ -102,31 +141,19 @@ func listPoliciesForRole(ctx context.Context, cli *ram20150501.Client, name stri
 		return nil
 	}
 
-	if response.Body.Policies != nil && response.Body.Policies.Policy != nil {
-		return getPolicyDetails(ctx, cli, response.Body.Policies.Policy, "Role:"+name)
+	if response != nil && response.Body != nil && response.Body.Policies != nil && response.Body.Policies.Policy != nil {
+		return getPolicyDetails(ctx, cli, response.Body.Policies.Policy, "Role:"+name, policyCache)
 	}
 	return nil
 }
 
-func getPolicyDetails(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForRoleResponseBodyPoliciesPolicy, source string) (policies []PolicyDetail) {
+func getPolicyDetails(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForRoleResponseBodyPoliciesPolicy, source string, policyCache *policyDetailCache) (policies []PolicyDetail) {
 
 	for i := 0; i < len(policy); i++ {
 		if policy[i].PolicyName != nil && policy[i].PolicyType != nil {
-			r := &ram20150501.GetPolicyRequest{
-				PolicyName: policy[i].PolicyName,
-				PolicyType: policy[i].PolicyType,
+			if p, ok := policyCache.get(ctx, cli, policy[i].PolicyName, policy[i].PolicyType, source); ok {
+				policies = append(policies, p)
 			}
-			resp, err := cli.GetPolicyWithOptions(r, collector.RuntimeObject)
-			if err != nil {
-				log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
-				continue
-			}
-			p := PolicyDetail{
-				Policy:               resp.Body.Policy,
-				DefaultPolicyVersion: resp.Body.DefaultPolicyVersion,
-				Source:               source,
-			}
-			policies = append(policies, p)
 		}
 	}
 

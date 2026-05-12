@@ -1,0 +1,43 @@
+{
+  "resource_type": "oss",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "CORSConfiguration": {
+      "CORSRules": []
+    },
+    "BucketPolicy": {
+      "Statement": []
+    },
+    "VersioningConfig": "sample",
+    "RefererConfiguration": {
+      "RefererList": []
+    },
+    "InventoryConfiguration": "sample",
+    "SSEDefaultRule": null,
+    "BucketInfo": {
+      "ACL": "private",
+      "BlockPublicAccess": false,
+      "Name": "sample",
+      "ExtranetEndpoint": "oss-cn-example.aliyuncs.com",
+      "SseRule": {
+        "SSEAlgorithm": "AES256"
+      }
+    },
+    "BucketProperties": {
+      "CreationDate": "e7hKaRkD7wKSzcUQO1FS",
+      "ResourceGroupId": null,
+      "ExtranetEndpoint": "LAc9atahbai1YZvTABF61Abs2B5LFSq5qL20lx87E5bfGXcG",
+      "StorageClass": "evrmvApK",
+      "Region": "lw0x6AzyX8jzDaTnqo",
+      "IntranetEndpoint": "13gnGOHQ2MqDhY6ugI8OWImLsvK7NMbeYKwh4TOJcxDnOnuk",
+      "Location": "ElUaA3dfO1T8MCCJyc",
+      "Name": "8xU8HzJPK4ShBxaDxkMsavaWqqrfJmwcPFTB09r"
+    },
+    "LoggingEnabled": false,
+    "BucketPolicyStatus": {
+      "IsPublic": false
+    }
+  }
+}

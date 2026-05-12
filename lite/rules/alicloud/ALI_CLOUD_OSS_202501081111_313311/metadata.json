@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.oss_202501081111_313311",
+  "name": "阿里云-OSS-任意VPC访问",
+  "version": "legacy",
+  "description": "阿里云-OSS-任意VPC访问",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "oss",
+  "asset_type": "oss",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "oss"
+  ],
+  "query": "data.oss_could_be_accessed_from_any_vpc_3000001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "收敛 OSS Bucket Policy 或访问点策略中的 VPC 条件，仅允许可信 VPC/VPC Endpoint；删除任意 VPC 或过宽条件的访问授权。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_313311",
+    "context": null,
+    "description": "阿里云-OSS-任意VPC访问",
+    "level": "High",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-OSS-任意VPC访问",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+  }
+}

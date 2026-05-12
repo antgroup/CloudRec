@@ -1,0 +1,58 @@
+[
+  {
+    "name": "running-ecs-agent-offline",
+    "want_findings": 1,
+    "input": {
+      "Instance": {
+        "AssetTypeName": "云服务器",
+        "Status": "Running",
+        "ClientStatus": "offline",
+        "AuthVersion": 1,
+        "AuthVersionName": "Basic",
+        "InstanceId": "i-agent-offline"
+      }
+    }
+  },
+  {
+    "name": "running-ecs-agent-online-lower-edition",
+    "want_findings": 0,
+    "input": {
+      "Instance": {
+        "AssetTypeName": "云服务器",
+        "Status": "Running",
+        "ClientStatus": "online",
+        "AuthVersion": 1,
+        "AuthVersionName": "Basic",
+        "InstanceId": "i-agent-online"
+      }
+    }
+  },
+  {
+    "name": "stopped-ecs-agent-offline",
+    "want_findings": 0,
+    "input": {
+      "Instance": {
+        "AssetTypeName": "云服务器",
+        "Status": "Stopped",
+        "ClientStatus": "offline",
+        "AuthVersion": 1,
+        "AuthVersionName": "Basic",
+        "InstanceId": "i-stopped"
+      }
+    }
+  },
+  {
+    "name": "running-ecs-agent-status-missing",
+    "want_findings": 1,
+    "input": {
+      "Instance": {
+        "AssetTypeName": "云服务器",
+        "Status": "Running",
+        "ClientStatus": null,
+        "AuthVersion": 7,
+        "AuthVersionName": "Ultimate",
+        "InstanceId": "i-agent-missing"
+      }
+    }
+  }
+]

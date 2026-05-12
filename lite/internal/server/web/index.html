@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>CloudRec Lite Console</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary navigation" data-i18n-aria-label="shell.primaryNavigation">
+      <a class="brand" href="#/overview" aria-label="CloudRec Lite overview">
+        <img class="brand-logo" src="/cloudrec-logo.png" alt="CloudRec logo">
+        <span class="brand-copy">
+          <strong>CloudRec</strong>
+          <small data-i18n="brand.lite">Lite</small>
+        </span>
+      </a>
+
+      <nav class="nav-list" id="navList">
+        <a href="#/overview" data-route="overview"><span>O</span><em>Overview</em></a>
+        <a href="#/risks" data-route="risks"><span>R</span><em>Risks</em></a>
+        <a href="#/assets" data-route="assets"><span>A</span><em>Assets</em></a>
+        <a href="#/topology" data-route="relationships"><span>T</span><em>Topology</em></a>
+        <a href="#/scans" data-route="scans"><span>S</span><em>Scans</em></a>
+        <a href="#/rules" data-route="rules"><span>P</span><em>Rules</em></a>
+        <a href="#/settings" data-route="settings"><span>G</span><em>Settings</em></a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <span class="health-dot" id="healthDot" aria-hidden="true"></span>
+        <span id="healthLabel" data-i18n="status.checking">Checking</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="page-heading">
+          <p class="eyebrow" data-i18n="shell.eyebrow">Security control plane</p>
+          <h1 id="pageTitle">Overview</h1>
+          <div class="language-switch" role="group" aria-label="Language" data-i18n-aria-label="shell.language">
+            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="zh">中文</button>
+          </div>
+        </div>
+
+        <form class="filters" id="filterForm">
+          <label>
+            <span data-i18n="filters.account">Account</span>
+            <input id="filterAccount" name="account_id" autocomplete="off" placeholder="all accounts" data-i18n-placeholder="filters.accountPlaceholder">
+          </label>
+          <label>
+            <span data-i18n="filters.provider">Provider</span>
+            <input id="filterProvider" name="provider" autocomplete="off" placeholder="any" data-i18n-placeholder="filters.providerPlaceholder">
+          </label>
+          <label>
+            <span data-i18n="filters.resource">Resource</span>
+            <select id="filterResourceType" name="resource_type">
+              <option value="" data-i18n="filters.all">all</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="filters.severity">Severity</span>
+            <select id="filterSeverity" name="severity">
+              <option value="" data-i18n="filters.all">all</option>
+              <option value="critical">critical</option>
+              <option value="high">high</option>
+              <option value="medium">medium</option>
+              <option value="low">low</option>
+              <option value="info">info</option>
+              <option value="unknown">unknown</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="filters.status">Status</span>
+            <select id="filterStatus" name="status">
+              <option value="" data-i18n="filters.all">all</option>
+              <option value="open">open</option>
+              <option value="resolved">resolved</option>
+              <option value="suppressed">suppressed</option>
+              <option value="running">running</option>
+              <option value="succeeded">succeeded</option>
+              <option value="failed">failed</option>
+            </select>
+          </label>
+          <label class="limit-field">
+            <span data-i18n="filters.limit">Limit</span>
+            <input id="filterLimit" name="limit" type="number" min="1" max="1000" value="50">
+          </label>
+          <button class="button primary" type="submit" data-i18n="actions.apply">Apply</button>
+          <button class="button ghost" id="resetFilters" type="button" data-i18n="actions.reset">Reset</button>
+        </form>
+      </header>
+
+      <section id="appStatus" class="app-status" role="status" aria-live="polite"></section>
+      <section id="view" class="view" tabindex="-1"></section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <aside class="drawer" id="detailDrawer" aria-label="Details" aria-hidden="true" data-i18n-aria-label="drawer.details">
+    <header class="drawer-head">
+      <div>
+        <p class="eyebrow" id="drawerKicker" data-i18n="drawer.details">Details</p>
+        <h2 id="drawerTitle" data-i18n="drawer.selectRow">Select a row</h2>
+      </div>
+      <button class="icon-button" id="drawerClose" type="button" aria-label="Close details" data-i18n-aria-label="drawer.close">x</button>
+    </header>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+</body>
+</html>

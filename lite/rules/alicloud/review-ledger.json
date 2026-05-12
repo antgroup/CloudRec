@@ -1,0 +1,2477 @@
+{
+  "version": 1,
+  "provider": "alicloud",
+  "updated_at": "2026-05-07",
+  "notes": "Persistent rule review ledger. Only rules reviewed against official documentation should be marked official_reviewed. Rules with fixture/sample or product-decision gaps stay blocked or needs_logic_change.",
+  "rules": [
+    {
+      "id": "alicloud.account_202501081111_689362",
+      "resource_type": "account",
+      "severity": "high",
+      "policy_sha256": "d221ff929e9255fc50d53d035cd41b024b7d68d8cb960dde28144327c8e43027",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-主账号启用AccessKey; logic=1_input_refs; refs=AccountSecurityPracticeReport.AccountSecurityPracticeUserInfo.RootWithAccessKey",
+      "official_behavior": "Alibaba Cloud security best practices state that Alibaba Cloud account credentials should not be used for routine or programmatic tasks, and that AccessKey pairs for the Alibaba Cloud account provide unrestricted programmatic access and should not be created or used.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Account_202501081111_689362/input.json",
+      "input_references": [
+        "AccountSecurityPracticeReport.AccountSecurityPracticeUserInfo.RootWithAccessKey"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ram/use-cases/ensure-security-of-alibaba-cloud-resources"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.account_202503031137_829663",
+      "resource_type": "account",
+      "severity": "high",
+      "policy_sha256": "11a393b386045346c046a2be91d610c797c0fab063de34e4eec293d61004ae2c",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-IMS-主账号未启用MFA; logic=2_input_refs; refs=AccountSecurityPracticeReport.AccountSecurityPracticeUserInfo.BindMfa,UserSsoSettings.SsoEnabled",
+      "official_behavior": "Alibaba Cloud security best practices recommend enabling MFA for the Alibaba Cloud account. If enterprise SSO is used, authentication controls may be centralized in the identity provider, which this rule already treats as an exception.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Account_202503031137_829663/input.json",
+      "input_references": [
+        "AccountSecurityPracticeReport.AccountSecurityPracticeUserInfo.BindMfa",
+        "UserSsoSettings.SsoEnabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ram/use-cases/ensure-security-of-alibaba-cloud-resources"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.account_202503171930_977923",
+      "resource_type": "account",
+      "severity": "medium",
+      "policy_sha256": "fc5c4232676bf3cb977e7cb74cb3e20bd82150435ee5d1e066483e6e6c680240",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-主账号存在长期未调用的Root AccessKey; logic=1_input_refs; refs=AccountSecurityPracticeReport.AccountSecurityPracticeUserInfo.UnusedAkNum",
+      "official_behavior": "Alibaba Cloud security best practices recommend removing unused credentials and not using Alibaba Cloud account AccessKey pairs. Long-unused root AccessKeys are credential hygiene and blast-radius risks.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Account_202503171930_977923/input.json",
+      "input_references": [
+        "AccountSecurityPracticeReport.AccountSecurityPracticeUserInfo.UnusedAkNum"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ram/use-cases/ensure-security-of-alibaba-cloud-resources"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.account_202504231623_427183",
+      "resource_type": "account",
+      "severity": "low",
+      "policy_sha256": "7cde8978276e8fc67ecc0a34c98c6b38132b9abb6f68b8b47af74a8462496558",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-密码复杂度检查; logic=9_input_refs; refs=PasswordPolicy.HardExpire,PasswordPolicy.MaxLoginAttemps,PasswordPolicy.MaxPasswordAge,PasswordPolicy.MinimumPasswordLength,PasswordPolicy.PasswordReusePrevention,PasswordPolicy.RequireLowercaseCharacters,PasswordPolicy.RequireSymbols,PasswordPolicy.RequireUppercaseCharacters,UserSsoSettings.SsoEnabled",
+      "official_behavior": "RAM password policies define password length, validity period, history reuse, and complexity requirements for RAM users. If enterprise SSO is enabled, local RAM password policy relevance is reduced and the rule treats SSO as an exception.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Account_202504231623_427183/input.json",
+      "input_references": [
+        "PasswordPolicy.HardExpire",
+        "PasswordPolicy.MaxLoginAttemps",
+        "PasswordPolicy.MaxPasswordAge",
+        "PasswordPolicy.MinimumPasswordLength",
+        "PasswordPolicy.PasswordReusePrevention",
+        "PasswordPolicy.RequireLowercaseCharacters",
+        "PasswordPolicy.RequireSymbols",
+        "PasswordPolicy.RequireUppercaseCharacters",
+        "UserSsoSettings.SsoEnabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Configure a password policy for RAM users",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/configure-a-password-policy-for-ram-users-1"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.account_202505121607_230809",
+      "resource_type": "account",
+      "severity": "medium",
+      "policy_sha256": "b1141d85461fd5df87e9814dd34f946b871d3751174a8a678978aff10aa0492f",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-IP白名单限制配置检查; logic=1_input_refs; refs=SecurityPreference.LoginProfilePreference.LoginNetworkMasks",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Account_202505121607_230809/input.json",
+      "input_references": [
+        "SecurityPreference.LoginProfilePreference.LoginNetworkMasks"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.account_202505121633_409089",
+      "resource_type": "account",
+      "severity": "medium",
+      "policy_sha256": "81a58a96445bbee9af8369b201bdfde566482ab697f94df81da5c4e27a669827",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-User登录控制台未强制启用MFA; logic=2_input_refs; refs=SecurityPreference.LoginProfilePreference.MFAOperationForLogin,UserSsoSettings.SsoEnabled",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Account_202505121633_409089/input.json",
+      "input_references": [
+        "SecurityPreference.LoginProfilePreference.MFAOperationForLogin",
+        "UserSsoSettings.SsoEnabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ram_global_config_202501081111_417007",
+      "resource_type": "account",
+      "severity": "high",
+      "policy_sha256": "7a96b934cd1cbd26d5da123354433ceb56898cc2d5210426f91826927b5f71bb",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-IMS-云账号未启用SSO功能; logic=1_input_refs; refs=UserSsoSettings.SsoEnabled",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Ram Global Config_202501081111_417007/input.json",
+      "input_references": [
+        "UserSsoSettings.SsoEnabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ack_cluster_202507301744_640069",
+      "resource_type": "ack_cluster",
+      "severity": "high",
+      "policy_sha256": "9d8ad2c4e9b2c011db89c11dd1ef50c88a631cafb89b9af0c4ed60d493900fd2",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ACK-Cluster API 公网暴露; logic=public_cidr, json_policy, 2_input_refs; refs=Cluster.master_url,LoadBalancer",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ACK Cluster_202507301744_640069/input.json",
+      "input_references": [
+        "Cluster.master_url",
+        "LoadBalancer"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ACK cluster API server access control",
+          "url": "https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/control-public-access-to-the-api-server-of-a-cluster"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.acr_202501081111_754419",
+      "resource_type": "acr",
+      "severity": "high",
+      "policy_sha256": "66ef0361d22a5b5da818f75a419f3e22ea9b613dbd5997a1c4448d08802f1e14",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ACR-实例公网暴露风险; logic=public_cidr, 3_input_refs; refs=InstanceInternetEndpoint.AclEntries,InstanceInternetEndpoint.Domains,InstanceInternetEndpoint.Status",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_acr_202501081111_754419/input.json",
+      "input_references": [
+        "InstanceInternetEndpoint.AclEntries",
+        "InstanceInternetEndpoint.Domains",
+        "InstanceInternetEndpoint.Status"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Container Registry Internet access control",
+          "url": "https://www.alibabacloud.com/help/en/acr/user-guide/configure-access-over-the-internet"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.action_trail_202505091554_896609",
+      "resource_type": "action_trail",
+      "severity": "medium",
+      "policy_sha256": "c6ec3d2b8837edb3c7094ec8b0ad26c42468bf52322a39f70afd4b9cf9512c1b",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ActionTrail-未开启日志审计; logic=1_input_refs; refs=TrailList",
+      "official_behavior": "Alibaba Cloud audit/log features record control-plane or data-plane events for investigation and accountability. Disabled trail, audit, access, or firewall logs reduce traceability after incidents.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Some low-risk or short-lived resources may intentionally not enable product audit logs.",
+      "false_negative_impact": "If collector fields do not include the product-specific logging state, disabled logging can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ActionTrail_202505091554_896609/input.json",
+      "input_references": [
+        "TrailList"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ActionTrail trails",
+          "url": "https://www.alibabacloud.com/help/en/actiontrail/user-guide/create-a-trail"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.alb_202501081111_769125",
+      "resource_type": "alb",
+      "severity": "low",
+      "policy_sha256": "396aa7b2e351b9db1b7f90de48961f1208a10e1242da9ff078aa70167566da50",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ALB-端口未配置ACL直接对公网开放; logic=public_cidr, 4_input_refs; refs=Listeners,LoadBalancer.AddressType,LoadBalancer.LoadBalancerId,LoadBalancer.LoadBalancerName",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ALB_202501081111_769125/input.json",
+      "input_references": [
+        "Listeners",
+        "LoadBalancer.AddressType",
+        "LoadBalancer.LoadBalancerId",
+        "LoadBalancer.LoadBalancerName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Server Load Balancer access control",
+          "url": "https://www.alibabacloud.com/help/en/slb/classic-load-balancer/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud ALB listener ACLs",
+          "url": "https://www.alibabacloud.com/help/en/alb/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud NLB security groups",
+          "url": "https://www.alibabacloud.com/help/en/nlb/user-guide/security-group"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.analytic_db_postgre_sql_202501081111_294684",
+      "resource_type": "analytic_db_postgre_sql",
+      "severity": "high",
+      "policy_sha256": "64a9e995c7bb9fbee8037db36418a4de4ec30ff3aaae6c5c28144490f602a97b",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-AnalyticDB PostgreSQL-实例对公网开放; logic=public_cidr, 4_input_refs; refs=DBInstance.DBInstanceDescription,DBInstance.DBInstanceId,DBInstanceIPArray,DBInstanceNetInfos.DBInstanceNetInfo",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684/input.json",
+      "input_references": [
+        "DBInstance.DBInstanceDescription",
+        "DBInstance.DBInstanceId",
+        "DBInstanceIPArray",
+        "DBInstanceNetInfos.DBInstanceNetInfo"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud database IP whitelist guidance",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.cas_202501081111_761202",
+      "resource_type": "cert",
+      "severity": "low",
+      "policy_sha256": "e7740b3f79f53191f6bca89ac879dea368a86c18ac501bebd6265781e782d6b7",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-CAS-云上购买SSL证书过期或者即将过期; logic=1_input_refs; refs=CertificateOrder.EndDate",
+      "official_behavior": "Certificate Management Service tracks certificate validity periods; expired or near-expiry SSL certificates can break TLS service availability and trust.",
+      "observed_mismatch": "Resolved on 2026-05-09: the rule now compares the certificate EndDate against an exact 90-day nanosecond threshold and treats already-expired certificates as risky.",
+      "change_required": false,
+      "false_positive_impact": "Low: near-expiry certificates are operationally actionable and now use a precise day-level threshold.",
+      "false_negative_impact": "Low-medium: certificates with unsupported date formats are ignored rather than producing noisy findings.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_数字证书管理服务 CAS_202501081111_761202/input.json",
+      "input_references": [
+        "CertificateOrder.EndDate"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Certificate Management Service certificate lifecycle",
+          "url": "https://www.alibabacloud.com/help/en/ssl-certificate/user-guide/purchase-and-enable-an-ssl-certificate"
+        }
+      ],
+      "proposed_change": "Compare EndDate to now using exact duration: risk when EndDate is in the past or within 90 days, and add fixtures for expired, 30-day, 89-day, 91-day, and invalid-date cases.",
+      "review_decision": "change",
+      "decision_by": "user",
+      "decision_at": "2026-05-06",
+      "decision_note": "User confirmed this rule should be changed: use precise expired/within-90-days logic and add boundary fixtures.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-09"
+    },
+    {
+      "id": "alicloud.click_house_202501081111_257102",
+      "resource_type": "click_house",
+      "severity": "info",
+      "policy_sha256": "fe199e41bc1724f35c17de5fc2250c773a9006eb2b4e31db17677ecb94eedcba",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ClickHouse-云数据库ClickHouse 设置公网ACL网段范围过大; logic=2_input_refs; refs=IPArray,NetInfoItem",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_257102/input.json",
+      "input_references": [
+        "IPArray",
+        "NetInfoItem"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud database IP whitelist guidance",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.click_house_202501081111_490826",
+      "resource_type": "click_house",
+      "severity": "medium",
+      "policy_sha256": "571fc601d14e0076f117e2e4caeaeb24aac329a535ec9c464b7750d04ff43045",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ClickHouse-云数据库ClickHouse公网入口已开启; logic=2_input_refs; refs=DBCluster.DBClusterDescription,NetInfoItem",
+      "official_behavior": "ApsaraDB for ClickHouse can expose public endpoints, while IP whitelists are used to restrict who can connect. Public endpoint existence alone is weaker evidence than public endpoint plus broad whitelist.",
+      "observed_mismatch": "Resolved on 2026-05-09: this rule is downgraded to an informational public-entry signal; the companion ACL rule remains responsible for broad whitelist risk.",
+      "change_required": false,
+      "false_positive_impact": "Low: public endpoints protected by narrow whitelists are no longer presented as medium-risk exposure by this rule.",
+      "false_negative_impact": "Low: the companion ACL rule still catches broad public access when whitelist data is present.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_490826/input.json",
+      "input_references": [
+        "DBCluster.DBClusterDescription",
+        "NetInfoItem"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud database IP whitelist guidance",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        }
+      ],
+      "proposed_change": "Either correlate public endpoint with whitelist state, or downgrade this rule to an informational exposure signal distinct from an open-risk finding.",
+      "review_decision": "downgrade",
+      "decision_by": "user",
+      "decision_at": "2026-05-06",
+      "decision_note": "User confirmed this should be downgraded: public endpoint is exposure/topology signal; risk should require broad or missing whitelist evidence.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-09"
+    },
+    {
+      "id": "alicloud.cloudfw_202501081111_104298",
+      "resource_type": "cloudfw",
+      "severity": "low",
+      "policy_sha256": "4fcf8257e765fe583995119235185c2f8b2be994882c5a58e7c05ae82ec7516d",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-CloudFW-云防火墙存在宽松出向放行策略; logic=public_cidr, 1_input_refs; refs=Policy",
+      "official_behavior": "Cloud Firewall outbound access control policies should avoid broad accept/log egress to Any, 0.0.0.0/0, or ::/0 unless explicitly justified; tenant-specific corporate allowlists are not portable Lite defaults.",
+      "observed_mismatch": "Resolved on 2026-05-06: removed the tenant-specific corpIpList_egress dependency and aligned the rule with the collector's single Policy output shape.",
+      "change_required": false,
+      "false_positive_impact": "Medium: business-approved broad outbound policies can still be reported and should be triaged by service context.",
+      "false_negative_impact": "Low-medium: destination representations outside Any/0.0.0.0/0/::/0 may require future normalization.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Cloudfw_202501081111_104298/input.json",
+      "input_references": [
+        "Policy"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Cloud Firewall access control policies",
+          "url": "https://www.alibabacloud.com/help/en/cloud-firewall/user-guide/access-control-policies"
+        },
+        {
+          "title": "Alibaba Cloud Cloud Firewall logs",
+          "url": "https://www.alibabacloud.com/help/en/cloud-firewall/user-guide/log-audit"
+        }
+      ],
+      "proposed_change": "Implemented: evaluate each collected CloudFW Policy for outbound accept/log to public destinations, while keeping inbound policy effects for topology/public-exposure reachability logic.",
+      "review_decision": "change",
+      "decision_by": "user",
+      "decision_at": "2026-05-06",
+      "decision_note": "User confirmed change: remove hard-coded enterprise egress allowlist dependency. Separately, Cloud Firewall inbound policies must be incorporated into public exposure/topology reachability with security groups and SLB ACLs.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-06"
+    },
+    {
+      "id": "alicloud.cloudfw_202508221407_633031",
+      "resource_type": "cloudfw",
+      "severity": "medium",
+      "policy_sha256": "9d09603429ee72b8c43ec9a0618cde6bb3fde5fc9851319809da74f18da3b69e",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-CloudFW-云防火墙非 80/443 端口开启; logic=public scope plus non-standard accepted/logged port; refs=Policy.AclAction,Policy.AclUuid,Policy.DestPort,Policy.Direction,Policy.Proto,Policy.Source,Policy.SourceGroupCidrs,Policy.Destination,Policy.DestinationGroupCidrs",
+      "official_behavior": "Cloud Firewall supports custom access control policies and ports. Non-80/443 ports are not inherently unsafe; risk depends on source, destination, service, direction, and whether the policy is broadly reachable.",
+      "observed_mismatch": "Resolved on 2026-05-09: the rule now requires accepted/logged traffic, non-ICMP protocol, a non-80/443 port, and a broad public source or destination based on direction.",
+      "change_required": false,
+      "false_positive_impact": "Medium: intentionally broad non-standard public policies can still be reported and should be triaged with asset context.",
+      "false_negative_impact": "Low-medium: non-public but risky internal lateral paths remain outside this public-scope rule.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Cloudfw_202508221407_633031/input.json",
+      "input_references": [
+        "Policy.AclAction",
+        "Policy.AclUuid",
+        "Policy.DestPort",
+        "Policy.Direction",
+        "Policy.Proto",
+        "Policy.Source",
+        "Policy.SourceGroupCidrs",
+        "Policy.Destination",
+        "Policy.DestinationGroupCidrs"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Cloud Firewall access control policies",
+          "url": "https://www.alibabacloud.com/help/en/cloud-firewall/user-guide/access-control-policies"
+        },
+        {
+          "title": "Alibaba Cloud Cloud Firewall logs",
+          "url": "https://www.alibabacloud.com/help/en/cloud-firewall/user-guide/log-audit"
+        }
+      ],
+      "proposed_change": "Implemented: require broad source or destination scope and Internet direction before raising a non-standard CloudFW port finding.",
+      "review_decision": "change",
+      "decision_by": "user",
+      "decision_at": "2026-05-06",
+      "decision_note": "User confirmed this rule should change; CloudFW inbound policies also feed topology/public-exposure reachability.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-09"
+    },
+    {
+      "id": "alicloud.cloudfw_config_202508261551_1013197",
+      "resource_type": "cloudfw_config",
+      "severity": "medium",
+      "policy_sha256": "5735138f68118dbcf61c2996b069a22ded5caa0bf7d1584f899a5f780976ed7c",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-CloudFC-未开启日志; logic=2_input_refs; refs=CloudfwVersionInfo.LogStatus,CloudfwVersionInfo.UserStatus",
+      "official_behavior": "Alibaba Cloud audit/log features record control-plane or data-plane events for investigation and accountability. Disabled trail, audit, access, or firewall logs reduce traceability after incidents.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Some low-risk or short-lived resources may intentionally not enable product audit logs.",
+      "false_negative_impact": "If collector fields do not include the product-specific logging state, disabled logging can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Cloudfw Config_202508261551_1013197/input.json",
+      "input_references": [
+        "CloudfwVersionInfo.LogStatus",
+        "CloudfwVersionInfo.UserStatus"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Cloud Firewall access control policies",
+          "url": "https://www.alibabacloud.com/help/en/cloud-firewall/user-guide/access-control-policies"
+        },
+        {
+          "title": "Alibaba Cloud Cloud Firewall logs",
+          "url": "https://www.alibabacloud.com/help/en/cloud-firewall/user-guide/log-audit"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.eci_container_group_202508182013_976553",
+      "resource_type": "eci_container_group",
+      "severity": "medium",
+      "policy_sha256": "535451d71266f5c24d0de7c7b91ba928cf68bbde810d459dfc14fd1e82950be2",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECI-ContainerGroup 公网暴露; logic=public_cidr, 3_input_refs; refs=ContainerGroup.InternetIp,SecurityGroup,SecurityGroup.Permissions",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECI ContainerGroup_202508182013_976553/input.json",
+      "input_references": [
+        "ContainerGroup.InternetIp",
+        "SecurityGroup",
+        "SecurityGroup.Permissions"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECI security groups",
+          "url": "https://www.alibabacloud.com/help/en/eci/user-guide/security-groups"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202501081111_432000",
+      "resource_type": "ecs",
+      "severity": "high",
+      "policy_sha256": "757cecf9d3991653c63959194709577270ca82434693b565de769a43b4ad5477",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-实例安全组对公网开放高危端口; logic=public_cidr, 2_input_refs; refs=PublicAddress,SecurityGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202501081111_432000/input.json",
+      "input_references": [
+        "PublicAddress",
+        "SecurityGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ECS security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ecs/use-cases/best-practices-for-security"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202501081111_712494",
+      "resource_type": "ecs",
+      "severity": "high",
+      "policy_sha256": "bb6aadf5493c9a48f9758c79771dee6f150ff1e57f6fb958255cf344bb039fc2",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-实例通过安全组对全网暴露; logic=public_cidr, 4_input_refs; refs=Instance.PublicIpAddress.IpAddress,InstanceId,InstanceName,SecurityGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202501081111_712494/input.json",
+      "input_references": [
+        "Instance.PublicIpAddress.IpAddress",
+        "InstanceId",
+        "InstanceName",
+        "SecurityGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ECS security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ecs/use-cases/best-practices-for-security"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202501081111_949294",
+      "resource_type": "ecs",
+      "severity": "high",
+      "policy_sha256": "074e3a11e1b6533e3480600935295cf15c17d00e2cbfcf401dce7c46cbff1e65",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-实例安全组对公网开放22端口; logic=public_cidr, 4_input_refs; refs=Instance.PublicIpAddress.IpAddress,InstanceId,InstanceName,SecurityGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202501081111_949294/input.json",
+      "input_references": [
+        "Instance.PublicIpAddress.IpAddress",
+        "InstanceId",
+        "InstanceName",
+        "SecurityGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ECS security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ecs/use-cases/best-practices-for-security"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202503071706_485785",
+      "resource_type": "ecs",
+      "severity": "medium",
+      "policy_sha256": "29612006cfc60d0132792375b02ed68335381eae00e10950cc6549c0f42304e3",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-实例存在任一端口通过安全组对全网开放; logic=public_cidr, 2_input_refs; refs=Instance.PublicIpAddress.IpAddress,SecurityGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202503071706_485785/input.json",
+      "input_references": [
+        "Instance.PublicIpAddress.IpAddress",
+        "SecurityGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ECS security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ecs/use-cases/best-practices-for-security"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202503131624_634803",
+      "resource_type": "ecs",
+      "severity": "medium",
+      "policy_sha256": "2eaf99ba73e0a19633fbb6670b3ccdc8b34782d7617cbfe8ba5368767c478e06",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-安全组入向规则网段掩码设置小于等于8; logic=2_input_refs; refs=Instance.PublicIpAddress.IpAddress,SecurityGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202503131624_634803/input.json",
+      "input_references": [
+        "Instance.PublicIpAddress.IpAddress",
+        "SecurityGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ECS security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ecs/use-cases/best-practices-for-security"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202507101730_155868",
+      "resource_type": "ecs",
+      "severity": "medium",
+      "policy_sha256": "9a9b7832001f18b597ef916f22e8d2426238d1adcfc52ec14f6ed3385cc39e44",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-未使用 IMDSv2; logic=1_input_refs; refs=Instance.MetadataOptions.HttpTokens",
+      "official_behavior": "ECS IMDSv2 requires session-oriented metadata access through required HttpTokens, reducing SSRF-style access to instance metadata compared with optional token behavior.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Older instances or compatibility-sensitive workloads may still run with optional metadata tokens during migration.",
+      "false_negative_impact": "If MetadataOptions.HttpTokens is missing or not normalized, instances that allow IMDSv1-style metadata access can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202507101730_155868/input.json",
+      "input_references": [
+        "Instance.MetadataOptions.HttpTokens"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS instance metadata and IMDSv2",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/instance-metadata"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202508221039_1003499",
+      "resource_type": "ecs",
+      "severity": "medium",
+      "policy_sha256": "9870c52ad1408eb0e38e249027a8adc537ec482e6ddd09b136ef057ca3bc6c8f",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-专有网络运行; logic=2_input_refs; refs=Instance.Status,Instance.VpcAttributes.VpcId",
+      "official_behavior": "Alibaba Cloud VPC provides stronger isolation and routing control than classic or public-network-only deployment modes. Running production compute or data services in VPC is a common security baseline.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Legacy environments may intentionally keep classic-network resources during migration.",
+      "false_negative_impact": "If network type or VPC ID fields are absent, non-VPC resources can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202508221039_1003499/input.json",
+      "input_references": [
+        "Instance.Status",
+        "Instance.VpcAttributes.VpcId"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ECS security best practices",
+          "url": "https://www.alibabacloud.com/help/en/ecs/use-cases/best-practices-for-security"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202508221532_537058",
+      "resource_type": "ecs",
+      "severity": "medium",
+      "policy_sha256": "f4cf8ff709afb055d3d74ead65c52e3f26f9b746731999f87230451a5ecf63cc",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-数据磁盘加密未开启; logic=2_input_refs; refs=Disks,Instance.InstanceId",
+      "official_behavior": "Alibaba Cloud supports encryption at rest or in transit for the resource. Disabling encryption leaves data or credentials exposed to broader infrastructure, storage, or network interception risks.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Some environments may rely on application-layer encryption or non-sensitive data classifications.",
+      "false_negative_impact": "If collector fields do not capture encryption state accurately, unencrypted resources can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS_202508221532_537058/input.json",
+      "input_references": [
+        "Disks",
+        "Instance.InstanceId"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS disk encryption",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/encrypt-a-cloud-disk"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ecs_image_202508142013_698823",
+      "resource_type": "ecs_image",
+      "severity": "medium",
+      "policy_sha256": "b0e8850b9fd7d0336a9fed18971c3100998127da75f95a9420876beef9a88a50",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ECS-自定义Image镜像开启共享; logic=1_input_refs; refs=Image.IsPublic",
+      "official_behavior": "Alibaba Cloud custom images can be shared with other accounts or made public. Public custom images can expose embedded data, software, or configuration and should be intentional.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Images intentionally published for distribution can be reported and require business context.",
+      "false_negative_impact": "If image sharing state is not collected or only cross-account sharing is represented, public image exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ECS Image_202508142013_698823/input.json",
+      "input_references": [
+        "Image.IsPublic"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ECS custom image sharing",
+          "url": "https://www.alibabacloud.com/help/en/ecs/user-guide/share-a-custom-image"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.elasticsearch_202501081111_791919",
+      "resource_type": "elasticsearch",
+      "severity": "medium",
+      "policy_sha256": "8cb392eebf352e86360e3ef5c681d56945cf90fe6446c9ec2b99d261c0cdd6d7",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-Elasticsearch-端口对全网暴露（或ACL设置不当）; logic=public_cidr, 3_input_refs; refs=InstanceDetail.description,InstanceDetail.instanceId,InstanceDetail.networkConfig.whiteIpGroupList",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Elasticsearch_202501081111_791919/input.json",
+      "input_references": [
+        "InstanceDetail.description",
+        "InstanceDetail.instanceId",
+        "InstanceDetail.networkConfig.whiteIpGroupList"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Elasticsearch public network whitelist",
+          "url": "https://www.alibabacloud.com/help/en/es/user-guide/configure-a-public-or-private-ip-address-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud Elasticsearch disk encryption",
+          "url": "https://www.alibabacloud.com/help/en/es/user-guide/encryption"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.elasticsearch_202508221539_209449",
+      "resource_type": "elasticsearch",
+      "severity": "medium",
+      "policy_sha256": "9bac3d8c53233b7ce805d65665225460f6898f9a2717b98e2717823138730d35",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-Elasticsearch-实例数据节点未开启云盘加密; logic=2_input_refs; refs=InstanceDetail.instanceId,InstanceDetail.nodeSpec.diskEncryption",
+      "official_behavior": "Alibaba Cloud supports encryption at rest or in transit for the resource. Disabling encryption leaves data or credentials exposed to broader infrastructure, storage, or network interception risks.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Some environments may rely on application-layer encryption or non-sensitive data classifications.",
+      "false_negative_impact": "If collector fields do not capture encryption state accurately, unencrypted resources can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Elasticsearch_202508221539_209449/input.json",
+      "input_references": [
+        "InstanceDetail.instanceId",
+        "InstanceDetail.nodeSpec.diskEncryption"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Elasticsearch public network whitelist",
+          "url": "https://www.alibabacloud.com/help/en/es/user-guide/configure-a-public-or-private-ip-address-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud Elasticsearch disk encryption",
+          "url": "https://www.alibabacloud.com/help/en/es/user-guide/encryption"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ens_instance_202501241146_999147",
+      "resource_type": "ens_instance",
+      "severity": "medium",
+      "policy_sha256": "1f15e3afcf8d7fcdf887377d9977d723a6fe810f68e6ae64495aa7e1646289f9",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ENS-实例未接入或离线云安全中心 Agent; logic=linked Sas InstanceInstalledAegis only; refs=InstanceInstalledAegis",
+      "official_behavior": "Security Center agent presence and protection edition are useful hardening signals, but requiring the Ultimate edition for every ENS instance is a tenant policy choice rather than a universal cloud misconfiguration.",
+      "observed_mismatch": "Implemented: the rule no longer enforces Ultimate edition and only reports when linked Security Center asset evidence says the agent is offline or uninstalled.",
+      "change_required": false,
+      "false_positive_impact": "Low-medium: environments with intentionally unsupported ENS agent coverage can still need suppression outside Lite.",
+      "false_negative_impact": "Medium: if Sas assets are not collected or cannot be linked by InstanceId, Lite now avoids unsupported risk assertions instead of guessing from missing evidence.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ENS Instance_202501241146_999147/examples.json",
+      "input_references": [
+        "InstanceInstalledAegis"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Security Center agent installation",
+          "url": "https://www.alibabacloud.com/help/en/security-center/user-guide/install-the-security-center-agent"
+        },
+        {
+          "title": "Alibaba Cloud Security Center functions and features",
+          "url": "https://www.alibabacloud.com/help/en/security-center/product-overview/functions-and-features"
+        }
+      ],
+      "proposed_change": "Implemented: split agent health from paid-edition baseline. Lite reports only offline/uninstalled linked agents; paid edition checks should be separate opt-in baseline policy.",
+      "review_decision": "change",
+      "decision_note": "User confirmed change: remove the mandatory Ultimate edition requirement and make the rule depend on linked Sas agent health evidence.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-06"
+    },
+    {
+      "id": "alicloud.ens_instance_202507181526_476835",
+      "resource_type": "ens_instance",
+      "severity": "high",
+      "policy_sha256": "c75f2bfd1918de3717362b15bb46250ff463a444d053cdcd9cd25077cf5c0069",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ENS-实例存在任一端口通过安全组对全网开放; logic=public_cidr, 3_input_refs; refs=EipAddress.EipAddress.IpAddress,Instance.PublicIpAddresses.PublicIpAddress,SecurityGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ENS Instance_202507181526_476835/input.json",
+      "input_references": [
+        "EipAddress.EipAddress.IpAddress",
+        "Instance.PublicIpAddresses.PublicIpAddress",
+        "SecurityGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ENS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ens/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ENS network ACLs",
+          "url": "https://www.alibabacloud.com/help/en/ens/user-guide/network-acls"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ens_nat_gateway_202507241705_673921",
+      "resource_type": "ens_nat_gateway",
+      "severity": "high",
+      "policy_sha256": "b5f1bbc4b152556ed19ff76b98ada291b4ca0a99ffd1a8934ff652e0e4e4562e",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-ENS NAT Gateway-实例存在任一端口通过 ACL 对全网开放; logic=public_cidr, 3_input_refs; refs=ENSNetwork,ENSNetwork.NetworkAcl.IngressAclEntries,ForwardTableEntries",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_ENS NatGateway_202507241705_673921/input.json",
+      "input_references": [
+        "ENSNetwork",
+        "ENSNetwork.NetworkAcl.IngressAclEntries",
+        "ForwardTableEntries"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ENS security groups",
+          "url": "https://www.alibabacloud.com/help/en/ens/user-guide/security-groups"
+        },
+        {
+          "title": "Alibaba Cloud ENS network ACLs",
+          "url": "https://www.alibabacloud.com/help/en/ens/user-guide/network-acls"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.fc_202508191157_819761",
+      "resource_type": "fc",
+      "severity": "medium",
+      "policy_sha256": "82e3da47c4410f9c526c977998421556e1f23492b18dd9b5da7e9216aebb259a",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-FC-HTTP Trigger 匿名访问; logic=json_policy, 1_input_refs; refs=Triggers",
+      "official_behavior": "Alibaba Cloud resource policies and triggers can allow anonymous or public principals. Anonymous access to data or function endpoints is risky when not explicitly intended and constrained.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Public-by-design endpoints may be reported and require business context.",
+      "false_negative_impact": "If policy parsing misses equivalent wildcard principals, conditions, or policy shapes, anonymous access can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_FC_202508191157_819761/input.json",
+      "input_references": [
+        "Triggers"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Function Compute HTTP triggers",
+          "url": "https://www.alibabacloud.com/help/en/functioncompute/fc-3-0/user-guide/http-triggers"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.hbase_202501081111_100645",
+      "resource_type": "hbase",
+      "severity": "medium",
+      "policy_sha256": "94b4fb6e15fbf4a4d5844fffb037ea2f0bad4f742b380835f80364a86b3eb47e",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-HBase-云数据库HBase公网暴露风险; logic=public_cidr, 2_input_refs; refs=ConnAddrInfo,Group",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Hbase_202501081111_100645/input.json",
+      "input_references": [
+        "ConnAddrInfo",
+        "Group"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud database IP whitelist guidance",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.kafka_202501081111_766488",
+      "resource_type": "kafka",
+      "severity": "medium",
+      "policy_sha256": "51f8d839bd81d5a218d27024e25a600b23cfca4ce155f498656ac256f958cf1c",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-Kafka-实例对公网开放访问; logic=public_cidr, 2_input_refs; refs=AllowedList.InternetList,InstanceVO.DeployType",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Kafka_202501081111_766488/input.json",
+      "input_references": [
+        "AllowedList.InternetList",
+        "InstanceVO.DeployType"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ApsaraMQ for Kafka Internet access",
+          "url": "https://www.alibabacloud.com/help/en/apsaramq-for-kafka/user-guide/access-from-the-internet"
+        },
+        {
+          "title": "Alibaba Cloud ApsaraMQ for RocketMQ Internet access whitelist",
+          "url": "https://www.alibabacloud.com/help/en/apsaramq-for-rocketmq/cloud-message-queue-rocketmq-5-x-series/user-guide/ip-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.lindorm_202501081111_504620",
+      "resource_type": "lindorm",
+      "severity": "medium",
+      "policy_sha256": "4e281632d15d14ac2d75542497201c10a6245420225c9486f906fe486e2f07aa",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-Lindorm-云原生多模数据库 Lindorm公网暴露风险; logic=public_cidr, 2_input_refs; refs=EngineList,InstanceIpWhiteList.IpList",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Lindorm_202501081111_504620/input.json",
+      "input_references": [
+        "EngineList",
+        "InstanceIpWhiteList.IpList"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud database IP whitelist guidance",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.max_compute_202501081111_193748",
+      "resource_type": "max_compute",
+      "severity": "high",
+      "policy_sha256": "7651b26c87cb5d11dfe812e12d2d3ac5dd1c6b0bdc093c35d9f9f6351304cd84",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-MaxCompute-MaxCompute 项目无白名单防护风险; logic=public_cidr, 4_input_refs; refs=GetProjectResponseBodyData.ipWhiteList,GetProjectResponseBodyData.ipWhiteList.ipList,Project.ipWhiteList.ipList,Project.name",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748/input.json",
+      "input_references": [
+        "GetProjectResponseBodyData.ipWhiteList",
+        "GetProjectResponseBodyData.ipWhiteList.ipList",
+        "Project.ipWhiteList.ipList",
+        "Project.name"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud MaxCompute IP whitelist",
+          "url": "https://www.alibabacloud.com/help/en/maxcompute/user-guide/project-security-configuration"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.mongo_db_202501081111_958052",
+      "resource_type": "mongo_db",
+      "severity": "high",
+      "policy_sha256": "a5afecf148df29d3153cb97c4b208248348671bdb6c34649fdb0a9f5b090acb0",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-MongoDB-实例端口对全网开放; logic=public_cidr, 4_input_refs; refs=DBInstance,DBInstanceAttribute.ReplicaSets.ReplicaSet,DBInstanceAttribute.VpcAuthMode,SecurityIpGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_MongoDB_202501081111_958052/input.json",
+      "input_references": [
+        "DBInstance",
+        "DBInstanceAttribute.ReplicaSets.ReplicaSet",
+        "DBInstanceAttribute.VpcAuthMode",
+        "SecurityIpGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud MongoDB whitelist",
+          "url": "https://www.alibabacloud.com/help/en/mongodb/user-guide/configure-a-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud MongoDB audit logs",
+          "url": "https://www.alibabacloud.com/help/en/mongodb/user-guide/use-the-audit-log-feature"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.mongo_db_202505261534_988136",
+      "resource_type": "mongo_db",
+      "severity": "low",
+      "policy_sha256": "44d693bc182258de38c88a1925f4e4d567c107f8a4e975adffb728872064b487",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-MongoDB-实例未启用审计日志; logic=1_input_refs; refs=LogAuditStatus",
+      "official_behavior": "Alibaba Cloud audit/log features record control-plane or data-plane events for investigation and accountability. Disabled trail, audit, access, or firewall logs reduce traceability after incidents.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Some low-risk or short-lived resources may intentionally not enable product audit logs.",
+      "false_negative_impact": "If collector fields do not include the product-specific logging state, disabled logging can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_MongoDB_202505261534_988136/input.json",
+      "input_references": [
+        "LogAuditStatus"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud MongoDB whitelist",
+          "url": "https://www.alibabacloud.com/help/en/mongodb/user-guide/configure-a-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud MongoDB audit logs",
+          "url": "https://www.alibabacloud.com/help/en/mongodb/user-guide/use-the-audit-log-feature"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.mongo_db_202508221144_912519",
+      "resource_type": "mongo_db",
+      "severity": "medium",
+      "policy_sha256": "f20b3252333b7db2a6f1ac814ad2ad039a0c8db0cfaf962ee5fa945e66aad3bc",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-MongoDb-专有网络运行; logic=2_input_refs; refs=DBInstanceAttribute.DBInstanceStatus,DBInstanceAttribute.VPCId",
+      "official_behavior": "Alibaba Cloud VPC provides stronger isolation and routing control than classic or public-network-only deployment modes. Running production compute or data services in VPC is a common security baseline.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Legacy environments may intentionally keep classic-network resources during migration.",
+      "false_negative_impact": "If network type or VPC ID fields are absent, non-VPC resources can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_MongoDB_202508221144_912519/input.json",
+      "input_references": [
+        "DBInstanceAttribute.DBInstanceStatus",
+        "DBInstanceAttribute.VPCId"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud MongoDB whitelist",
+          "url": "https://www.alibabacloud.com/help/en/mongodb/user-guide/configure-a-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud MongoDB audit logs",
+          "url": "https://www.alibabacloud.com/help/en/mongodb/user-guide/use-the-audit-log-feature"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.nas_202501081111_655917",
+      "resource_type": "nas",
+      "severity": "low",
+      "policy_sha256": "d017b237af1576d1bc8431f3806aeffa48714e135f41b0b31343ce1449f2b224",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-NAS-存在经典网络挂载点; logic=classic mount target migration signal; refs=FileSystem.MountTargets.MountTarget",
+      "official_behavior": "NAS mount targets can use VPC or classic network types. Classic network is not equivalent to unrestricted Internet exposure; exposure depends on mount target network reachability and permission groups.",
+      "observed_mismatch": "Implemented: the rule no longer labels classic-network mount targets as public exposure; it is now a low-severity migration signal. Public or broad NAS access should be handled by permission-group and reachability rules.",
+      "change_required": false,
+      "false_positive_impact": "Low-medium: classic-network mount targets can still be intentional legacy deployments, but the finding no longer overstates Internet exposure.",
+      "false_negative_impact": "Medium: true NAS public exposure still depends on mount target reachability and permission group scope, which should be evaluated by separate access rules.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_NAS_202501081111_655917/input.json",
+      "input_references": [
+        "FileSystem.MountTargets.MountTarget"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud NAS mount targets and access control",
+          "url": "https://www.alibabacloud.com/help/en/nas/user-guide/manage-mount-targets"
+        },
+        {
+          "title": "Alibaba Cloud NAS ACLs",
+          "url": "https://www.alibabacloud.com/help/en/nas/user-guide/manage-a-permission-group"
+        }
+      ],
+      "proposed_change": "Implemented: renamed and reframed as a classic-network mount target migration finding; true exposure remains the responsibility of permission group and reachability checks.",
+      "review_decision": "change",
+      "decision_note": "User confirmed change: keep the classic network signal but remove the public-exposure assertion.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-06"
+    },
+    {
+      "id": "alicloud.nas_202503062114_370131",
+      "resource_type": "nas",
+      "severity": "low",
+      "policy_sha256": "2a4543479ce791238ed12581694374c295a69e35ea28ea2790055a50c0ce4979",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-NAS-未启用NFS ACL白名单; logic=1_input_refs; refs=NfsAcl.Enabled",
+      "official_behavior": "NAS permission groups and NFS/SMB ACL features restrict which clients can mount or access a file system. Disabled protocol ACLs reduce network/file access control depth and can broaden access within reachable networks.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Small internal-only NAS deployments may rely on network isolation or other controls instead of protocol ACLs.",
+      "false_negative_impact": "If mount target, permission group, or protocol ACL fields are not collected, overly broad NAS access can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_NAS_202503062114_370131/input.json",
+      "input_references": [
+        "NfsAcl.Enabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud NAS mount targets and access control",
+          "url": "https://www.alibabacloud.com/help/en/nas/user-guide/manage-mount-targets"
+        },
+        {
+          "title": "Alibaba Cloud NAS ACLs",
+          "url": "https://www.alibabacloud.com/help/en/nas/user-guide/manage-a-permission-group"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.nas_202503062119_948181",
+      "resource_type": "nas",
+      "severity": "low",
+      "policy_sha256": "7ee2c86f93642c6d2c7b1e9d423b55f4d06dcc3390626ad29d1c5acf9b3243a4",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-NAS-未启用SMB ACL白名单; logic=1_input_refs; refs=SmbAcl.Enabled",
+      "official_behavior": "NAS permission groups and NFS/SMB ACL features restrict which clients can mount or access a file system. Disabled protocol ACLs reduce network/file access control depth and can broaden access within reachable networks.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Small internal-only NAS deployments may rely on network isolation or other controls instead of protocol ACLs.",
+      "false_negative_impact": "If mount target, permission group, or protocol ACL fields are not collected, overly broad NAS access can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_NAS_202503062119_948181/input.json",
+      "input_references": [
+        "SmbAcl.Enabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud NAS mount targets and access control",
+          "url": "https://www.alibabacloud.com/help/en/nas/user-guide/manage-mount-targets"
+        },
+        {
+          "title": "Alibaba Cloud NAS ACLs",
+          "url": "https://www.alibabacloud.com/help/en/nas/user-guide/manage-a-permission-group"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.nat_202508191105_542880",
+      "resource_type": "nat",
+      "severity": "low",
+      "policy_sha256": "df4e0186477cf54f70d0388f0197f4c2b003722084bb642e1be257adf62c565d",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-NAT-Gateway 存在 DNAT 公网入口; logic=internet NAT with at least one enabled ForwardTableEntry; refs=ForwardTableEntry,NatGateway.NetworkType",
+      "official_behavior": "NAT Gateway DNAT entries intentionally publish selected private services through public IPs and ports. The risk depends on exposed port, source restrictions, target asset, and whether the rule is expected.",
+      "observed_mismatch": "Implemented: the rule no longer claims internal IP exposure as a misconfiguration; it records DNAT as a low-severity public-entry signal with mapped IP/port evidence.",
+      "change_required": false,
+      "false_positive_impact": "Medium: intended DNAT publications still appear as low-severity exposure evidence rather than high-confidence misconfigurations.",
+      "false_negative_impact": "Medium: high-risk DNAT should still be prioritized by separate topology, sensitive-port, target-asset, security-group, and CloudFW controls.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_NAT_202508191105_542880/examples.json",
+      "input_references": [
+        "ForwardTableEntry",
+        "NatGateway.NetworkType"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud NAT Gateway DNAT entries",
+          "url": "https://www.alibabacloud.com/help/en/nat-gateway/user-guide/create-and-manage-dnat-entries"
+        }
+      ],
+      "proposed_change": "Implemented: treat DNAT as topology/exposure evidence with mapped endpoint details; high-risk prioritization remains separate.",
+      "review_decision": "change",
+      "decision_note": "User confirmed change: keep DNAT evidence but remove the misleading internal-IP-exposed assertion.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-06"
+    },
+    {
+      "id": "alicloud.nlb_202501081111_1042010",
+      "resource_type": "nlb",
+      "severity": "medium",
+      "policy_sha256": "3312a7d22b8607bee5de1539a2d61664db50d8596ff3f942e8d7008c0a8ebf0b",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-NLB-对公网暴露高危端口; logic=Internet NLB listener frontend port in risk_default_ports unless covered by broad-source security-group Drop; refs=Listeners,LoadBalancer.AddressType,SecurityGroups",
+      "official_behavior": "NLB Internet-facing exposure should be evaluated using the public listener, security group, source CIDR, and backend service context. Backend server ports are not always the same as the public listener port.",
+      "observed_mismatch": "Implemented: the rule now evaluates frontend listener ports instead of backend server ports, and treats a matching broad-source security-group Drop as compensating evidence.",
+      "change_required": false,
+      "false_positive_impact": "Medium: business-approved public high-risk listener ports can still need contextual triage, but backend-only ports no longer trigger this rule.",
+      "false_negative_impact": "Medium: complex upstream controls outside NLB security groups, such as CloudFW or custom appliances, are handled by topology/exposure analysis rather than this standalone rule.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_NLB_202501081111_1042010/examples.json",
+      "input_references": [
+        "Listeners",
+        "LoadBalancer.AddressType",
+        "SecurityGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Server Load Balancer access control",
+          "url": "https://www.alibabacloud.com/help/en/slb/classic-load-balancer/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud ALB listener ACLs",
+          "url": "https://www.alibabacloud.com/help/en/alb/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud NLB security groups",
+          "url": "https://www.alibabacloud.com/help/en/nlb/user-guide/security-group"
+        }
+      ],
+      "proposed_change": "Implemented: evaluate frontend listener ports and security-group broad-source Drop coverage; backend server ports are preserved only as context.",
+      "review_decision": "change",
+      "decision_note": "User confirmed change: use public listener port as the exposure surface and avoid backend-port false positives.",
+      "implementation_status": "implemented",
+      "implemented_at": "2026-05-06"
+    },
+    {
+      "id": "alicloud.oss_202501081111_1077246",
+      "resource_type": "oss",
+      "severity": "high",
+      "policy_sha256": "8ec13642669d00c6fa97f038236d38acb7f8ab8274ee0338b5772a95e3734172",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags BucketInfo.ACL == public-read-write unless BucketInfo.BlockPublicAccess is true.",
+      "official_behavior": "OSS bucket ACL public-read-write allows anonymous users to read and write objects. OSS requires Block Public Access to be disabled before a bucket ACL can be set to public-read or public-read-write.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_1077246/input.json",
+      "input_references": [
+        "BucketInfo.ACL",
+        "BucketInfo.BlockPublicAccess",
+        "BucketInfo.Name"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS Bucket ACL",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/oss-bucket-acl"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_160028",
+      "resource_type": "oss",
+      "severity": "low",
+      "policy_sha256": "909a7f1894a44c7aca5deb21fa386546bb891439e90125ad15488c8a57445cff",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags RefererConfiguration.RefererList containing '*' or exactly equal to '*'.",
+      "official_behavior": "OSS hotlink protection Referer whitelist supports wildcard rules; a Referer value of '*' matches all domain names and IP addresses.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_160028/input.json",
+      "input_references": [
+        "RefererConfiguration.RefererList"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS Referer hotlink protection",
+          "url": "https://www.alibabacloud.com/help/en/oss/view-the-referers-of-oss-requests-from-other-websites"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_313311",
+      "resource_type": "oss",
+      "severity": "high",
+      "policy_sha256": "5f3ff41d856c90e7b7c53c772e0e3bdee5fdaae83d2eef0de3b75cef16ea02be",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags bucket policies that allow Principal=* with acs:SourceVpc matching vpc-* or deny with StringNotLike acs:SourceVpc=vpc-* and no NotIpAddress.",
+      "official_behavior": "OSS supports acs:SourceVpc as a bucket-policy condition key. vpc-* is a broad wildcard pattern for VPC-routed requests; specific VPC IDs are required for narrow VPC restriction.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_313311/input.json",
+      "input_references": [
+        "BucketPolicy.Statement"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS Bucket policies",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/use-bucket-policy-to-grant-permission-to-access-oss/"
+        },
+        {
+          "title": "Alibaba Cloud OSS RAM policy overview",
+          "url": "https://www.alibabacloud.com/help/en/oss/ram-policy-overview/"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_364778",
+      "resource_type": "oss",
+      "severity": "high",
+      "policy_sha256": "442931a006ae5be92613563748c656a4869e9d21f654c4ce24cd68c9c7badeb8",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Defaults to risk=true, then clears risk when a bucket policy has IP or SourceVpc conditions, when bucket ACL is private, or when BlockPublicAccess is true.",
+      "official_behavior": "OSS bucket access can be restricted by bucket ACL, Block Public Access, and bucket-policy conditions such as acs:SourceIp and acs:SourceVpc.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_364778/input.json",
+      "input_references": [
+        "BucketInfo.ACL",
+        "BucketInfo.BlockPublicAccess",
+        "BucketInfo.Name",
+        "BucketPolicy.Statement"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS overview of access control methods",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/permissions-and-access-control/"
+        },
+        {
+          "title": "Alibaba Cloud OSS Bucket policies",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/use-bucket-policy-to-grant-permission-to-access-oss/"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_562729",
+      "resource_type": "oss",
+      "severity": "medium",
+      "policy_sha256": "06775d945cdfa3d9366a523411ef9deefb7d1404ba7e979b28c13376f70d078a",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags BucketInfo.ACL == public-read unless BucketInfo.BlockPublicAccess is true.",
+      "official_behavior": "OSS bucket ACL public-read allows anyone, including anonymous users, to read objects; Block Public Access must be disabled before public ACLs can be configured.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_562729/input.json",
+      "input_references": [
+        "BucketInfo.ACL",
+        "BucketInfo.BlockPublicAccess",
+        "BucketInfo.Name"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS Bucket ACL",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/oss-bucket-acl"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_563734",
+      "resource_type": "oss",
+      "severity": "high",
+      "policy_sha256": "d9e5b7a11ba588f3e5effd100a6a1d4fbaf63de428a9f78c7c1ed6608f6f6d93",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags public BucketPolicyStatus or Allow statements with public Principal and no restrictive SourceVpc, SourceIp, or AccessId condition, unless BlockPublicAccess is true.",
+      "official_behavior": "OSS bucket policies can grant anonymous access with Principal=* and can restrict access with conditions such as acs:SourceIp and acs:SourceVpc. Explicit deny takes precedence and unmatched requests are denied by default.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_563734/input.json",
+      "input_references": [
+        "BucketInfo.BlockPublicAccess",
+        "BucketPolicy.Statement",
+        "BucketPolicyStatus.IsPublic",
+        "BucketProperties.Name"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS Bucket policies",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/use-bucket-policy-to-grant-permission-to-access-oss/"
+        },
+        {
+          "title": "Alibaba Cloud RAM/OSS policy condition keys",
+          "url": "https://www.alibabacloud.com/help/en/oss/ram-policy-overview/"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_735473",
+      "resource_type": "oss",
+      "severity": "low",
+      "policy_sha256": "ba837b767a27326cf1abcad7063ba9d29769476e09d44fa177fc44f0b83058a0",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "Flags any non-empty InventoryConfiguration and formats source/destination bucket path details.",
+      "official_behavior": "OSS bucket inventory generates inventory files into a configured destination bucket. Inventory configuration alone does not prove public exposure or leakage; exposure depends on destination bucket access controls and cross-account destination settings.",
+      "observed_mismatch": "Reviewed: inventory configuration alone does not prove leakage, but product decision is to keep the existing signal unchanged for now.",
+      "proposed_change": "User confirmed keep/no code change; destination bucket correlation remains a future enhancement, not a current blocker.",
+      "change_required": false,
+      "false_positive_impact": "High; healthy inventory configurations will be reported as leakage.",
+      "false_negative_impact": "Medium; without destination bucket ACL/policy correlation, actual inventory exposure can be missed.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_735473/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "BucketInfo.ExtranetEndpoint",
+        "BucketInfo.Name",
+        "InventoryConfiguration"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS bucket inventory",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/bucket-inventory"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_846565",
+      "resource_type": "oss",
+      "severity": "medium",
+      "policy_sha256": "c4e6c623ab67dda88aca57ca1af8c5d6ca586b7387342ad03dd7ca7cca2ee3c3",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags any CORS rule whose AllowedOrigin contains '*'.",
+      "official_behavior": "OSS CORS rules authorize browser cross-origin access. AllowedOrigin can contain a wildcard, and a single '*' matches all origins.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_846565/input.json",
+      "input_references": [
+        "CORSConfiguration.CORSRules"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS PutBucketCors",
+          "url": "https://www.alibabacloud.com/help/en/oss/developer-reference/putbucketcors"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202503031637_689177",
+      "resource_type": "oss",
+      "severity": "medium",
+      "policy_sha256": "77f5343bb57c4e61d3d02bbd68713587cdb3b36f5961967aa6334484907d4ac5",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags when VersioningConfig is null or VersioningConfig.Status != Enabled.",
+      "official_behavior": "OSS bucket versioning preserves historical object versions after overwrite or delete and is recommended for accidental deletion or overwrite recovery.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202503031637_689177/input.json",
+      "input_references": [
+        "VersioningConfig"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS versioning",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/overview-78/"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202503031646_805434",
+      "resource_type": "oss",
+      "severity": "medium",
+      "policy_sha256": "850b747cb2bc0e69539ff16c22c9881a03ca64c8e5a702cced1a81be8139bb09",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "Flags when LoggingEnabled is null.",
+      "official_behavior": "OSS log storage writes request access logs as hourly files to a configured bucket. Lack of logging reduces auditability.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific business exceptions may exist, but the rule maps to a documented OSS access-control, logging, versioning, or exposure control.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202503031646_805434/input.json",
+      "input_references": [
+        "LoggingEnabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS monitoring and logging",
+          "url": "https://www.alibabacloud.com/help/en/oss/logging-and-monitoring/"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.oss_202508201612_324403",
+      "resource_type": "oss",
+      "severity": "medium",
+      "policy_sha256": "05087d9bdb9cf7a107f94ed0187cda4e0876deff328875a2c0348f742d74423d",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "Flags when BucketInfo.SseRule.SSEAlgorithm is missing or empty.",
+      "official_behavior": "OSS supports bucket-level server-side encryption; when configured, objects uploaded to the bucket are encrypted at rest using OSS-managed or KMS-managed keys.",
+      "observed_mismatch": "Reviewed: collector exposes both BucketInfo.SseRule.SSEAlgorithm and SSEDefaultRule; product decision is to keep the rule reading BucketInfo.SseRule.SSEAlgorithm.",
+      "proposed_change": "User confirmed keep/no code change; no rule logic change required.",
+      "change_required": false,
+      "false_positive_impact": "Low after field contract is fixed; missing bucket encryption is a valid data-at-rest risk.",
+      "false_negative_impact": "High today if encryption state is only available in SSEDefaultRule and not BucketInfo.SseRule.",
+      "test_fixture": "lite/rules/alicloud/ALI_CLOUD_OSS_202508201612_324403/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "BucketInfo.ACL",
+        "BucketInfo.Name",
+        "BucketInfo.SseRule.SSEAlgorithm"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud OSS server-side encryption",
+          "url": "https://www.alibabacloud.com/help/en/oss/user-guide/server-side-encryption-8"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.polar_db_202501081111_118228",
+      "resource_type": "polar_db",
+      "severity": "high",
+      "policy_sha256": "e9bfa11138d8568bea1e2f8f9101868d0f62594f30e3f08abb9b06485e6e9630",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-PolarDB-实例端口全网开放(或ACL设置不当); logic=public_cidr, 1_input_refs; refs=DBClusterAccessWhitelist.Items.DBClusterIPArray",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_PolarDB_202501081111_118228/input.json",
+      "input_references": [
+        "DBClusterAccessWhitelist.Items.DBClusterIPArray"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RDS IP address whitelist",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud PolarDB IP whitelist",
+          "url": "https://www.alibabacloud.com/help/en/polardb/polardb-for-mysql/user-guide/configure-an-ip-address-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.polar_db_202505261533_254903",
+      "resource_type": "polar_db",
+      "severity": "low",
+      "policy_sha256": "bcc0d67ff980803f1659f08f0277157cf866a7259b0162c7e0cf233bf31a23f5",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-PolarDB-实例未启用审计日志; logic=1_input_refs; refs=DBClusterAuditLogCollector.CollectorStatus",
+      "official_behavior": "Alibaba Cloud audit/log features record control-plane or data-plane events for investigation and accountability. Disabled trail, audit, access, or firewall logs reduce traceability after incidents.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Some low-risk or short-lived resources may intentionally not enable product audit logs.",
+      "false_negative_impact": "If collector fields do not include the product-specific logging state, disabled logging can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_PolarDB_202505261533_254903/input.json",
+      "input_references": [
+        "DBClusterAuditLogCollector.CollectorStatus"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RDS IP address whitelist",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud PolarDB IP whitelist",
+          "url": "https://www.alibabacloud.com/help/en/polardb/polardb-for-mysql/user-guide/configure-an-ip-address-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ram_role_202501081111_210181",
+      "resource_type": "ram_role",
+      "severity": "medium",
+      "policy_sha256": "be1e1e5c86138788eb623a5984ce52140bf5cfac6c2f0b9115847203b5a2e264",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-RAM角色授权给外部账号; logic=principal, json_policy, 3_input_refs; refs=Role.Arn,Role.AssumeRolePolicyDocument,Role.RoleName",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM Role_202501081111_210181/input.json",
+      "input_references": [
+        "Role.Arn",
+        "Role.AssumeRolePolicyDocument",
+        "Role.RoleName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ram_role_202507101903_755145",
+      "resource_type": "ram_role",
+      "severity": "medium",
+      "policy_sha256": "3ab397317dc51a4bcfdbcd2a09a1261e39f824ed8c56f1e2931d19b5e0e6dff0",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-Role拥有敏感权限; logic=condition, json_policy, 1_input_refs; refs=Policies",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM Role_202507101903_755145/input.json",
+      "input_references": [
+        "Policies"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202505081354_731990",
+      "resource_type": "ram_role",
+      "severity": "high",
+      "policy_sha256": "8b76d0a2b0beb4e2206c2cc71635e1399a3ebd76d7bfe95a726ac5ce44a1ea9b",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM Role-拥有RAM敏感操作（前提可被扮演登录控制台）; logic=principal, json_policy, 3_input_refs; refs=Policies,Role.AssumeRolePolicyDocument,Role.Description",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM User_202505081354_731990/input.json",
+      "input_references": [
+        "Policies",
+        "Role.AssumeRolePolicyDocument",
+        "Role.Description"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ram_202501081111_110025",
+      "resource_type": "ram_user",
+      "severity": "medium",
+      "policy_sha256": "c8c8deaf4024979b9c939ea74ca33339803b15b021d5f580433e6c73daa5cb08",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-可登录控制台的子账号下存在AK; logic=3_input_refs; refs=ConsoleLogin,ExistActiveAccessKey,UserDetail.UserName",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM_202501081111_110025/input.json",
+      "input_references": [
+        "ConsoleLogin",
+        "ExistActiveAccessKey",
+        "UserDetail.UserName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202503172029_147841",
+      "resource_type": "ram_user",
+      "severity": "medium",
+      "policy_sha256": "4fa9c86ae8d8380e8a1d672ad27442a1e9ac7b5835490455f42664b56ee4167c",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-RAM User AccessKey在创建90天后仍未被使用; logic=1_input_refs; refs=AccessKeys",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM User_202503172029_147841/input.json",
+      "input_references": [
+        "AccessKeys"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202503172212_146913",
+      "resource_type": "ram_user",
+      "severity": "high",
+      "policy_sha256": "559f11e1143ec649ec75c58bf44b5c9e8d5b6cac0a963477ae6c40aa2d07461f",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "阿里云-RAM-RAM User拥有大权限AK但未设置调用来源ACL; logic=condition, json_policy, 3_input_refs; refs=AccessKeys,ExistActiveAccessKey,Policies",
+      "official_behavior": "RAM supports policy Condition keys such as acs:SourceIp and acs:SourceVpc, and also provides AccessKey network access restriction policies at the account or AccessKey-pair level. A rule named AK source ACL must evaluate the official AK network ACL state, not only RAM policy conditions.",
+      "observed_mismatch": "Reviewed: official AccessKey network ACL exists in console documentation, but no public read API was found in RAM/IMS SDK or Action probing; product decision is to keep the RAM policy condition model unchanged.",
+      "change_required": false,
+      "false_positive_impact": "High: AKs protected by official AccessKey network ACL policies can still be reported as unrestricted.",
+      "false_negative_impact": "Medium: source restrictions configured through official AK network ACL APIs are not represented in the policy-condition model.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM User_202503172212_146913/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "AccessKeys",
+        "ExistActiveAccessKey",
+        "Policies"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        },
+        {
+          "title": "Alibaba Cloud AccessKey network access restriction policy",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/accesskey-network-access-restriction-policy"
+        }
+      ],
+      "proposed_change": "User confirmed keep/no code change; revisit only if Alibaba Cloud exposes a public read API for AccessKey network ACL policies."
+    },
+    {
+      "id": "alicloud.ram_user_202504031734_497143",
+      "resource_type": "ram_user",
+      "severity": "medium",
+      "policy_sha256": "f6d426d416ca2db5248ef6e66092456377054415c2592379068c8e3d51936053",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "阿里云-RAM-RAM User拥有AK且未设置调用来源ACL; logic=condition, json_policy, 3_input_refs; refs=AccessKeys,ExistActiveAccessKey,Policies",
+      "official_behavior": "RAM supports policy Condition keys such as acs:SourceIp and acs:SourceVpc, and also provides AccessKey network access restriction policies at the account or AccessKey-pair level. A rule named AK source ACL must evaluate the official AK network ACL state, not only RAM policy conditions.",
+      "observed_mismatch": "Reviewed: this rule uses RAM policy SourceIp/SourceVpc conditions rather than official AccessKey network ACL state; product decision is to keep it unchanged.",
+      "change_required": false,
+      "false_positive_impact": "High: AKs protected by official AccessKey network ACL policies can still be reported as unrestricted.",
+      "false_negative_impact": "Medium: source restrictions configured through official AK network ACL APIs are not represented in the policy-condition model.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM User_202504031734_497143/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "AccessKeys",
+        "ExistActiveAccessKey",
+        "Policies"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        },
+        {
+          "title": "Alibaba Cloud AccessKey network access restriction policy",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/accesskey-network-access-restriction-policy"
+        }
+      ],
+      "proposed_change": "User confirmed keep/no code change; revisit only if Alibaba Cloud exposes a public read API for AccessKey network ACL policies."
+    },
+    {
+      "id": "alicloud.ram_user_202504111433_216558",
+      "resource_type": "ram_user",
+      "severity": "medium",
+      "policy_sha256": "0494786b893b8e5f9543fdd23c640d9fcb7487bedaefb378075e4106acbff1e0",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-User AK存在可访问OSS的权限; logic=condition, json_policy, 3_input_refs; refs=AccessKeys,ExistActiveAccessKey,Policies",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAM User_202504111433_216558/input.json",
+      "input_references": [
+        "AccessKeys",
+        "ExistActiveAccessKey",
+        "Policies"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ramuser_202501081111_272084",
+      "resource_type": "ram_user",
+      "severity": "high",
+      "policy_sha256": "c9d97c2c29bb7f2c1a0faead4ffa7e3433ce60265e79ab61604fce3c665fab9d",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "阿里云-RAM-RAM用户权限过大; logic=condition, json_policy, 3_input_refs; refs=AccessKeys,ExistActiveAccessKey,Policies",
+      "official_behavior": "RAM permission evaluation combines identity policies, resource policies, boundaries, conditions, and explicit Deny semantics. Explicit Deny must override Allow, so broad Allow findings must account for covering Deny statements and restrictive conditions.",
+      "observed_mismatch": "Reviewed: explicit Deny/conditions could reduce false positives, but product decision is to keep the existing broad high-risk permission detection unchanged.",
+      "change_required": false,
+      "false_positive_impact": "Medium-high: broad Allow statements covered by explicit Deny or restrictive conditions can still be reported.",
+      "false_negative_impact": "Unknown until collector/native-adapter samples prove field availability.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAMUser_202501081111_272084/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "AccessKeys",
+        "ExistActiveAccessKey",
+        "Policies"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        },
+        {
+          "title": "Alibaba Cloud RAM policy evaluation",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-evaluation-process"
+        }
+      ],
+      "proposed_change": "User confirmed keep/no code change."
+    },
+    {
+      "id": "alicloud.ramuser_202502051715_1081479",
+      "resource_type": "ram_user",
+      "severity": "medium",
+      "policy_sha256": "8648651604e5b5730373529bbe4f3e9777071cacb932656f235de7ec5cb33da2",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-User AK 超过一年未使用; logic=1_input_refs; refs=AccessKeys",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAMUser_202502051715_1081479/input.json",
+      "input_references": [
+        "AccessKeys"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ramuser_202502051725_1037615",
+      "resource_type": "ram_user",
+      "severity": "medium",
+      "policy_sha256": "e0b9034ba1720aeda9eab92f542869ea731016b4f676b50952a2296c8eab085e",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-User 超一年未使用; logic=3_input_refs; refs=AccessKeys,UserDetail.LastLoginDate,UserDetail.UserName",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAMUser_202502051725_1037615/input.json",
+      "input_references": [
+        "AccessKeys",
+        "UserDetail.LastLoginDate",
+        "UserDetail.UserName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.ramuser_202502201756_962162",
+      "resource_type": "ram_user",
+      "severity": "medium",
+      "policy_sha256": "084665064eb3cace153ca3cc65cdbc69d86c898364410af8a3d8f5189fe86be0",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-05",
+      "current_logic": "阿里云-RAM-使用密码登录控制台的的账号应启用MFA; logic=3_input_refs; refs=ConsoleLogin,LoginProfile.MFABindRequired,UserDetail.UserName",
+      "official_behavior": "Mapped to Alibaba Cloud official docs; requires product-specific positive/negative proof before official approval.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining sample coverage is tracked by rules validate/coverage rather than review status.",
+      "change_required": false,
+      "false_positive_impact": "Product-specific exceptions may exist, but the rule maps to documented RAM identity, policy, MFA, SSO, AccessKey, or network-control behavior.",
+      "false_negative_impact": "Collector/native-adapter sample gaps can still cause missed findings; validate --samples remains required for field-level trust.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RAMUser_202502201756_962162/input.json",
+      "input_references": [
+        "ConsoleLogin",
+        "LoginProfile.MFABindRequired",
+        "UserDetail.UserName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RAM policy elements and condition keys",
+          "url": "https://www.alibabacloud.com/help/en/ram/user-guide/policy-elements"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.rds_202501081111_335475",
+      "resource_type": "rds",
+      "severity": "high",
+      "policy_sha256": "ae693ccd7832194c3c91ac08b045d1479e8bf33d1807d4768a4864c6dfca23e4",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-RDS-实例端口对全网开放; logic=public_cidr, 3_input_refs; refs=DBInstance,DBInstanceAttribute.DBInstanceNetType,DBInstanceIPArray",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RDS_202501081111_335475/input.json",
+      "input_references": [
+        "DBInstance",
+        "DBInstanceAttribute.DBInstanceNetType",
+        "DBInstanceIPArray"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RDS IP address whitelist",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-an-ip-address-whitelist"
+        },
+        {
+          "title": "Alibaba Cloud PolarDB IP whitelist",
+          "url": "https://www.alibabacloud.com/help/en/polardb/polardb-for-mysql/user-guide/configure-an-ip-address-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.rds_202508221521_636677",
+      "resource_type": "rds",
+      "severity": "medium",
+      "policy_sha256": "51de373439bc40ce71cc33996379e5626fc6330cfe69a5c364094ec9b8476429",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "Flags RDS instances whose DBInstanceSSL.SSLEnabled is missing, null, empty, or No.",
+      "official_behavior": "RDS SSL encryption protects client-to-database connections. A disabled SSL state should be reported when encryption in transit is required.",
+      "observed_mismatch": "Resolved: the predicate now reports disabled or unknown SSL states instead of enabled SSL states.",
+      "change_required": false,
+      "false_positive_impact": "High: correctly enabled SSL can be reported as risky.",
+      "false_negative_impact": "High: disabled SSL can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RDS_202508221521_636677/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "DBInstanceAttribute.DBInstanceId",
+        "DBInstanceSSL.SSLEnabled"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud RDS SSL encrypted connections",
+          "url": "https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/configure-ssl-encryption"
+        }
+      ],
+      "proposed_change": "Implemented: SSLEnabled == No/missing/null triggers risk, and enabled/disabled examples cover the behavior."
+    },
+    {
+      "id": "alicloud.redis_202501081111_459624",
+      "resource_type": "redis",
+      "severity": "high",
+      "policy_sha256": "c6daa7093f5b20c37d5501e78379bf3b18d4cf57c8ca7f8feeb5215b64bc7b8f",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "Flags non-VPC Redis cluster instances and labels the finding as public IP exposure rather than public proxy.",
+      "official_behavior": "Tair/Redis public exposure is controlled by public endpoint state and IP whitelist configuration. NetworkType != VPC does not by itself prove that a public proxy endpoint is enabled.",
+      "observed_mismatch": "Resolved by product decision: wording changed from public proxy to public IP while preserving the existing predicate.",
+      "change_required": false,
+      "false_positive_impact": "High: classic or non-VPC deployment can be reported as public proxy even when no public endpoint is open.",
+      "false_negative_impact": "Medium: actual public endpoints should be caught by endpoint and whitelist fields, not network type alone.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Redis_202501081111_459624/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "DBInstanceAttribute.NetworkType",
+        "DBInstanceAttribute.ReplicationMode",
+        "KVStoreInstance.InstanceId",
+        "KVStoreInstance.InstanceName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Tair/Redis public endpoint and whitelist",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/apply-for-a-public-endpoint"
+        },
+        {
+          "title": "Alibaba Cloud Tair/Redis audit logs",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/use-the-audit-log-feature"
+        }
+      ],
+      "proposed_change": "Implemented: metadata name/description were renamed to 公网IP; Rego logic intentionally unchanged."
+    },
+    {
+      "id": "alicloud.redis_202501081111_469998",
+      "resource_type": "redis",
+      "severity": "high",
+      "policy_sha256": "220c62cd0e4bf23a93a0c9c8cab8f9cd1c1d7ab1f976428015bb5c5f084a5d6c",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-Redis-实例端口对全网开放; logic=public_cidr, 2_input_refs; refs=InstanceNetInfo,SecurityIpGroups",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Redis_202501081111_469998/input.json",
+      "input_references": [
+        "InstanceNetInfo",
+        "SecurityIpGroups"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Tair/Redis public endpoint and whitelist",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/apply-for-a-public-endpoint"
+        },
+        {
+          "title": "Alibaba Cloud Tair/Redis audit logs",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/use-the-audit-log-feature"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.redis_202503062130_462923",
+      "resource_type": "redis",
+      "severity": "low",
+      "policy_sha256": "8c09db61bae803d4f84fc66b75ec355eb83272a4b930315155bc7b32d1c7dd71",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-Redis-实例未启用审计日志; logic=1_input_refs; refs=AuditLogConfig.DbAudit",
+      "official_behavior": "Alibaba Cloud audit/log features record control-plane or data-plane events for investigation and accountability. Disabled trail, audit, access, or firewall logs reduce traceability after incidents.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Some low-risk or short-lived resources may intentionally not enable product audit logs.",
+      "false_negative_impact": "If collector fields do not include the product-specific logging state, disabled logging can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Redis_202503062130_462923/input.json",
+      "input_references": [
+        "AuditLogConfig.DbAudit"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Tair/Redis public endpoint and whitelist",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/apply-for-a-public-endpoint"
+        },
+        {
+          "title": "Alibaba Cloud Tair/Redis audit logs",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/use-the-audit-log-feature"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.redis_202508221135_782313",
+      "resource_type": "redis",
+      "severity": "medium",
+      "policy_sha256": "311967af86d95b4f01cec44376748dfbab066e01bec09546bb61e736a8cf1e9f",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-Redis-专有网络运行; logic=1_input_refs; refs=DBInstanceAttribute",
+      "official_behavior": "Alibaba Cloud VPC provides stronger isolation and routing control than classic or public-network-only deployment modes. Running production compute or data services in VPC is a common security baseline.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Legacy environments may intentionally keep classic-network resources during migration.",
+      "false_negative_impact": "If network type or VPC ID fields are absent, non-VPC resources can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Redis_202508221135_782313/input.json",
+      "input_references": [
+        "DBInstanceAttribute"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Tair/Redis public endpoint and whitelist",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/apply-for-a-public-endpoint"
+        },
+        {
+          "title": "Alibaba Cloud Tair/Redis audit logs",
+          "url": "https://www.alibabacloud.com/help/en/redis/user-guide/use-the-audit-log-feature"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.rocket_mq_202501081111_882671",
+      "resource_type": "rocket_mq",
+      "severity": "medium",
+      "policy_sha256": "1f08a6eb0a1b95603dec2bf35122d4ec2ca20bdb87a102736ebe51698fc063f3",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-RocketMQ-消息队列RocketMQ版公网暴露风险; logic=public_cidr, 2_input_refs; refs=Instance.networkInfo.internetInfo.internetSpec,WhiteList",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_RocketMQ_202501081111_882671/input.json",
+      "input_references": [
+        "Instance.networkInfo.internetInfo.internetSpec",
+        "WhiteList"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud ApsaraMQ for Kafka Internet access",
+          "url": "https://www.alibabacloud.com/help/en/apsaramq-for-kafka/user-guide/access-from-the-internet"
+        },
+        {
+          "title": "Alibaba Cloud ApsaraMQ for RocketMQ Internet access whitelist",
+          "url": "https://www.alibabacloud.com/help/en/apsaramq-for-rocketmq/cloud-message-queue-rocketmq-5-x-series/user-guide/ip-whitelist"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.sas_202501081111_427603",
+      "resource_type": "sas",
+      "severity": "medium",
+      "policy_sha256": "1598ba0093a6f9126cc005c492c13076e0f7df65d0a6801440234312a32ede81",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "Flags running ECS assets whose Security Center agent ClientStatus is not online, including missing/null/offline states.",
+      "official_behavior": "Security Center agent status is a useful host protection signal, but requiring Ultimate edition for every ECS instance is a tenant policy and licensing decision rather than a universal baseline.",
+      "observed_mismatch": "Resolved: the rule no longer requires Ultimate edition by default.",
+      "change_required": false,
+      "false_positive_impact": "High: most small and medium teams will not treat Ultimate edition as a universal requirement.",
+      "false_negative_impact": "Low-medium: offline or missing agents should still be detected by a narrower rule.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_Sas_202501081111_427603/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "Instance.AssetTypeName",
+        "Instance.AuthVersion",
+        "Instance.AuthVersionName",
+        "Instance.ClientStatus",
+        "Instance.InstanceId",
+        "Instance.Status"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Security Center editions and agent status",
+          "url": "https://www.alibabacloud.com/help/en/security-center/user-guide/assets"
+        }
+      ],
+      "proposed_change": "Implemented: default Lite baseline checks agent online/install state only, with examples for offline, online lower-edition, stopped, and missing status."
+    },
+    {
+      "id": "alicloud.slb_202501081111_1075291",
+      "resource_type": "slb",
+      "severity": "medium",
+      "policy_sha256": "b46a6c281f0e7c70c7c1084ff0be5106273b32d5d37377d70d0814fb664995cb",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-SLB-非标端口对全网开放; logic=public_cidr, 6_input_refs; refs=EipAddress,Listeners,LoadBalancer.AddressType,LoadBalancerAttribute.Address,LoadBalancerAttribute.LoadBalancerId,LoadBalancerAttribute.LoadBalancerName",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_SLB_202501081111_1075291/input.json",
+      "input_references": [
+        "EipAddress",
+        "Listeners",
+        "LoadBalancer.AddressType",
+        "LoadBalancerAttribute.Address",
+        "LoadBalancerAttribute.LoadBalancerId",
+        "LoadBalancerAttribute.LoadBalancerName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Server Load Balancer access control",
+          "url": "https://www.alibabacloud.com/help/en/slb/classic-load-balancer/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud ALB listener ACLs",
+          "url": "https://www.alibabacloud.com/help/en/alb/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud NLB security groups",
+          "url": "https://www.alibabacloud.com/help/en/nlb/user-guide/security-group"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.slb_202504031719_475191",
+      "resource_type": "slb",
+      "severity": "low",
+      "policy_sha256": "3cc66bc93299d9028faa3f142262abbb4e01e25757c1d090abb59ffaa7997666",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "阿里云-SLB-公网实例未接或未正确接入WAF; logic=4_input_refs; refs=LoadBalancerAttribute.AddressType,LoadBalancerAttribute.ListenerPortsAndProtocal.ListenerPortAndProtocal,LoadBalancerAttribute.LoadBalancerId,WAFDetail.Resources",
+      "official_behavior": "WAF protects web-layer HTTP/HTTPS services. Public load balancers that expose non-web TCP/UDP services are not necessarily expected to be onboarded to WAF.",
+      "observed_mismatch": "Reviewed: WAF is most applicable to HTTP/HTTPS web listeners, but product decision is to keep the existing public SLB WAF coverage rule unchanged.",
+      "change_required": false,
+      "false_positive_impact": "High: public TCP/UDP or non-web SLB listeners can be reported as missing WAF even when WAF is not applicable.",
+      "false_negative_impact": "Medium: web listeners missing WAF remain valid findings once protocol scoping is fixed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_SLB_202504031719_475191/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "LoadBalancerAttribute.AddressType",
+        "LoadBalancerAttribute.ListenerPortsAndProtocal.ListenerPortAndProtocal",
+        "LoadBalancerAttribute.LoadBalancerId",
+        "WAFDetail.Resources"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud WAF protection for cloud resources",
+          "url": "https://www.alibabacloud.com/help/en/waf/web-application-firewall-3-0/user-guide/add-cloud-services-to-waf"
+        }
+      ],
+      "proposed_change": "User confirmed keep/no code change."
+    },
+    {
+      "id": "alicloud.slb_202504091156_104651",
+      "resource_type": "slb",
+      "severity": "medium",
+      "policy_sha256": "5628426d5ffa810e0c986ce64550079ed911f86328e73370002621fa9265bf94",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-SLB-互联网实例ACL网段掩码小于8; logic=2_input_refs; refs=Listeners,LoadBalancer.AddressType",
+      "official_behavior": "Alibaba Cloud network controls such as security groups, listener ACLs, endpoint whitelists, and database IP whitelists are intended to restrict who can reach a public endpoint. Public endpoints combined with 0.0.0.0/0, ::/0, disabled ACLs, or very broad CIDR ranges create Internet-reachable exposure.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Business-approved Internet exposure can still be reported and should be triaged by asset criticality and compensating controls.",
+      "false_negative_impact": "If collectors miss listener ACLs, security groups, public endpoint state, or IP whitelist fields, real exposure can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_SLB_202504091156_104651/input.json",
+      "input_references": [
+        "Listeners",
+        "LoadBalancer.AddressType"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Server Load Balancer access control",
+          "url": "https://www.alibabacloud.com/help/en/slb/classic-load-balancer/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud ALB listener ACLs",
+          "url": "https://www.alibabacloud.com/help/en/alb/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud NLB security groups",
+          "url": "https://www.alibabacloud.com/help/en/nlb/user-guide/security-group"
+        }
+      ]
+    },
+    {
+      "id": "alicloud.slb_202504091159_993485",
+      "resource_type": "slb",
+      "severity": "low",
+      "policy_sha256": "646f6244677eac153d52a8bef01a9029288c99f04db2990b0d3aa3a404dafb94",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-07",
+      "current_logic": "Flags public CLB standard web ports 80/443 when ACL is off or whitelist contains 0.0.0.0/0; public state is detected from LoadBalancer/LoadBalancerAttribute AddressType or EIP binding.",
+      "official_behavior": "Public CLB listener exposure should be evaluated by listener port, ACL status, and ACL entries. A rule named standard web ports should focus on 80/443 behavior.",
+      "observed_mismatch": "Resolved: the ACL-off branch now checks standard web ports instead of non-standard ports.",
+      "change_required": false,
+      "false_positive_impact": "Medium: non-standard ports can appear in the standard web-port finding.",
+      "false_negative_impact": "Low-medium: standard 80/443 listeners with ACL off may not be consistently represented.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_SLB_202504091159_993485/input.json",
+      "blocking_reason": "",
+      "input_references": [
+        "Listeners",
+        "LoadBalancer.AddressType",
+        "LoadBalancerAttribute.Address",
+        "LoadBalancerAttribute.LoadBalancerId",
+        "LoadBalancerAttribute.LoadBalancerName"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Server Load Balancer access control",
+          "url": "https://www.alibabacloud.com/help/en/slb/classic-load-balancer/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud ALB listener ACLs",
+          "url": "https://www.alibabacloud.com/help/en/alb/user-guide/access-control"
+        },
+        {
+          "title": "Alibaba Cloud NLB security groups",
+          "url": "https://www.alibabacloud.com/help/en/nlb/user-guide/security-group"
+        }
+      ],
+      "proposed_change": "Implemented: fixed standard-port predicate, added EIP/AddressType compatibility, and covered standard/non-standard/EIP examples."
+    },
+    {
+      "id": "alicloud.sls_202508181708_1003938",
+      "resource_type": "sls",
+      "severity": "high",
+      "policy_sha256": "5794c8591098aea30fd501137a70e2e1083af51433f5af088ab73fd397ac0173",
+      "review_status": "official_reviewed",
+      "reviewed_by": "codex",
+      "reviewed_at": "2026-05-06",
+      "current_logic": "阿里云-SLS-Project Policy匿名访问; logic=principal, condition, json_policy, 1_input_refs; refs=PolicyStatus.body",
+      "official_behavior": "Alibaba Cloud resource policies and triggers can allow anonymous or public principals. Anonymous access to data or function endpoints is risky when not explicitly intended and constrained.",
+      "observed_mismatch": "No official behavior mismatch found in this review pass; remaining collector/sample coverage is tracked separately by rules validate and coverage.",
+      "change_required": false,
+      "false_positive_impact": "Public-by-design endpoints may be reported and require business context.",
+      "false_negative_impact": "If policy parsing misses equivalent wildcard principals, conditions, or policy shapes, anonymous access can be missed.",
+      "test_fixture": "rules/alicloud/ALI_CLOUD_SLS_202508181708_1003938/input.json",
+      "input_references": [
+        "PolicyStatus.body"
+      ],
+      "official_docs": [
+        {
+          "title": "Alibaba Cloud Simple Log Service project policy",
+          "url": "https://www.alibabacloud.com/help/en/sls/user-guide/manage-a-project-policy"
+        }
+      ]
+    }
+  ]
+}

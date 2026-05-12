@@ -17,6 +17,7 @@ package cloudstoragegateway
 
 import (
 	"context"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/sgw"
 	"github.com/cloudrec/alicloud/collector"
@@ -50,8 +51,9 @@ func GetCloudStorageGatewayStorageBundleDetail(ctx context.Context, service sche
 
 	describeStorageBundlesRequest := sgw.CreateDescribeStorageBundlesRequest()
 	describeStorageBundlesRequest.Scheme = "https"
-	describeStorageBundlesRequest.PageSize = requests.NewInteger(100)
+	describeStorageBundlesRequest.PageSize = requests.NewInteger(50)
 	describeStorageBundlesRequest.PageNumber = requests.NewInteger(1)
+	describeStorageBundlesRequest.BackendBucketRegionId = storageBundleBackendRegion(ctx)
 
 	for {
 		response, err := cli.DescribeStorageBundles(describeStorageBundlesRequest)
@@ -89,4 +91,11 @@ func GetCloudStorageGatewayStorageBundleDetail(ctx context.Context, service sche
 	}
 
 	return nil
+}
+
+func storageBundleBackendRegion(ctx context.Context) string {
+	if regionID, ok := ctx.Value(constant.RegionId).(string); ok && regionID != "" && regionID != "global" {
+		return regionID
+	}
+	return "cn-hangzhou"
 }

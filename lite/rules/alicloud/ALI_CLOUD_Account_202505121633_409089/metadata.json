@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.account_202505121633_409089",
+  "name": "阿里云-RAM-User登录控制台未强制启用MFA",
+  "version": "legacy",
+  "description": "User登录控制台未强制启用MFA",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "account",
+  "asset_type": "account",
+  "categories": [
+    "身份安全"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "account"
+  ],
+  "query": "data.cloudrec_9100003.messages",
+  "entrypoint": "messages",
+  "legacy": {
+    "advice": "在 RAM 全局安全设置中强制控制台登录用户启用 MFA，并为仍需登录控制台的 RAM User 逐一绑定 MFA；不再需要控制台登录的用户应关闭登录权限。",
+    "categoryList": [
+      "身份安全"
+    ],
+    "code": "ALI_CLOUD_Account_202505121633_409089",
+    "context": "实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。",
+    "description": "User登录控制台未强制启用MFA",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RAM-User登录控制台未强制启用MFA",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Account"
+  }
+}

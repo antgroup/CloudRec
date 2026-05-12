@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.oss_202501081111_846565",
+  "name": "阿里云-OSS-跨域来源配置包含 *",
+  "version": "legacy",
+  "description": "OSS跨域来源配置包含 *",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "oss",
+  "asset_type": "oss",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "oss"
+  ],
+  "query": "data.cloudrec_3600005.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "收敛 OSS CORS 配置，移除 Origin 为 * 的规则，仅允许可信域名、必要方法和必要请求头；变更后验证前端跨域访问仍满足业务需求。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_846565",
+    "context": null,
+    "description": "OSS跨域来源配置包含 *",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-OSS-跨域来源配置包含 *",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+  }
+}

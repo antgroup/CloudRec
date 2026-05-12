@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.cloudfw_202501081111_104298",
+  "name": "阿里云-CloudFW-云防火墙存在宽松出向放行策略",
+  "version": "legacy",
+  "description": "云防火墙存在出向放行到 Any/0.0.0.0/0 的宽松策略",
+  "severity": "low",
+  "provider": "alicloud",
+  "service": "cloudfw",
+  "asset_type": "cloudfw",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "cloudfw"
+  ],
+  "query": "data.cloudfw_forbidden_net_out_by_default_2400001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "复核云防火墙访问控制策略，删除 Any/0.0.0.0/0 到非必要端口的放行；按业务系统、方向、协议和端口建立最小放行规则。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_Cloudfw_202501081111_104298",
+    "context": null,
+    "description": "云防火墙存在出向放行到 Any/0.0.0.0/0 的宽松策略",
+    "level": "Low",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-CloudFW-云防火墙存在宽松出向放行策略",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Cloudfw"
+  }
+}

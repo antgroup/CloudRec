@@ -1,0 +1,50 @@
+[
+  {
+    "name": "offline-agent",
+    "want_findings": 1,
+    "input": {
+      "Instance": {
+        "InstanceId": "i-ens-offline"
+      },
+      "InstanceInstalledAegis": {
+        "Instance": {
+          "InstanceId": "i-ens-offline",
+          "ClientStatus": "offline",
+          "AuthVersion": 1
+        }
+      }
+    }
+  },
+  {
+    "name": "online-lower-edition-agent",
+    "want_findings": 0,
+    "input": {
+      "Instance": {
+        "InstanceId": "i-ens-online"
+      },
+      "InstanceInstalledAegis": {
+        "Instance": {
+          "InstanceId": "i-ens-online",
+          "ClientStatus": "online",
+          "AuthVersion": 1
+        }
+      }
+    }
+  },
+  {
+    "name": "uninstalled-agent",
+    "want_findings": 1,
+    "input": {
+      "Instance": {
+        "InstanceId": "i-ens-uninstalled"
+      },
+      "InstanceInstalledAegis": {
+        "Instance": {
+          "InstanceId": "i-ens-uninstalled",
+          "ClientSubStatus": "uninstalled",
+          "AuthVersion": 7
+        }
+      }
+    }
+  }
+]

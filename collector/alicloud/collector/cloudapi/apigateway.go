@@ -17,6 +17,8 @@ package cloudapi
 
 import (
 	"context"
+	"errors"
+
 	cloudapi20160714 "github.com/alibabacloud-go/cloudapi-20160714/v5/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
@@ -70,6 +72,10 @@ func GetAPIGatewayDetail(ctx context.Context, service schema.ServiceInterface, r
 
 // listAPIs 获取API列表
 func listAPIs(ctx context.Context, c *cloudapi20160714.Client) ([]*cloudapi20160714.DescribeApisResponseBodyApiSummarysApiSummary, error) {
+	if c == nil {
+		return nil, errors.New("cloudapi client is nil")
+	}
+
 	var apis []*cloudapi20160714.DescribeApisResponseBodyApiSummarysApiSummary
 
 	req := &cloudapi20160714.DescribeApisRequest{}
@@ -83,26 +89,50 @@ func listAPIs(ctx context.Context, c *cloudapi20160714.Client) ([]*cloudapi20160
 			log.CtxLogger(ctx).Error("DescribeApis error", zap.Error(err))
 			return nil, err
 		}
+		if resp == nil || resp.Body == nil {
+			return nil, errors.New("DescribeApis returned nil response body")
+		}
 
-		apis = append(apis, resp.Body.ApiSummarys.ApiSummary...)
-		count += int32(len(resp.Body.ApiSummarys.ApiSummary))
+		pageAPIs := describeAPIsPageSummaries(resp.Body)
+		apis = append(apis, pageAPIs...)
+		count += int32(len(pageAPIs))
 
-		if count >= *resp.Body.TotalCount || len(resp.Body.ApiSummarys.ApiSummary) < constant.DefaultPageSize {
+		totalCount := tea.Int32Value(resp.Body.TotalCount)
+		if totalCount == 0 || count >= totalCount || len(pageAPIs) < constant.DefaultPageSize {
 			break
 		}
-		req.PageNumber = tea.Int32(*resp.Body.PageNumber + 1)
+
+		currentPage := tea.Int32Value(resp.Body.PageNumber)
+		if currentPage == 0 {
+			currentPage = tea.Int32Value(req.PageNumber)
+		}
+		req.PageNumber = tea.Int32(currentPage + 1)
 	}
 
 	return apis, nil
 }
 
+func describeAPIsPageSummaries(body *cloudapi20160714.DescribeApisResponseBody) []*cloudapi20160714.DescribeApisResponseBodyApiSummarysApiSummary {
+	if body == nil || body.ApiSummarys == nil || len(body.ApiSummarys.ApiSummary) == 0 {
+		return nil
+	}
+	return body.ApiSummarys.ApiSummary
+}
+
 func describeAPI(ctx context.Context, c *cloudapi20160714.Client, api *cloudapi20160714.DescribeApisResponseBodyApiSummarysApiSummary) *cloudapi20160714.DescribeApiResponseBody {
+	if c == nil || api == nil || api.ApiId == nil || *api.ApiId == "" {
+		return nil
+	}
+
 	req := &cloudapi20160714.DescribeApiRequest{}
 	req.ApiId = api.ApiId
 
 	resp, err := c.DescribeApi(req)
 	if err != nil {
-		log.CtxLogger(ctx).Error("DescribeApi error", zap.Error(err), zap.String("apiId", *api.ApiId))
+		log.CtxLogger(ctx).Error("DescribeApi error", zap.Error(err), zap.String("apiId", tea.StringValue(api.ApiId)))
+		return nil
+	}
+	if resp == nil {
 		return nil
 	}
 

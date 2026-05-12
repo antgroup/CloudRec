@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.max_compute_202501081111_193748",
+  "name": "阿里云-MaxCompute-MaxCompute 项目无白名单防护风险",
+  "version": "legacy",
+  "description": "MaxCompute 项目无白名单防护风险",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "max",
+  "asset_type": "max_compute",
+  "categories": [
+    "数据保护",
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "max"
+  ],
+  "query": "data.cloudrec_2300005.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "参考 https://help.aliyun.com/zh/maxcompute/security-and-compliance/manage-ip-address-whitelists 添加白名单",
+    "categoryList": [
+      "数据保护",
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748",
+    "context": "MaxCompute 项目 {$.project_name} 无白名单防护",
+    "description": "MaxCompute 项目无白名单防护风险",
+    "level": "High",
+    "link": "https://help.aliyun.com/zh/maxcompute/security-and-compliance/manage-ip-address-whitelists",
+    "linkedDataList": null,
+    "name": "阿里云-MaxCompute-MaxCompute 项目无白名单防护风险",
+    "platform": "ALI_CLOUD",
+    "resourceType": "MaxCompute"
+  }
+}

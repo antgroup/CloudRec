@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ram_global_config_202501081111_417007",
+  "name": "阿里云-IMS-云账号未启用SSO功能",
+  "version": "legacy",
+  "description": "云账号未启用SSO功能",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "account",
+  "asset_type": "account",
+  "categories": [
+    "身份安全"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "account"
+  ],
+  "query": "data.ram_sso_enabled_2200011.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "优先接入企业身份提供方并启用 RAM SSO/身份联合登录；如暂不启用，请记录例外原因并确保高权限账号启用 MFA 和最小权限。",
+    "categoryList": [
+      "身份安全"
+    ],
+    "code": "ALI_CLOUD_Ram Global Config_202501081111_417007",
+    "context": null,
+    "description": "云账号未启用SSO功能",
+    "level": "High",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-IMS-云账号未启用SSO功能",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Account"
+  }
+}

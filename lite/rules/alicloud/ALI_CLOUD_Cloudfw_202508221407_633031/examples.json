@@ -1,0 +1,107 @@
+[
+  {
+    "name": "inbound-public-non-standard-port",
+    "want_findings": 1,
+    "input": {
+      "Policy": {
+        "AclUuid": "acl-in-public-ssh",
+        "Direction": "in",
+        "AclAction": "accept",
+        "Proto": "TCP",
+        "DestPort": "22",
+        "Source": "0.0.0.0/0",
+        "SourceGroupCidrs": [
+          "0.0.0.0/0"
+        ],
+        "Destination": "203.0.113.10",
+        "DestinationGroupCidrs": [
+          "203.0.113.10/32"
+        ]
+      }
+    }
+  },
+  {
+    "name": "inbound-public-standard-port",
+    "want_findings": 0,
+    "input": {
+      "Policy": {
+        "AclUuid": "acl-in-public-https",
+        "Direction": "in",
+        "AclAction": "accept",
+        "Proto": "TCP",
+        "DestPort": "443",
+        "Source": "0.0.0.0/0",
+        "SourceGroupCidrs": [
+          "0.0.0.0/0"
+        ],
+        "Destination": "203.0.113.10",
+        "DestinationGroupCidrs": [
+          "203.0.113.10/32"
+        ]
+      }
+    }
+  },
+  {
+    "name": "inbound-private-source-non-standard-port",
+    "want_findings": 0,
+    "input": {
+      "Policy": {
+        "AclUuid": "acl-in-private-admin",
+        "Direction": "in",
+        "AclAction": "accept",
+        "Proto": "TCP",
+        "DestPort": "22",
+        "Source": "10.0.0.0/8",
+        "SourceGroupCidrs": [
+          "10.0.0.0/8"
+        ],
+        "Destination": "203.0.113.10",
+        "DestinationGroupCidrs": [
+          "203.0.113.10/32"
+        ]
+      }
+    }
+  },
+  {
+    "name": "outbound-public-non-standard-port",
+    "want_findings": 1,
+    "input": {
+      "Policy": {
+        "AclUuid": "acl-out-public-db",
+        "Direction": "out",
+        "AclAction": "log",
+        "Proto": "TCP",
+        "DestPort": "3306",
+        "Source": "10.0.1.10",
+        "SourceGroupCidrs": [
+          "10.0.0.0/8"
+        ],
+        "Destination": "0.0.0.0/0",
+        "DestinationGroupCidrs": [
+          "0.0.0.0/0"
+        ]
+      }
+    }
+  },
+  {
+    "name": "drop-policy-not-risky",
+    "want_findings": 0,
+    "input": {
+      "Policy": {
+        "AclUuid": "acl-drop-public-ssh",
+        "Direction": "in",
+        "AclAction": "drop",
+        "Proto": "TCP",
+        "DestPort": "22",
+        "Source": "0.0.0.0/0",
+        "SourceGroupCidrs": [
+          "0.0.0.0/0"
+        ],
+        "Destination": "203.0.113.10",
+        "DestinationGroupCidrs": [
+          "203.0.113.10/32"
+        ]
+      }
+    }
+  }
+]

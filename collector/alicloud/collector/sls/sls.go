@@ -17,6 +17,8 @@ package sls
 
 import (
 	"context"
+	"sync"
+
 	"go.uber.org/zap"
 
 	"github.com/core-sdk/constant"
@@ -27,6 +29,12 @@ import (
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
+)
+
+const (
+	slsPageSize            int32 = 500
+	slsProjectConcurrency        = 4
+	slsLogStoreConcurrency       = 4
 )
 
 func GetSLSResource() schema.Resource {
@@ -80,17 +88,17 @@ func GetSLSResource() schema.Resource {
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).SLS
 	listProjectRequest := &sls20201230.ListProjectRequest{}
-	listProjectRequest.Size = tea.Int32(500)
+	listProjectRequest.FetchQuota = tea.Bool(true)
+	listProjectRequest.Size = tea.Int32(slsPageSize)
 	listProjectRequest.Offset = tea.Int32(0)
 	count := 0
 
-	runtime := &util.RuntimeOptions{
-		ConnectTimeout: tea.Int(10000),
-		ReadTimeout:    tea.Int(10000),
-	}
 	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		headers := make(map[string]*string)
-		projects, err := cli.ListProjectWithOptions(listProjectRequest, headers, runtime)
+		projects, err := cli.ListProjectWithOptions(listProjectRequest, headers, slsRuntime())
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListProjectWithOptions error", zap.Error(err))
 			return err
@@ -100,21 +108,15 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 			return nil
 		}
 
-		for _, project := range projects.Body.Projects {
-			res <- Detail{
-				RegionId:     cli.RegionId,
-				LogProject:   describeProject(ctx, cli, *project.ProjectName),
-				PolicyStatus: describeProjectPolicy(ctx, cli, *project.ProjectName),
-				Alert:        describeAlert(ctx, cli, *project.ProjectName),
-				LogStore:     describeLogStore(ctx, cli, *project.ProjectName),
-			}
-			count++
+		if err := collectProjects(ctx, cli, projects.Body.Projects, res); err != nil {
+			return err
 		}
 
-		if count >= int(*projects.Body.Total) {
+		count += len(projects.Body.Projects)
+		if count >= int(tea.Int64Value(projects.Body.Total)) {
 			break
 		}
-		listProjectRequest.Offset = tea.Int32(*listProjectRequest.Offset + 1)
+		listProjectRequest.Offset = tea.Int32(tea.Int32Value(listProjectRequest.Offset) + int32(len(projects.Body.Projects)))
 	}
 
 	return nil
@@ -136,11 +138,90 @@ type Detail struct {
 	Alert []*sls20201230.Alert
 }
 
+func slsRuntime() *util.RuntimeOptions {
+	return &util.RuntimeOptions{
+		Autoretry:      tea.Bool(true),
+		MaxAttempts:    tea.Int(1),
+		ConnectTimeout: tea.Int(10000),
+		ReadTimeout:    tea.Int(10000),
+	}
+}
+
+func collectProjects(ctx context.Context, cli *sls20201230.Client, projects []*sls20201230.Project, res chan<- any) error {
+	sem := make(chan struct{}, slsProjectConcurrency)
+	var wg sync.WaitGroup
+
+	for _, project := range projects {
+		if project == nil || tea.StringValue(project.ProjectName) == "" {
+			continue
+		}
+		select {
+		case <-ctx.Done():
+			wg.Wait()
+			return ctx.Err()
+		case sem <- struct{}{}:
+		}
+
+		wg.Add(1)
+		go func(project *sls20201230.Project) {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			detail := collectProjectDetail(ctx, cli, project)
+			select {
+			case <-ctx.Done():
+			case res <- detail:
+			}
+		}(project)
+	}
+
+	wg.Wait()
+	return ctx.Err()
+}
+
+func collectProjectDetail(ctx context.Context, cli *sls20201230.Client, project *sls20201230.Project) Detail {
+	projectName := tea.StringValue(project.ProjectName)
+	logProject := project
+	if project.Quota == nil {
+		if detail := describeProject(ctx, cli, projectName); detail != nil {
+			logProject = detail
+		}
+	}
+
+	var (
+		policyStatus *sls20201230.GetProjectPolicyResponse
+		alerts       []*sls20201230.Alert
+		logStores    []*sls20201230.Logstore
+		wg           sync.WaitGroup
+	)
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		policyStatus = describeProjectPolicy(ctx, cli, projectName)
+	}()
+	go func() {
+		defer wg.Done()
+		alerts = describeAlert(ctx, cli, projectName)
+	}()
+	go func() {
+		defer wg.Done()
+		logStores = describeLogStore(ctx, cli, projectName)
+	}()
+	wg.Wait()
+
+	return Detail{
+		RegionId:     cli.RegionId,
+		LogProject:   logProject,
+		PolicyStatus: policyStatus,
+		Alert:        alerts,
+		LogStore:     logStores,
+	}
+}
+
 // Get project info
 func describeProject(ctx context.Context, cli *sls20201230.Client, projectName string) *sls20201230.Project {
-	runtime := &util.RuntimeOptions{}
 	headers := make(map[string]*string)
-	projectDetail, err := cli.GetProjectWithOptions(tea.String(projectName), headers, runtime)
+	projectDetail, err := cli.GetProjectWithOptions(tea.String(projectName), headers, slsRuntime())
 	if err != nil {
 		log.CtxLogger(ctx).Warn("GetProjectWithOptions error", zap.Error(err))
 		return nil
@@ -151,9 +232,8 @@ func describeProject(ctx context.Context, cli *sls20201230.Client, projectName s
 
 // Check whether the authorization policy is set
 func describeProjectPolicy(ctx context.Context, cli *sls20201230.Client, projectName string) *sls20201230.GetProjectPolicyResponse {
-	runtime := &util.RuntimeOptions{}
 	headers := make(map[string]*string)
-	result, err := cli.GetProjectPolicyWithOptions(tea.String(projectName), headers, runtime)
+	result, err := cli.GetProjectPolicyWithOptions(tea.String(projectName), headers, slsRuntime())
 	if err != nil {
 		log.CtxLogger(ctx).Warn("GetProjectPolicyWithOptions error", zap.Error(err))
 		return nil
@@ -166,39 +246,77 @@ func describeProjectPolicy(ctx context.Context, cli *sls20201230.Client, project
 func describeLogStore(ctx context.Context, cli *sls20201230.Client, projectName string) []*sls20201230.Logstore {
 	listLogStoresRequest := &sls20201230.ListLogStoresRequest{}
 	listLogStoresRequest.Offset = tea.Int32(0)
-	listLogStoresRequest.Size = tea.Int32(500)
+	listLogStoresRequest.Size = tea.Int32(slsPageSize)
 	count := 0
 
 	var result []*sls20201230.Logstore
 
 	for {
-		runtime := &util.RuntimeOptions{}
+		if err := ctx.Err(); err != nil {
+			return result
+		}
 		headers := make(map[string]*string)
 
-		logStores, err := cli.ListLogStoresWithOptions(tea.String(projectName), listLogStoresRequest, headers, runtime)
+		logStores, err := cli.ListLogStoresWithOptions(tea.String(projectName), listLogStoresRequest, headers, slsRuntime())
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListLogStoresWithOptions error", zap.Error(err))
 			return nil
 		}
 
-		for _, logStore := range logStores.Body.Logstores {
-			runtime = &util.RuntimeOptions{}
-			headers = make(map[string]*string)
-			detail, err := cli.GetLogStoreWithOptions(tea.String(projectName), tea.String(*logStore), headers, runtime)
-			if err != nil {
-				log.CtxLogger(ctx).Warn("GetLogStoreWithOptions error", zap.Error(err))
-				return nil
-			}
-			result = append(result, detail.Body)
-			count++
-		}
+		result = append(result, describeLogStoreDetails(ctx, cli, projectName, logStores.Body.Logstores)...)
+		count += len(logStores.Body.Logstores)
 
-		if count >= int(*logStores.Body.Total) {
+		if count >= int(tea.Int32Value(logStores.Body.Total)) {
 			break
 		}
-		listLogStoresRequest.Offset = tea.Int32(*listLogStoresRequest.Offset + 1)
+		listLogStoresRequest.Offset = tea.Int32(tea.Int32Value(listLogStoresRequest.Offset) + int32(len(logStores.Body.Logstores)))
 	}
 
+	return result
+}
+
+func describeLogStoreDetails(ctx context.Context, cli *sls20201230.Client, projectName string, logStores []*string) []*sls20201230.Logstore {
+	details := make([]*sls20201230.Logstore, len(logStores))
+	sem := make(chan struct{}, slsLogStoreConcurrency)
+	var wg sync.WaitGroup
+
+	for i, logStore := range logStores {
+		name := tea.StringValue(logStore)
+		if name == "" {
+			continue
+		}
+		select {
+		case <-ctx.Done():
+			wg.Wait()
+			return compactLogStores(details)
+		case sem <- struct{}{}:
+		}
+
+		wg.Add(1)
+		go func(i int, name string) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			headers := make(map[string]*string)
+			detail, err := cli.GetLogStoreWithOptions(tea.String(projectName), tea.String(name), headers, slsRuntime())
+			if err != nil {
+				log.CtxLogger(ctx).Warn("GetLogStoreWithOptions error", zap.Error(err))
+				return
+			}
+			details[i] = detail.Body
+		}(i, name)
+	}
+
+	wg.Wait()
+	return compactLogStores(details)
+}
+
+func compactLogStores(logStores []*sls20201230.Logstore) []*sls20201230.Logstore {
+	result := make([]*sls20201230.Logstore, 0, len(logStores))
+	for _, logStore := range logStores {
+		if logStore != nil {
+			result = append(result, logStore)
+		}
+	}
 	return result
 }
 
@@ -209,10 +327,9 @@ func describeAlert(ctx context.Context, cli *sls20201230.Client, projectName str
 		Offset: tea.Int32(0),
 		Size:   tea.Int32(10),
 	}
-	runtime := &util.RuntimeOptions{}
 	headers := make(map[string]*string)
 
-	result, err := cli.ListAlertsWithOptions(tea.String(projectName), listAlertsRequest, headers, runtime)
+	result, err := cli.ListAlertsWithOptions(tea.String(projectName), listAlertsRequest, headers, slsRuntime())
 	if err != nil {
 		log.CtxLogger(ctx).Warn("ListAlertsWithOptions error", zap.Error(err))
 		return nil

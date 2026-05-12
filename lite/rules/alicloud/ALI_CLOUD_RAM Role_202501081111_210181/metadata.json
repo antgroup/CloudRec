@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ram_role_202501081111_210181",
+  "name": "阿里云-RAM-RAM角色授权给外部账号",
+  "version": "legacy",
+  "description": "RAM角色授权给外部账号",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "ram",
+  "asset_type": "ram_role",
+  "categories": [
+    "身份安全"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ram"
+  ],
+  "query": "data.other_account_assume_role_3600012.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "如外部账号非业务自行添加，请联系安全工程师进行入侵排查；如为业务自行添加，驳回工单并说明用途。",
+    "categoryList": [
+      "身份安全"
+    ],
+    "code": "ALI_CLOUD_RAM Role_202501081111_210181",
+    "context": "角色 {$.role_name} 允许外部账号 {$.other_account_assume_role} 扮演，存在潜在后门风险",
+    "description": "RAM角色授权给外部账号",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RAM-RAM角色授权给外部账号",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RAM Role"
+  }
+}

@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["数据保护"],"code":"ALI_CLOUD_OSS_202501081111_160028","context":null,"description":"防盗链设置包含 *","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-OSS-Bucket 防盗链设置包含 *","platform":"ALI_CLOUD","resourceType":"OSS"}
+{"advice":"从 OSS Referer 防盗链配置中移除 *，仅保留可信域名；根据业务需要关闭空 Referer 访问，并验证外链访问不再绕过限制。","categoryList":["数据保护"],"code":"ALI_CLOUD_OSS_202501081111_160028","context":null,"description":"防盗链设置包含 *","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-OSS-Bucket 防盗链设置包含 *","platform":"ALI_CLOUD","resourceType":"OSS"}

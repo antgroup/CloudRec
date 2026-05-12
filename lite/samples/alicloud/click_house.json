@@ -1,0 +1,120 @@
+{
+  "resource_type": "click_house",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "DBCluster": {
+      "EngineMinorVersion": "",
+      "ResourceGroupId": "wzETx19GcgdjqSC57g",
+      "ControlVersion": "j2",
+      "VpcIpAddr": "",
+      "orderId": "",
+      "Port": 8123,
+      "DBClusterType": "",
+      "ZookeeperClass": "",
+      "SupportBackup": 0,
+      "DBNodeCount": 1,
+      "PublicConnectionString": "",
+      "LockReason": "",
+      "ExtStorageSize": 0,
+      "Engine": "",
+      "Tags": {
+        "Tag": []
+      },
+      "DBNodeStorage": 100,
+      "EncryptionType": "",
+      "IsExpired": "98WCA",
+      "EngineVersion": "",
+      "StorageType": "UBinmlmhB",
+      "VSwitchId": "763RdQFzFJlHWh5E5dA3BxmXg",
+      "DBClusterDescription": "C7AAQAv3OxjTErB3mMk9",
+      "LockMode": "z8H13S",
+      "PayType": "hjFHYiPS",
+      "ScaleOutStatus": {
+        "Progress": "",
+        "Ratio": ""
+      },
+      "VpcId": "yQOi6Aug7HQZ73MJmi8YVBAMb",
+      "dbClusterId": "",
+      "VpcCloudInstanceId": "0ttZZSFhU2i7jocZXxUu",
+      "ZoneIdVswitchMap": null,
+      "SupportMysqlPort": false,
+      "ConnectionString": "RG8jYZvLzFAn1sLF88QYUoAsIlkyLGjkjdJC2ODyaOmKE7bd",
+      "ExpireTime": "",
+      "Category": "Y7bFX",
+      "EngineLatestMinorVersion": "",
+      "MaintainAutoType": false,
+      "DBClusterId": "AAYlWxqlFOldBAAEWPzl",
+      "EncryptionKey": "",
+      "DBClusterNetworkType": "EHu",
+      "ExtStorageType": "",
+      "CommodityCode": "oBkp7kYlzytqfXllIZTwR9L",
+      "SupportOss": 0,
+      "SupportHttpsPort": false,
+      "Bid": "YI8Il",
+      "MaintainTime": "",
+      "ZoneId": "YiezuTK7JigSE",
+      "PublicIpAddr": "",
+      "DBClusterStatus": "c9C1lqx",
+      "CreateTime": "bG6MQjQJh63Z5Tzw0eKL",
+      "DBNodeClass": "cE",
+      "RegionId": "WXhjwhyk6rx",
+      "PublicPort": "",
+      "AliUid": "lgigU1AsrxyDLj2T",
+      "AppointmentRestartTime": ""
+    },
+    "NetInfoItem": [
+      {
+        "HttpPort": "Vsb3",
+        "VpcId": "6oeksyDnKFOQy8mc99zyZTQQs",
+        "MySQLPort": "vWY3",
+        "JdbcPort": "yND6",
+        "VSwitchId": "TCGEdM2aJGpdtJc9Mn7mgExrC",
+        "ConnectionString": "LWIbc0zurtdUdvDtlXKGC5Aaz9SRYbZSNwNVn7u5C1a5oPv6",
+        "IPAddress": "3whycCKNe",
+        "NetType": "UIo",
+        "HttpsPort": "AoAf"
+      },
+      {
+        "NetType": "Public"
+      },
+      {
+        "NetType": "Private"
+      },
+      {
+        "HttpPort": "LU2n",
+        "VpcId": "iboUEnpxpLlkP0QSEZJafEu0C",
+        "MySQLPort": "PLYY",
+        "JdbcPort": "MZbn",
+        "VSwitchId": "6tX2c7gHVzyiJCKs4f1Ta2aFk",
+        "ConnectionString": "ieFlXABnXyhVoR0bPWRo3tcYrhb835NafMIoJDKWo5PGyZan",
+        "IPAddress": "NPfmxewou",
+        "NetType": "1Dw",
+        "HttpsPort": "trcP"
+      }
+    ],
+    "IPArray": [
+      {
+        "DBClusterIPArrayName": "BrnBBO5",
+        "SecurityIPList": "kgFbxwwWr",
+        "DBClusterIPArrayAttribute": ""
+      },
+      {
+        "DBClusterIPArrayName": "tas",
+        "SecurityIPList": "8iVIAABh5oVc35TJIbIQXC1a4Sk5mqKWYAnZn34InbpZvkEoO3nPkm8QIUzS5qtTgspNcrYa7RVmbU54qiVoHUhoOjpGitnd8xNPnlhgrWlBqOY8UCkziHYq",
+        "DBClusterIPArrayAttribute": ""
+      },
+      {
+        "DBClusterIPArrayName": "6KWXdtl",
+        "SecurityIPList": "Mhlwy1njP",
+        "DBClusterIPArrayAttribute": ""
+      },
+      {
+        "DBClusterIPArrayName": "FQj",
+        "SecurityIPList": "hZ6ixlpE94dVsnHGI8FGONB8KnOtbfpsWoi9p9LCHVIPoJUIaJEUFoR3NLvdeqiEghbNNBFJpZMA3PNKyMWuh9b1whfZq7bqpgYWxrFc414x07We5NVdK89Z",
+        "DBClusterIPArrayAttribute": ""
+      }
+    ]
+  }
+}

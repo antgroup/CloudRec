@@ -1,1 +1,0 @@
-{"advice":null,"categoryList":["数据保护"],"code":"ALI_CLOUD_SLB_202503031456_509683","context":null,"description":"listener的监听协议使用了 UDP、TCP、HTTP，这类协议往往是不安全的","level":"Medium","link":null,"linkedDataList":null,"name":"阿里云-SLB-监听器采用不安全的监听协议","platform":"ALI_CLOUD","resourceType":"SLB"}

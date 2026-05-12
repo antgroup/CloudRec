@@ -50,14 +50,13 @@ type DTSInstanceDetail struct {
 func GetDTSInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).DTS
 
-	// 1. DescirbeMigrationJobs - 获取DTS迁移任务列表
-	request := dts.CreateDescirbeMigrationJobsRequest()
-	request.Scheme = "https"
+	// 1. DescribeMigrationJobs - 获取DTS迁移任务列表
+	request := newDescribeMigrationJobsRequest()
 	var count int64 = 0
 	for {
 		response, err := cli.DescirbeMigrationJobs(request)
 		if err != nil {
-			log.CtxLogger(ctx).Warn("DescirbeMigrationJobs error", zap.Error(err))
+			log.CtxLogger(ctx).Warn("DescribeMigrationJobs error", zap.Error(err))
 			return err
 		}
 
@@ -83,6 +82,13 @@ func GetDTSInstanceDetail(ctx context.Context, service schema.ServiceInterface, 
 	}
 
 	return nil
+}
+
+func newDescribeMigrationJobsRequest() *dts.DescirbeMigrationJobsRequest {
+	request := dts.CreateDescirbeMigrationJobsRequest()
+	request.InitWithApiInfo("Dts", "2017-06-01", "DescribeMigrationJobs", "dts", "openAPI")
+	request.Scheme = "https"
+	return request
 }
 
 // describeMigrationJobDetail 获取DTS迁移任务详细信息

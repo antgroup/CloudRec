@@ -22,6 +22,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
+	"regexp"
 )
 
 // NewLogger
@@ -36,6 +37,7 @@ import (
  */
 func NewLogger(filePath string, level zapcore.Level, maxSize int, maxBackups int, maxAge int, compress bool) *zap.Logger {
 	core := newCore(filePath, level, maxSize, maxBackups, maxAge, compress)
+	core = redactingCore{Core: core}
 	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 }
 
@@ -71,10 +73,80 @@ func newCore(filePath string, level zapcore.Level, maxSize int, maxBackups int, 
 	)
 }
 
+type redactingCore struct {
+	zapcore.Core
+}
+
+func (c redactingCore) With(fields []zapcore.Field) zapcore.Core {
+	return redactingCore{Core: c.Core.With(redactLogFields(fields))}
+}
+
+func (c redactingCore) Check(entry zapcore.Entry, checked *zapcore.CheckedEntry) *zapcore.CheckedEntry {
+	if c.Enabled(entry.Level) {
+		return checked.AddCore(entry, c)
+	}
+	return checked
+}
+
+func (c redactingCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
+	entry.Message = redactLogText(entry.Message)
+	return c.Core.Write(entry, redactLogFields(fields))
+}
+
+func redactLogFields(fields []zapcore.Field) []zapcore.Field {
+	if len(fields) == 0 {
+		return nil
+	}
+	redacted := make([]zapcore.Field, len(fields))
+	copy(redacted, fields)
+	for i := range redacted {
+		switch redacted[i].Type {
+		case zapcore.StringType:
+			redacted[i].String = redactLogText(redacted[i].String)
+		case zapcore.ErrorType:
+			if err, ok := redacted[i].Interface.(error); ok && err != nil {
+				redacted[i] = zap.String(redacted[i].Key, redactLogText(err.Error()))
+			}
+		}
+	}
+	return redacted
+}
+
+var logRedactionPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?i)(AccessKeyId=)[^&\s"']+`),
+	regexp.MustCompile(`(?i)(AccessKeySecret=)[^&\s"']+`),
+	regexp.MustCompile(`(?i)(SecurityToken=)[^&\s"']+`),
+	regexp.MustCompile(`(?i)(Signature=)[^&\s"']+`),
+	regexp.MustCompile(`(?i)(SignatureNonce=)[^&\s"']+`),
+	regexp.MustCompile(`(?i)("AccessKeyId"\s*:\s*")[^"]+`),
+	regexp.MustCompile(`(?i)("AccessKeySecret"\s*:\s*")[^"]+`),
+	regexp.MustCompile(`(?i)("SecurityToken"\s*:\s*")[^"]+`),
+	regexp.MustCompile(`(?i)("Signature"\s*:\s*")[^"]+`),
+	regexp.MustCompile(`(?i)\bLTAI[0-9A-Za-z]{12,}\b`),
+}
+
+func redactLogText(value string) string {
+	redacted := value
+	for _, pattern := range logRedactionPatterns {
+		redacted = pattern.ReplaceAllString(redacted, `${1}<redacted>`)
+	}
+	return redacted
+}
+
 var logger *zap.Logger
 
 func GetWLogger() *zap.Logger {
 	return logger
+}
+
+func SetWLogger(next *zap.Logger) {
+	if next == nil {
+		return
+	}
+	if logger != nil {
+		_ = logger.Sync()
+	}
+	logger = next
 }
 
 func init() {
@@ -115,6 +187,9 @@ func fieldsFromContext(ctx context.Context) []zap.Field {
 }
 
 func CtxLogger(ctx context.Context) *zap.Logger {
+	if logger == nil {
+		return zap.NewNop()
+	}
 	return logger.With(fieldsFromContext(ctx)...)
 }
 

@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.oss_202501081111_563734",
+  "name": "阿里云-OSS-Bucket授权策略允许匿名操作",
+  "version": "legacy",
+  "description": "OSS bucket允许匿名操作",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "oss",
+  "asset_type": "oss",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "oss"
+  ],
+  "query": "data.oss_bucket_anony_access_2200008.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "检查 Bucket Policy，移除 Principal 为匿名用户或通配主体的 Allow 授权；按最小权限限定具体 RAM 身份、Action、Resource 和来源条件。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_563734",
+    "context": "Bucket {$.BucketName} 存在匿名操作风险，相关 Bucket policy statement：{$.risk_statements}",
+    "description": "OSS bucket允许匿名操作",
+    "level": "High",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-OSS-Bucket授权策略允许匿名操作",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+  }
+}

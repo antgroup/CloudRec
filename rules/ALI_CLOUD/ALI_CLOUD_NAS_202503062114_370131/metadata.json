@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["网络访问"],"code":"ALI_CLOUD_NAS_202503062114_370131","context":null,"description":"未启用NFS ACL白名单","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-NAS-未启用NFS ACL白名单","platform":"ALI_CLOUD","resourceType":"NAS"}
+{"advice":"启用并配置访问 ACL 白名单，仅允许可信业务网段或客户端访问；删除空白、全网或过宽网段配置。","categoryList":["网络访问"],"code":"ALI_CLOUD_NAS_202503062114_370131","context":null,"description":"未启用NFS ACL白名单","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-NAS-未启用NFS ACL白名单","platform":"ALI_CLOUD","resourceType":"NAS"}

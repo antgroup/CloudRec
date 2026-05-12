@@ -1,0 +1,38 @@
+[
+  {
+    "name": "ssl-disabled",
+    "want_findings": 1,
+    "input": {
+      "DBInstanceAttribute": {
+        "DBInstanceId": "rm-demo-disabled"
+      },
+      "DBInstanceSSL": {
+        "SSLEnabled": "No"
+      }
+    }
+  },
+  {
+    "name": "ssl-enabled",
+    "want_findings": 0,
+    "input": {
+      "DBInstanceAttribute": {
+        "DBInstanceId": "rm-demo-enabled"
+      },
+      "DBInstanceSSL": {
+        "SSLEnabled": "Yes"
+      }
+    }
+  },
+  {
+    "name": "ssl-state-missing",
+    "want_findings": 1,
+    "input": {
+      "DBInstanceAttribute": {
+        "DBInstanceId": "rm-demo-unknown"
+      },
+      "DBInstanceSSL": {
+        "SSLEnabled": null
+      }
+    }
+  }
+]

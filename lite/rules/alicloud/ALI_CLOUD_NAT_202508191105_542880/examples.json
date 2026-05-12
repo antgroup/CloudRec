@@ -1,0 +1,52 @@
+[
+  {
+    "name": "internet-nat-with-dnat-entry",
+    "want_findings": 1,
+    "input": {
+      "NatGateway": {
+        "NatGatewayId": "ngw-demo",
+        "NetworkType": "internet"
+      },
+      "ForwardTableEntry": [
+        {
+          "ForwardEntryId": "fwd-demo",
+          "ExternalIp": "203.0.113.10",
+          "ExternalPort": "443",
+          "InternalIp": "10.0.1.10",
+          "InternalPort": "8443",
+          "IpProtocol": "TCP",
+          "Status": "Available"
+        }
+      ]
+    }
+  },
+  {
+    "name": "internet-nat-without-dnat-entry",
+    "want_findings": 0,
+    "input": {
+      "NatGateway": {
+        "NatGatewayId": "ngw-demo",
+        "NetworkType": "internet"
+      },
+      "ForwardTableEntry": []
+    }
+  },
+  {
+    "name": "vpc-nat-with-dnat-entry",
+    "want_findings": 0,
+    "input": {
+      "NatGateway": {
+        "NatGatewayId": "ngw-demo",
+        "NetworkType": "intranet"
+      },
+      "ForwardTableEntry": [
+        {
+          "ForwardEntryId": "fwd-demo",
+          "ExternalPort": "22",
+          "InternalPort": "22",
+          "IpProtocol": "TCP"
+        }
+      ]
+    }
+  }
+]

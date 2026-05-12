@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.rds_202501081111_335475",
+  "name": "阿里云-RDS-实例端口对全网开放",
+  "version": "legacy",
+  "description": "RDS全网开放",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "rds",
+  "asset_type": "rds",
+  "categories": [
+    "数据保护",
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "rds"
+  ],
+  "query": "data.rds_open_network_to_all_1700003.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "关闭数据库或中间件公网访问入口，或将白名单收敛到可信业务出口；禁止 0.0.0.0/0，优先使用 VPC 私网连接并开启认证、加密和审计。",
+    "categoryList": [
+      "数据保护",
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_RDS_202501081111_335475",
+    "context": null,
+    "description": "RDS全网开放",
+    "level": "High",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RDS-实例端口对全网开放",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RDS"
+  }
+}

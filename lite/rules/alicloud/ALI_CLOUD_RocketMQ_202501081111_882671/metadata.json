@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.rocket_mq_202501081111_882671",
+  "name": "阿里云-RocketMQ-消息队列RocketMQ版公网暴露风险",
+  "version": "legacy",
+  "description": "消息队列RocketMQ版公网暴露风险",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "rocket",
+  "asset_type": "rocket_mq",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "rocket"
+  ],
+  "query": "data.cloudrec_3900001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "关闭数据库或中间件公网访问入口，或将白名单收敛到可信业务出口；禁止 0.0.0.0/0，优先使用 VPC 私网连接并开启认证、加密和审计。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_RocketMQ_202501081111_882671",
+    "context": null,
+    "description": "消息队列RocketMQ版公网暴露风险",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RocketMQ-消息队列RocketMQ版公网暴露风险",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RocketMQ"
+  }
+}

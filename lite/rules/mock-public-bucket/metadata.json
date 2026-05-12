@@ -1,0 +1,13 @@
+{
+  "id": "mock.storage_bucket.public",
+  "name": "Mock storage bucket allows public access",
+  "version": "0.1.0",
+  "description": "Detects mock storage buckets that are marked as publicly accessible.",
+  "severity": "high",
+  "provider": "mock",
+  "service": "storage",
+  "asset_type": "storage_bucket",
+  "categories": ["exposure"],
+  "tags": ["public-access", "lite-sample"],
+  "query": "data.cloudrec.lite.rules.mock_public_bucket.findings"
+}

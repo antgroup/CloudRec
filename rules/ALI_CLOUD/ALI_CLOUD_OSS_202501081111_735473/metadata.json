@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["数据保护"],"code":"ALI_CLOUD_OSS_202501081111_735473","context":null,"description":"OSS清单文件泄露风险","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-OSS-清单文件泄露风险","platform":"ALI_CLOUD","resourceType":"OSS"}
+{"advice":"检查 OSS Inventory 输出目标 Bucket 和对象前缀权限，确保清单文件仅对授权身份可读；必要时迁移清单到专用私有 Bucket 并开启访问日志。","categoryList":["数据保护"],"code":"ALI_CLOUD_OSS_202501081111_735473","context":null,"description":"OSS清单文件泄露风险","level":"Low","link":null,"linkedDataList":null,"name":"阿里云-OSS-清单文件泄露风险","platform":"ALI_CLOUD","resourceType":"OSS"}

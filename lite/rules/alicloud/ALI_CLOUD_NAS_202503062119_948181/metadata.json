@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.nas_202503062119_948181",
+  "name": "阿里云-NAS-未启用SMB ACL白名单",
+  "version": "legacy",
+  "description": "未启用SMB ACL白名单",
+  "severity": "low",
+  "provider": "alicloud",
+  "service": "nas",
+  "asset_type": "nas",
+  "categories": [
+    "数据保护",
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "nas"
+  ],
+  "query": "data.enable_smb_acl_6800005.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "启用并配置访问 ACL 白名单，仅允许可信业务网段或客户端访问；删除空白、全网或过宽网段配置。",
+    "categoryList": [
+      "数据保护",
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_NAS_202503062119_948181",
+    "context": null,
+    "description": "未启用SMB ACL白名单",
+    "level": "Low",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-NAS-未启用SMB ACL白名单",
+    "platform": "ALI_CLOUD",
+    "resourceType": "NAS"
+  }
+}

@@ -27,6 +27,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const gaListPageSize = 50
+
 func GetAcceleratorResource() schema.Resource {
 	return schema.Resource{
 		ResourceType:       collector.GAAccelerator,
@@ -58,7 +60,7 @@ func GetAcceleratorDetail(ctx context.Context, service schema.ServiceInterface, 
 
 	request := ga.CreateListAcceleratorsRequest()
 	request.Scheme = "https"
-	request.PageSize = requests.NewInteger(50)
+	request.PageSize = requests.NewInteger(gaListPageSize)
 	pageNumber := 1
 
 	for {
@@ -82,7 +84,7 @@ func GetAcceleratorDetail(ctx context.Context, service schema.ServiceInterface, 
 			res <- detail
 		}
 
-		if len(response.Accelerators) < 50 {
+		if len(response.Accelerators) < gaListPageSize {
 			break
 		}
 		pageNumber++
@@ -147,7 +149,7 @@ func listListeners(ctx context.Context, cli *ga.Client, acceleratorId string) []
 	request := ga.CreateListListenersRequest()
 	request.Scheme = "https"
 	request.AcceleratorId = acceleratorId
-	request.PageSize = requests.NewInteger(100)
+	request.PageSize = requests.NewInteger(gaListPageSize)
 
 	var allListeners []ga.ListenersItem
 	pageNumber := 1
@@ -176,7 +178,7 @@ func getEndpointGroups(ctx context.Context, cli *ga.Client, acceleratorId string
 	request := ga.CreateListEndpointGroupsRequest()
 	request.Scheme = "https"
 	request.AcceleratorId = acceleratorId
-	request.PageSize = requests.NewInteger(100)
+	request.PageSize = requests.NewInteger(gaListPageSize)
 
 	var allEndpointGroups []ga.EndpointGroupsItem
 	pageNumber := 1
@@ -191,7 +193,7 @@ func getEndpointGroups(ctx context.Context, cli *ga.Client, acceleratorId string
 
 		allEndpointGroups = append(allEndpointGroups, response.EndpointGroups...)
 
-		if len(response.EndpointGroups) < 100 {
+		if len(response.EndpointGroups) < gaListPageSize {
 			break
 		}
 		pageNumber++

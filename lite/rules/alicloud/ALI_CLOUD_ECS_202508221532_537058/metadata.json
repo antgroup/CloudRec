@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ecs_202508221532_537058",
+  "name": "阿里云-ECS-数据磁盘加密未开启",
+  "version": "legacy",
+  "description": "阿里云-ECS-数据磁盘加密未开启",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "ecs",
+  "asset_type": "ecs",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ecs"
+  ],
+  "query": "data.ecs_disk_encryption_check_12200006.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "为实例磁盘或存储资源开启加密，优先使用 KMS 托管密钥；对无法原地开启的存量资源，规划迁移到加密的新资源。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_ECS_202508221532_537058",
+    "context": null,
+    "description": "阿里云-ECS-数据磁盘加密未开启",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-ECS-数据磁盘加密未开启",
+    "platform": "ALI_CLOUD",
+    "resourceType": "ECS"
+  }
+}

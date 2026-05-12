@@ -56,6 +56,9 @@ func GetGroupDetail(ctx context.Context, service schema.ServiceInterface, res ch
 			log.CtxLogger(ctx).Warn("ListGroups error", zap.Error(err))
 			return err
 		}
+		if response == nil || response.Body == nil {
+			return nil
+		}
 		if response.Body.Groups != nil && response.Body.Groups.Group != nil {
 			for _, i := range response.Body.Groups.Group {
 				d := GroupDetail{
@@ -73,7 +76,7 @@ func GetGroupDetail(ctx context.Context, service schema.ServiceInterface, res ch
 	return nil
 }
 
-func listPoliciesForGroup(ctx context.Context, cli *ram20150501.Client, name string) (policies []PolicyDetail) {
+func listPoliciesForGroup(ctx context.Context, cli *ram20150501.Client, name string, caches ...*policyDetailCache) (policies []PolicyDetail) {
 	request := &ram20150501.ListPoliciesForGroupRequest{
 		GroupName: tea.String(name),
 	}
@@ -83,27 +86,25 @@ func listPoliciesForGroup(ctx context.Context, cli *ram20150501.Client, name str
 		return
 	}
 
-	return getPolicyDetailsForGroup(ctx, cli, response.Body.Policies.Policy, "Group:"+name)
+	if response == nil || response.Body == nil || response.Body.Policies == nil {
+		return nil
+	}
+	var cache *policyDetailCache
+	if len(caches) > 0 {
+		cache = caches[0]
+	}
+	if cache == nil {
+		cache = newPolicyDetailCache()
+	}
+	return getPolicyDetailsForGroup(ctx, cli, response.Body.Policies.Policy, "Group:"+name, cache)
 }
 
-func getPolicyDetailsForGroup(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForGroupResponseBodyPoliciesPolicy, source string) (policies []PolicyDetail) {
+func getPolicyDetailsForGroup(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForGroupResponseBodyPoliciesPolicy, source string, policyCache *policyDetailCache) (policies []PolicyDetail) {
 	for i := 0; i < len(policy); i++ {
 		if policy[i].PolicyName != nil && policy[i].PolicyType != nil {
-			r := &ram20150501.GetPolicyRequest{
-				PolicyName: policy[i].PolicyName,
-				PolicyType: policy[i].PolicyType,
+			if p, ok := policyCache.get(ctx, cli, policy[i].PolicyName, policy[i].PolicyType, source); ok {
+				policies = append(policies, p)
 			}
-			resp, err := cli.GetPolicyWithOptions(r, collector.RuntimeObject)
-			if err != nil {
-				log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
-				continue
-			}
-			p := PolicyDetail{
-				Policy:               resp.Body.Policy,
-				DefaultPolicyVersion: resp.Body.DefaultPolicyVersion,
-				Source:               source,
-			}
-			policies = append(policies, p)
 		}
 	}
 	return policies

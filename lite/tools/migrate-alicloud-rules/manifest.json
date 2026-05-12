@@ -1,0 +1,1509 @@
+{
+  "rules_migrated": 88,
+  "rule_root": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud",
+  "data_files_copied": 3,
+  "data_root": "/Users/noble/Alipay/Project/CloudRec/lite/rules/data",
+  "rules": [
+    {
+      "id": "alicloud.ack_cluster_202504011757_921292",
+      "name": "阿里云-ACK-IngressNightmare",
+      "provider": "alicloud",
+      "service": "ack",
+      "asset_type": "ack_cluster",
+      "severity": "high",
+      "query": "data.cloudrec_7600001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ACK Cluster_202504011757_921292",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202504011757_921292",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202504011757_921292/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202504011757_921292/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202504011757_921292/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202504011757_921292/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ack_cluster_202507301744_640069",
+      "name": "阿里云-ACK-Cluster API 公网暴露",
+      "provider": "alicloud",
+      "service": "ack",
+      "asset_type": "ack_cluster",
+      "severity": "high",
+      "query": "data.cloudrec_11200001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ACK Cluster_202507301744_640069",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202507301744_640069",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202507301744_640069/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202507301744_640069/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202507301744_640069/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ACK Cluster_202507301744_640069/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.alb_202501081111_769125",
+      "name": "阿里云-ALB-端口未配置ACL直接对公网开放",
+      "provider": "alicloud",
+      "service": "alb",
+      "asset_type": "alb",
+      "severity": "low",
+      "query": "data.alb_open_to_pub_without_acl_2100001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ALB_202501081111_769125",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ALB_202501081111_769125",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ALB_202501081111_769125/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ALB_202501081111_769125/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ALB_202501081111_769125/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ALB_202501081111_769125/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.account_202501081111_689362",
+      "name": "阿里云-RAM-主账号启用AccessKey",
+      "provider": "alicloud",
+      "service": "account",
+      "asset_type": "account",
+      "severity": "high",
+      "query": "data.cloudrec_3800002.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Account_202501081111_689362",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202501081111_689362",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202501081111_689362/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202501081111_689362/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202501081111_689362/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202501081111_689362/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.account_202503031137_829663",
+      "name": "阿里云-IMS-主账号未启用MFA",
+      "provider": "alicloud",
+      "service": "account",
+      "asset_type": "account",
+      "severity": "high",
+      "query": "data.root_user_bind_mfa_6500001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Account_202503031137_829663",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503031137_829663",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503031137_829663/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503031137_829663/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503031137_829663/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503031137_829663/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.account_202503171930_977923",
+      "name": "阿里云-RAM-主账号存在长期未调用的Root AccessKey",
+      "provider": "alicloud",
+      "service": "account",
+      "asset_type": "account",
+      "severity": "medium",
+      "query": "data.root_ak_unused_7200001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Account_202503171930_977923",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503171930_977923",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503171930_977923/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503171930_977923/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503171930_977923/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202503171930_977923/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.account_202504231623_427183",
+      "name": "阿里云-RAM-密码复杂度检查",
+      "provider": "alicloud",
+      "service": "account",
+      "asset_type": "account",
+      "severity": "low",
+      "query": "data.cloudrec_8600001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Account_202504231623_427183",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202504231623_427183",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202504231623_427183/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202504231623_427183/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202504231623_427183/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202504231623_427183/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.account_202505121607_230809",
+      "name": "阿里云-RAM-IP白名单限制配置检查",
+      "provider": "alicloud",
+      "service": "account",
+      "asset_type": "account",
+      "severity": "medium",
+      "query": "data.cloudrec_9100002.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Account_202505121607_230809",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121607_230809",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121607_230809/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121607_230809/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121607_230809/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121607_230809/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.account_202505121633_409089",
+      "name": "阿里云-RAM-User登录控制台未强制启用MFA",
+      "provider": "alicloud",
+      "service": "account",
+      "asset_type": "account",
+      "severity": "medium",
+      "query": "data.cloudrec_9100003.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Account_202505121633_409089",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121633_409089",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121633_409089/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121633_409089/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121633_409089/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Account_202505121633_409089/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.action_trail_202505091554_896609",
+      "name": "阿里云-ActionTrail-未开启日志审计",
+      "provider": "alicloud",
+      "service": "action",
+      "asset_type": "action_trail",
+      "severity": "medium",
+      "query": "data.cloudrec_9000001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ActionTrail_202505091554_896609",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ActionTrail_202505091554_896609",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ActionTrail_202505091554_896609/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ActionTrail_202505091554_896609/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ActionTrail_202505091554_896609/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ActionTrail_202505091554_896609/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.analytic_db_postgre_sql_202501081111_294684",
+      "name": "阿里云-AnalyticDB PostgreSQL-实例对公网开放",
+      "provider": "alicloud",
+      "service": "analytic",
+      "asset_type": "analytic_db_postgre_sql",
+      "severity": "high",
+      "query": "data.adb_postgreSQL_open_to_pub_2200005.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.click_house_202501081111_257102",
+      "name": "阿里云-ClickHouse-云数据库ClickHouse 设置公网ACL网段范围过大",
+      "provider": "alicloud",
+      "service": "click",
+      "asset_type": "click_house",
+      "severity": "medium",
+      "query": "data.clickhouse_open_to_pub_3800007.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ClickHouse_202501081111_257102",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_257102",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_257102/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_257102/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_257102/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_257102/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.click_house_202501081111_490826",
+      "name": "阿里云-ClickHouse-云数据库ClickHouse公网暴露风险",
+      "provider": "alicloud",
+      "service": "click",
+      "asset_type": "click_house",
+      "severity": "medium",
+      "query": "data.clickhouse_open_to_pub_3800006.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ClickHouse_202501081111_490826",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_490826",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_490826/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_490826/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_490826/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ClickHouse_202501081111_490826/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.cloudfw_config_202508261551_1013197",
+      "name": "阿里云-CloudFC-未开启日志",
+      "provider": "alicloud",
+      "service": "cloudfw",
+      "asset_type": "cloudfw_config",
+      "severity": "medium",
+      "query": "data.example_12300001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Cloudfw Config_202508261551_1013197",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw Config_202508261551_1013197",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw Config_202508261551_1013197/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw Config_202508261551_1013197/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw Config_202508261551_1013197/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw Config_202508261551_1013197/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.cloudfw_202501081111_104298",
+      "name": "阿里云-CloudFW-云防火墙未设置默认不出网策略",
+      "provider": "alicloud",
+      "service": "cloudfw",
+      "asset_type": "cloudfw",
+      "severity": "low",
+      "query": "data.cloudfw_forbidden_net_out_by_default_2400001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Cloudfw_202501081111_104298",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202501081111_104298",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202501081111_104298/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202501081111_104298/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202501081111_104298/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202501081111_104298/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.cloudfw_202508221407_633031",
+      "name": "阿里云-CloudFW-云防火墙非 80/443 端口开启",
+      "provider": "alicloud",
+      "service": "cloudfw",
+      "asset_type": "cloudfw",
+      "severity": "medium",
+      "query": "data.cloudfw_open_unstandard_port_12200004.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Cloudfw_202508221407_633031",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202508221407_633031",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202508221407_633031/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202508221407_633031/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202508221407_633031/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Cloudfw_202508221407_633031/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.eci_container_group_202508182013_976553",
+      "name": "阿里云-ECI-ContainerGroup 公网暴露",
+      "provider": "alicloud",
+      "service": "eci",
+      "asset_type": "eci_container_group",
+      "severity": "medium",
+      "query": "data.cloudrec_11900002.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECI ContainerGroup_202508182013_976553",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECI ContainerGroup_202508182013_976553",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECI ContainerGroup_202508182013_976553/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECI ContainerGroup_202508182013_976553/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECI ContainerGroup_202508182013_976553/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECI ContainerGroup_202508182013_976553/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_image_202508142013_698823",
+      "name": "阿里云-ECS-自定义Image镜像开启共享",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs_image",
+      "severity": "medium",
+      "query": "data.cloudrec_11800001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS Image_202508142013_698823",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS Image_202508142013_698823",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS Image_202508142013_698823/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS Image_202508142013_698823/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS Image_202508142013_698823/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS Image_202508142013_698823/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202501081111_432000",
+      "name": "阿里云-ECS-实例安全组对公网开放高危端口",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "high",
+      "query": "data.ecs_open_risk_port_to_pub_2200007.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202501081111_432000",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_432000",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_432000/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_432000/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_432000/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_432000/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202501081111_712494",
+      "name": "阿里云-ECS-实例通过安全组对全网暴露",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "high",
+      "query": "data.ecs_sg_public_open_1100001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202501081111_712494",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_712494",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_712494/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_712494/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_712494/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_712494/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202501081111_949294",
+      "name": "阿里云-ECS-实例安全组对公网开放22端口",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "high",
+      "query": "data.ecs_public_open_rule_1200003.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202501081111_949294",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_949294",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_949294/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_949294/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_949294/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202501081111_949294/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202503071706_485785",
+      "name": "阿里云-ECS-实例存在任一端口通过安全组对全网开放",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "medium",
+      "query": "data.cloudrec_6900003.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202503071706_485785",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071706_485785",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071706_485785/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071706_485785/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071706_485785/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071706_485785/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202503071738_195973",
+      "name": "阿里云-ECS-使用AMD EPYC",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "medium",
+      "query": "data.zen_vuln_6900004.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202503071738_195973",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071738_195973",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071738_195973/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071738_195973/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071738_195973/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503071738_195973/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202503131624_634803",
+      "name": "阿里云-ECS-安全组入向规则网段掩码设置小于等于8",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "medium",
+      "query": "data.cloudrec_7000001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202503131624_634803",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503131624_634803",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503131624_634803/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503131624_634803/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503131624_634803/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202503131624_634803/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202507101730_155868",
+      "name": "阿里云-ECS-未使用 IMDSv2",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "medium",
+      "query": "data.cloudrec_10700001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202507101730_155868",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202507101730_155868",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202507101730_155868/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202507101730_155868/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202507101730_155868/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202507101730_155868/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202508221039_1003499",
+      "name": "阿里云-ECS-专有网络运行",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "medium",
+      "query": "data.ecs_instance_vpc_check_12200001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202508221039_1003499",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221039_1003499",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221039_1003499/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221039_1003499/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221039_1003499/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221039_1003499/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ecs_202508221532_537058",
+      "name": "阿里云-ECS-数据磁盘加密未开启",
+      "provider": "alicloud",
+      "service": "ecs",
+      "asset_type": "ecs",
+      "severity": "medium",
+      "query": "data.ecs_disk_encryption_check_12200006.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ECS_202508221532_537058",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221532_537058",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221532_537058/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221532_537058/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221532_537058/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ECS_202508221532_537058/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ens_instance_202501241146_999147",
+      "name": "阿里云-ENS-实例未安装旗舰版安骑士客户端",
+      "provider": "alicloud",
+      "service": "ens",
+      "asset_type": "ens_instance",
+      "severity": "medium",
+      "query": "data.ens_instance_didnt_install_aegis_5600001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ENS Instance_202501241146_999147",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202501241146_999147",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202501241146_999147/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202501241146_999147/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202501241146_999147/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202501241146_999147/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ens_instance_202507181526_476835",
+      "name": "阿里云-ENS-实例存在任一端口通过安全组对全网开放",
+      "provider": "alicloud",
+      "service": "ens",
+      "asset_type": "ens_instance",
+      "severity": "high",
+      "query": "data.cloudrec_10900001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ENS Instance_202507181526_476835",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202507181526_476835",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202507181526_476835/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202507181526_476835/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202507181526_476835/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS Instance_202507181526_476835/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ens_nat_gateway_202507241705_673921",
+      "name": "阿里云-ENS NAT Gateway-实例存在任一端口通过 ACL 对全网开放",
+      "provider": "alicloud",
+      "service": "ens",
+      "asset_type": "ens_nat_gateway",
+      "severity": "high",
+      "query": "data.cloudrec_11000001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_ENS NatGateway_202507241705_673921",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS NatGateway_202507241705_673921",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS NatGateway_202507241705_673921/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS NatGateway_202507241705_673921/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS NatGateway_202507241705_673921/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_ENS NatGateway_202507241705_673921/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.elasticsearch_202501081111_791919",
+      "name": "阿里云-Elasticsearch-端口对全网暴露（或ACL设置不当）",
+      "provider": "alicloud",
+      "service": "elasticsearch",
+      "asset_type": "elasticsearch",
+      "severity": "medium",
+      "query": "data.es_open_to_pub_2200001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Elasticsearch_202501081111_791919",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202501081111_791919",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202501081111_791919/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202501081111_791919/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202501081111_791919/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202501081111_791919/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.elasticsearch_202508221539_209449",
+      "name": "阿里云-Elasticsearch-实例数据节点未开启云盘加密",
+      "provider": "alicloud",
+      "service": "elasticsearch",
+      "asset_type": "elasticsearch",
+      "severity": "medium",
+      "query": "data.elasticsearch_disk_encryption_check_12200007.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Elasticsearch_202508221539_209449",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202508221539_209449",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202508221539_209449/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202508221539_209449/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202508221539_209449/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Elasticsearch_202508221539_209449/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.fc_202508191157_819761",
+      "name": "阿里云-FC-HTTP Trigger 匿名访问",
+      "provider": "alicloud",
+      "service": "fc",
+      "asset_type": "fc",
+      "severity": "medium",
+      "query": "data.cloudrec_12000002.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_FC_202508191157_819761",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_FC_202508191157_819761",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_FC_202508191157_819761/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_FC_202508191157_819761/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_FC_202508191157_819761/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_FC_202508191157_819761/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.hbase_202501081111_100645",
+      "name": "阿里云-HBase-云数据库HBase公网暴露风险",
+      "provider": "alicloud",
+      "service": "hbase",
+      "asset_type": "hbase",
+      "severity": "medium",
+      "query": "data.hbase_exposed_to_pub_3300001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Hbase_202501081111_100645",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Hbase_202501081111_100645",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Hbase_202501081111_100645/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Hbase_202501081111_100645/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Hbase_202501081111_100645/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Hbase_202501081111_100645/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.kafka_202501081111_766488",
+      "name": "阿里云-Kafka-实例对公网开放访问",
+      "provider": "alicloud",
+      "service": "kafka",
+      "asset_type": "kafka",
+      "severity": "medium",
+      "query": "data.kafka_open_to_all_public_3200001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Kafka_202501081111_766488",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Kafka_202501081111_766488",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Kafka_202501081111_766488/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Kafka_202501081111_766488/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Kafka_202501081111_766488/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Kafka_202501081111_766488/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.lindorm_202501081111_504620",
+      "name": "阿里云-Lindorm-云原生多模数据库 Lindorm公网暴露风险",
+      "provider": "alicloud",
+      "service": "lindorm",
+      "asset_type": "lindorm",
+      "severity": "medium",
+      "query": "data.lindorm_exposed_to_pub_3800005.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Lindorm_202501081111_504620",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Lindorm_202501081111_504620",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Lindorm_202501081111_504620/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Lindorm_202501081111_504620/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Lindorm_202501081111_504620/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Lindorm_202501081111_504620/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.mongo_db_202501081111_958052",
+      "name": "阿里云-MongoDB-实例端口对全网开放",
+      "provider": "alicloud",
+      "service": "mongo",
+      "asset_type": "mongo_db",
+      "severity": "high",
+      "query": "data.mongodb_open_network_to_all_1700001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_MongoDB_202501081111_958052",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202501081111_958052",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202501081111_958052/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202501081111_958052/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202501081111_958052/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202501081111_958052/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.mongo_db_202505261534_988136",
+      "name": "阿里云-MongoDB-实例未启用审计日志",
+      "provider": "alicloud",
+      "service": "mongo",
+      "asset_type": "mongo_db",
+      "severity": "low",
+      "query": "data.mongodb_enable_audit_log_9500002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_MongoDB_202505261534_988136",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202505261534_988136",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202505261534_988136/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202505261534_988136/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202505261534_988136/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202505261534_988136/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.mongo_db_202508221144_912519",
+      "name": "阿里云-MongoDb-专有网络运行",
+      "provider": "alicloud",
+      "service": "mongo",
+      "asset_type": "mongo_db",
+      "severity": "medium",
+      "query": "data.mongodb_vpc_check_12200003.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_MongoDB_202508221144_912519",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202508221144_912519",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202508221144_912519/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202508221144_912519/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202508221144_912519/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_MongoDB_202508221144_912519/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.nas_202501081111_655917",
+      "name": "阿里云-NAS-文件存储NAS公网暴露风险",
+      "provider": "alicloud",
+      "service": "nas",
+      "asset_type": "nas",
+      "severity": "low",
+      "query": "data.nas_exposed_to_public_3200002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_NAS_202501081111_655917",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202501081111_655917",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202501081111_655917/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202501081111_655917/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202501081111_655917/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202501081111_655917/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.nas_202503062114_370131",
+      "name": "阿里云-NAS-未启用NFS ACL白名单",
+      "provider": "alicloud",
+      "service": "nas",
+      "asset_type": "nas",
+      "severity": "low",
+      "query": "data.enable_nfs_acl_6800003.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_NAS_202503062114_370131",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062114_370131",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062114_370131/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062114_370131/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062114_370131/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062114_370131/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.nas_202503062119_948181",
+      "name": "阿里云-NAS-未启用SMB ACL白名单",
+      "provider": "alicloud",
+      "service": "nas",
+      "asset_type": "nas",
+      "severity": "low",
+      "query": "data.enable_smb_acl_6800005.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_NAS_202503062119_948181",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062119_948181",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062119_948181/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062119_948181/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062119_948181/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAS_202503062119_948181/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.nat_202508191105_542880",
+      "name": "阿里云-NAT-Gateway 配置DNAT规则",
+      "provider": "alicloud",
+      "service": "nat",
+      "asset_type": "nat",
+      "severity": "low",
+      "query": "data.cloudrec_12000001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_NAT_202508191105_542880",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAT_202508191105_542880",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAT_202508191105_542880/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAT_202508191105_542880/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAT_202508191105_542880/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NAT_202508191105_542880/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.nlb_202501081111_1042010",
+      "name": "阿里云-NLB-对公网暴露高危端口",
+      "provider": "alicloud",
+      "service": "nlb",
+      "asset_type": "nlb",
+      "severity": "medium",
+      "query": "data.nlb_exposed_high_risk_port_to_pub_3800004.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_NLB_202501081111_1042010",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NLB_202501081111_1042010",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NLB_202501081111_1042010/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NLB_202501081111_1042010/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NLB_202501081111_1042010/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_NLB_202501081111_1042010/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_1077246",
+      "name": "阿里云-OSS-Bucket的权限设为公有读写(public-read-write)",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "high",
+      "query": "data.cloudrec_2200002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_1077246",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_1077246",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_1077246/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_1077246/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_1077246/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_1077246/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_160028",
+      "name": "阿里云-OSS-Bucket 防盗链设置包含 *",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "low",
+      "query": "data.cloudrec_3600004.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_160028",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_160028",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_160028/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_160028/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_160028/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_160028/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_313311",
+      "name": "阿里云-OSS-任意VPC访问",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "high",
+      "query": "data.oss_could_be_accessed_from_any_vpc_3000001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_313311",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_313311",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_313311/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_313311/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_313311/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_313311/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_364778",
+      "name": "阿里云-OSS-未配置网络策略风险",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "high",
+      "query": "data.oss_bucket_policy_without_network_condition_2900001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_364778",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_364778",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_364778/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_364778/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_364778/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_364778/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_562729",
+      "name": "阿里云-OSS-Bucket的权限设为公有读(public-read)",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "medium",
+      "query": "data.cloudrec_2200003.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_562729",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_562729",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_562729/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_562729/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_562729/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_562729/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_563734",
+      "name": "阿里云-OSS-Bucket授权策略允许匿名操作",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "high",
+      "query": "data.oss_bucket_anony_access_2200008.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_563734",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_563734",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_563734/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_563734/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_563734/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_563734/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_735473",
+      "name": "阿里云-OSS-清单文件泄露风险",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "low",
+      "query": "data.cloudrec_3600007.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_735473",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_735473",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_735473/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_735473/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_735473/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_735473/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202501081111_846565",
+      "name": "阿里云-OSS-跨域来源配置包含 *",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "medium",
+      "query": "data.cloudrec_3600005.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202501081111_846565",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_846565",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_846565/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_846565/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_846565/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202501081111_846565/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202503031637_689177",
+      "name": "阿里云-OSS-Bucket 未启用版本控制",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "medium",
+      "query": "data.ali_cloud_versioning_enable_6500006.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202503031637_689177",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031637_689177",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031637_689177/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031637_689177/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031637_689177/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031637_689177/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202503031646_805434",
+      "name": "阿里云-OSS-Bucket 未启用日志记录",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "medium",
+      "query": "data.cloudrec_6500008.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202503031646_805434",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031646_805434",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031646_805434/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031646_805434/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031646_805434/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202503031646_805434/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.oss_202508201612_324403",
+      "name": "阿里云-OSS-OSS存储桶未使用服务端加密",
+      "provider": "alicloud",
+      "service": "oss",
+      "asset_type": "oss",
+      "severity": "medium",
+      "query": "data.oss_sse_algorithm_check_12100001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_OSS_202508201612_324403",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202508201612_324403",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202508201612_324403/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202508201612_324403/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202508201612_324403/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_OSS_202508201612_324403/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.polar_db_202501081111_118228",
+      "name": "阿里云-PolarDB-实例端口全网开放(或ACL设置不当)",
+      "provider": "alicloud",
+      "service": "polar",
+      "asset_type": "polar_db",
+      "severity": "high",
+      "query": "data.polardb_open_to_pub_2200004.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_PolarDB_202501081111_118228",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202501081111_118228",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202501081111_118228/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202501081111_118228/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202501081111_118228/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202501081111_118228/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.polar_db_202505261533_254903",
+      "name": "阿里云-PolarDB-实例未启用审计日志",
+      "provider": "alicloud",
+      "service": "polar",
+      "asset_type": "polar_db",
+      "severity": "low",
+      "query": "data.polardb_enable_audit_log_9500001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_PolarDB_202505261533_254903",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202505261533_254903",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202505261533_254903/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202505261533_254903/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202505261533_254903/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_PolarDB_202505261533_254903/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_role_202501081111_210181",
+      "name": "阿里云-RAM-RAM角色授权给外部账号",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_role",
+      "severity": "medium",
+      "query": "data.other_account_assume_role_3600012.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM Role_202501081111_210181",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_210181",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_210181/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_210181/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_210181/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_210181/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_role_202501081111_730058",
+      "name": "阿里云-RAM-RAM角色授权给ECS",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_role",
+      "severity": "low",
+      "query": "data.ecs_assume_role_3600011.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM Role_202501081111_730058",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_730058",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_730058/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_730058/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_730058/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202501081111_730058/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_role_202507101903_755145",
+      "name": "阿里云-RAM-Role拥有敏感权限",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_role",
+      "severity": "medium",
+      "query": "data.ram_role_with_high_risk_access_10700002.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM Role_202507101903_755145",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202507101903_755145",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202507101903_755145/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202507101903_755145/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202507101903_755145/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM Role_202507101903_755145/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202503172029_147841",
+      "name": "阿里云-RAM-RAM User AccessKey在创建90天后仍未被使用",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "medium",
+      "query": "data.ak_never_used_after_being_created_90days_7200002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM User_202503172029_147841",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172029_147841",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172029_147841/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172029_147841/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172029_147841/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172029_147841/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202503172212_146913",
+      "name": "阿里云-RAM-RAM User拥有大权限AK但未设置调用来源ACL",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "high",
+      "query": "data.ram_user_with_high_risk_access_has_no_acl_7200004.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM User_202503172212_146913",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172212_146913",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172212_146913/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172212_146913/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172212_146913/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202503172212_146913/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202504031734_497143",
+      "name": "阿里云-RAM-RAM User拥有AK且未设置调用来源ACL",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "medium",
+      "query": "data.cloudrec_7800004.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM User_202504031734_497143",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504031734_497143",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504031734_497143/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504031734_497143/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504031734_497143/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504031734_497143/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202504111433_216558",
+      "name": "阿里云-RAM-User AK存在可访问OSS的权限",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "medium",
+      "query": "data.cloudrec_8200001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM User_202504111433_216558",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504111433_216558",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504111433_216558/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504111433_216558/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504111433_216558/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202504111433_216558/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_user_202505081354_731990",
+      "name": "阿里云-RAM Role-拥有RAM敏感操作（前提可被扮演登录控制台）",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_role",
+      "severity": "high",
+      "query": "data.ram_user_with_high_risk_access_has_no_acl_8900001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM User_202505081354_731990",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202505081354_731990",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202505081354_731990/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202505081354_731990/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202505081354_731990/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM User_202505081354_731990/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ramuser_202501081111_272084",
+      "name": "阿里云-RAM-RAM用户权限过大",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "high",
+      "query": "data.ram_user_with_high_risk_access_3700001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAMUser_202501081111_272084",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202501081111_272084",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202501081111_272084/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202501081111_272084/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202501081111_272084/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202501081111_272084/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ramuser_202502051715_1081479",
+      "name": "阿里云-RAM-User AK 超过一年未使用",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "medium",
+      "query": "data.ak_has_not_used_for_365_days_5700001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAMUser_202502051715_1081479",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051715_1081479",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051715_1081479/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051715_1081479/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051715_1081479/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051715_1081479/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ramuser_202502051725_1037615",
+      "name": "阿里云-RAM-User 超一年未使用",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "medium",
+      "query": "data.user_not_using_for_365_days_5700002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAMUser_202502051725_1037615",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051725_1037615",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051725_1037615/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051725_1037615/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051725_1037615/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502051725_1037615/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ramuser_202502201756_962162",
+      "name": "阿里云-RAM-使用密码登录控制台的的账号应启用MFA",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "medium",
+      "query": "data.login_console_should_enable_mfa_6100001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAMUser_202502201756_962162",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502201756_962162",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502201756_962162/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502201756_962162/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502201756_962162/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAMUser_202502201756_962162/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_202501081111_110025",
+      "name": "阿里云-RAM-可登录控制台的子账号下存在AK",
+      "provider": "alicloud",
+      "service": "ram",
+      "asset_type": "ram_user",
+      "severity": "medium",
+      "query": "data.ram_allow_to_login_console_has_ak_2200012.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RAM_202501081111_110025",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM_202501081111_110025",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM_202501081111_110025/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM_202501081111_110025/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM_202501081111_110025/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RAM_202501081111_110025/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.rds_202501081111_335475",
+      "name": "阿里云-RDS-实例端口对全网开放",
+      "provider": "alicloud",
+      "service": "rds",
+      "asset_type": "rds",
+      "severity": "high",
+      "query": "data.rds_open_network_to_all_1700003.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RDS_202501081111_335475",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202501081111_335475",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202501081111_335475/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202501081111_335475/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202501081111_335475/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202501081111_335475/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.rds_202508221521_636677",
+      "name": "阿里云-RDS-SSL加密未开启",
+      "provider": "alicloud",
+      "service": "rds",
+      "asset_type": "rds",
+      "severity": "medium",
+      "query": "data.rds_ssl_encryption_12200005.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RDS_202508221521_636677",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202508221521_636677",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202508221521_636677/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202508221521_636677/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202508221521_636677/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RDS_202508221521_636677/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.ram_global_config_202501081111_417007",
+      "name": "阿里云-IMS-云账号未启用SSO功能",
+      "provider": "alicloud",
+      "service": "account",
+      "asset_type": "account",
+      "severity": "high",
+      "query": "data.ram_sso_enabled_2200011.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Ram Global Config_202501081111_417007",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Ram Global Config_202501081111_417007",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Ram Global Config_202501081111_417007/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Ram Global Config_202501081111_417007/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Ram Global Config_202501081111_417007/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Ram Global Config_202501081111_417007/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.redis_202501081111_459624",
+      "name": "阿里云-Redis-实例开启公网代理",
+      "provider": "alicloud",
+      "service": "redis",
+      "asset_type": "redis",
+      "severity": "high",
+      "query": "data.kvstore_network_pub_proxy_2300004.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Redis_202501081111_459624",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_459624",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_459624/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_459624/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_459624/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_459624/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.redis_202501081111_469998",
+      "name": "阿里云-Redis-实例端口对全网开放",
+      "provider": "alicloud",
+      "service": "redis",
+      "asset_type": "redis",
+      "severity": "high",
+      "query": "data.redis_open_network_to_all_1700002.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Redis_202501081111_469998",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_469998",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_469998/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_469998/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_469998/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202501081111_469998/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.redis_202503062130_462923",
+      "name": "阿里云-Redis-实例未启用审计日志",
+      "provider": "alicloud",
+      "service": "redis",
+      "asset_type": "redis",
+      "severity": "low",
+      "query": "data.enable_audit_log_6800006.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Redis_202503062130_462923",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202503062130_462923",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202503062130_462923/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202503062130_462923/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202503062130_462923/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202503062130_462923/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.redis_202508221135_782313",
+      "name": "阿里云-Redis-专有网络运行",
+      "provider": "alicloud",
+      "service": "redis",
+      "asset_type": "redis",
+      "severity": "medium",
+      "query": "data.redis_vpc_check_12200002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Redis_202508221135_782313",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202508221135_782313",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202508221135_782313/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202508221135_782313/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202508221135_782313/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Redis_202508221135_782313/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.rocket_mq_202501081111_882671",
+      "name": "阿里云-RocketMQ-消息队列RocketMQ版公网暴露风险",
+      "provider": "alicloud",
+      "service": "rocket",
+      "asset_type": "rocket_mq",
+      "severity": "medium",
+      "query": "data.cloudrec_3900001.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_RocketMQ_202501081111_882671",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RocketMQ_202501081111_882671",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RocketMQ_202501081111_882671/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RocketMQ_202501081111_882671/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RocketMQ_202501081111_882671/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_RocketMQ_202501081111_882671/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.slb_202501081111_1075291",
+      "name": "阿里云-SLB-非标端口对全网开放",
+      "provider": "alicloud",
+      "service": "slb",
+      "asset_type": "slb",
+      "severity": "medium",
+      "query": "data.slb_acl_misconfiguration_2100002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_SLB_202501081111_1075291",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202501081111_1075291",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202501081111_1075291/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202501081111_1075291/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202501081111_1075291/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202501081111_1075291/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.slb_202503031456_509683",
+      "name": "阿里云-SLB-监听器采用不安全的监听协议",
+      "provider": "alicloud",
+      "service": "slb",
+      "asset_type": "slb",
+      "severity": "medium",
+      "query": "data.listener_with_unsafe_protocal_6500002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_SLB_202503031456_509683",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202503031456_509683",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202503031456_509683/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202503031456_509683/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202503031456_509683/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202503031456_509683/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.slb_202504031719_475191",
+      "name": "阿里云-SLB-公网实例未接或未正确接入WAF",
+      "provider": "alicloud",
+      "service": "slb",
+      "asset_type": "slb",
+      "severity": "low",
+      "query": "data.cloudrec_7800003.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_SLB_202504031719_475191",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504031719_475191",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504031719_475191/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504031719_475191/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504031719_475191/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504031719_475191/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.slb_202504091156_104651",
+      "name": "阿里云-SLB-互联网实例ACL网段掩码小于8",
+      "provider": "alicloud",
+      "service": "slb",
+      "asset_type": "slb",
+      "severity": "medium",
+      "query": "data.cloudrec_7900001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_SLB_202504091156_104651",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091156_104651",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091156_104651/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091156_104651/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091156_104651/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091156_104651/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.slb_202504091159_993485",
+      "name": "阿里云-SLB-标准WEB端口对全网开放",
+      "provider": "alicloud",
+      "service": "slb",
+      "asset_type": "slb",
+      "severity": "low",
+      "query": "data.cloudrec_7900002.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_SLB_202504091159_993485",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091159_993485",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091159_993485/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091159_993485/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091159_993485/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLB_202504091159_993485/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.sls_202508181708_1003938",
+      "name": "阿里云-SLS-Project Policy匿名访问",
+      "provider": "alicloud",
+      "service": "sls",
+      "asset_type": "sls",
+      "severity": "high",
+      "query": "data.cloudrec_11900001.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_SLS_202508181708_1003938",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLS_202508181708_1003938",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLS_202508181708_1003938/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLS_202508181708_1003938/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLS_202508181708_1003938/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_SLS_202508181708_1003938/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.sas_202501081111_427603",
+      "name": "阿里云-SAS-ECS未安装旗舰版云安全中心",
+      "provider": "alicloud",
+      "service": "sas",
+      "asset_type": "sas",
+      "severity": "medium",
+      "query": "data.cloudrec_2200006.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_Sas_202501081111_427603",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Sas_202501081111_427603",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Sas_202501081111_427603/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Sas_202501081111_427603/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Sas_202501081111_427603/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_Sas_202501081111_427603/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.acr_202501081111_754419",
+      "name": "阿里云-ACR-实例公网暴露风险",
+      "provider": "alicloud",
+      "service": "acr",
+      "asset_type": "acr",
+      "severity": "high",
+      "query": "data.cloudrec_3600010.messages",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_acr_202501081111_754419",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_acr_202501081111_754419",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_acr_202501081111_754419/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_acr_202501081111_754419/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_acr_202501081111_754419/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_acr_202501081111_754419/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.max_compute_202501081111_193748",
+      "name": "阿里云-MaxCompute-MaxCompute 项目无白名单防护风险",
+      "provider": "alicloud",
+      "service": "max",
+      "asset_type": "max_compute",
+      "severity": "high",
+      "query": "data.cloudrec_2300005.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_云原生大数据计算服务 MaxCompute_202501081111_193748/relation.json"
+      ]
+    },
+    {
+      "id": "alicloud.cas_202501081111_761202",
+      "name": "阿里云-CAS-云上购买SSL证书过期或者即将过期",
+      "provider": "alicloud",
+      "service": "cert",
+      "asset_type": "cert",
+      "severity": "low",
+      "query": "data.cloudrec_2200013.risk",
+      "source_dir": "/Users/noble/Alipay/Project/CloudRec/rules/ALI_CLOUD/ALI_CLOUD_数字证书管理服务 CAS_202501081111_761202",
+      "target_dir": "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_数字证书管理服务 CAS_202501081111_761202",
+      "files": [
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_数字证书管理服务 CAS_202501081111_761202/metadata.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_数字证书管理服务 CAS_202501081111_761202/policy.rego",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_数字证书管理服务 CAS_202501081111_761202/input.json",
+        "/Users/noble/Alipay/Project/CloudRec/lite/rules/alicloud/ALI_CLOUD_数字证书管理服务 CAS_202501081111_761202/relation.json"
+      ]
+    }
+  ],
+  "data_files": [
+    "/Users/noble/Alipay/Project/CloudRec/lite/rules/data/corpIpList_egress.json",
+    "/Users/noble/Alipay/Project/CloudRec/lite/rules/data/risk_default_ports.json",
+    "/Users/noble/Alipay/Project/CloudRec/lite/rules/data/special_purpose_cidr.json"
+  ]
+}

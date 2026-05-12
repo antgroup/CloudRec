@@ -17,6 +17,7 @@ package bpstudio
 
 import (
 	"context"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/bpstudio"
 	"github.com/cloudrec/alicloud/collector"
@@ -24,7 +25,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
-	"strconv"
 )
 
 func GetBPStudioApplicationResource() schema.Resource {
@@ -50,9 +50,7 @@ type ApplicationDetail struct {
 func GetApplicationDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).BPStudio
 
-	request := bpstudio.CreateListApplicationRequest()
-	request.Scheme = "https"
-	request.MaxResults = "20"
+	request := newListApplicationRequest()
 
 	for {
 		response, err := cli.ListApplication(request)
@@ -72,9 +70,17 @@ func GetApplicationDetail(ctx context.Context, service schema.ServiceInterface, 
 		if response.NextToken == 0 {
 			break
 		}
-		request.NextToken = requests.Integer(strconv.Itoa(response.NextToken))
+		request.NextToken = requests.NewInteger(response.NextToken)
 	}
 	return nil
+}
+
+func newListApplicationRequest() *bpstudio.ListApplicationRequest {
+	request := bpstudio.CreateListApplicationRequest()
+	request.Scheme = "https"
+	request.MaxResults = requests.NewInteger(20)
+	request.NextToken = requests.NewInteger(1)
+	return request
 }
 
 func getApplication(ctx context.Context, cli *bpstudio.Client, applicationId string) (application bpstudio.Data) {

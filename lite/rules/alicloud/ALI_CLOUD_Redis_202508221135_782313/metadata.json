@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.redis_202508221135_782313",
+  "name": "阿里云-Redis-专有网络运行",
+  "version": "legacy",
+  "description": "要求在在专有网络中运行",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "redis",
+  "asset_type": "redis",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "redis"
+  ],
+  "query": "data.redis_vpc_check_12200002.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "将该资源迁移或重建到 VPC 专有网络中，避免继续使用经典网络或公网直连形态；迁移后通过安全组、白名单和私网连接限制访问面。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_Redis_202508221135_782313",
+    "context": null,
+    "description": "要求在在专有网络中运行",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-Redis-专有网络运行",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Redis"
+  }
+}

@@ -81,6 +81,9 @@ type VPNGatewayDetail struct {
 
 func GetVPNGatewayDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).VPC
+	if cli == nil {
+		return nil
+	}
 
 	request := vpc.CreateDescribeVpnGatewaysRequest()
 	request.PageSize = requests.NewInteger(50)
@@ -92,6 +95,9 @@ func GetVPNGatewayDetail(ctx context.Context, service schema.ServiceInterface, r
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeVpnGateways error", zap.Error(err))
 			return err
+		}
+		if response == nil {
+			return nil
 		}
 
 		for _, gateway := range response.VpnGateways.VpnGateway {
@@ -106,18 +112,30 @@ func GetVPNGatewayDetail(ctx context.Context, service schema.ServiceInterface, r
 			res <- detail
 		}
 
-		count += len(response.VpnGateways.VpnGateway)
+		pageCount := len(response.VpnGateways.VpnGateway)
+		count += pageCount
+		if pageCount == 0 {
+			break
+		}
 		if count >= response.TotalCount {
 			break
 		}
 
-		request.PageNumber = requests.NewInteger(response.PageNumber + 1)
+		nextPage := response.PageNumber + 1
+		if nextPage <= 1 {
+			nextPage = count/50 + 1
+		}
+		request.PageNumber = requests.NewInteger(nextPage)
 	}
 
 	return nil
 }
 
 func getVpnRouteEntries(ctx context.Context, cli *vpc.Client, vpnGatewayId string) (vpnRouteEntries []vpc.VpnRouteEntry) {
+	if cli == nil || vpnGatewayId == "" {
+		return nil
+	}
+
 	request := vpc.CreateDescribeVpnRouteEntriesRequest()
 	request.VpnGatewayId = vpnGatewayId
 	request.PageSize = requests.NewInteger(50)
@@ -130,14 +148,25 @@ func getVpnRouteEntries(ctx context.Context, cli *vpc.Client, vpnGatewayId strin
 			log.CtxLogger(ctx).Warn("DescribeVpnRouteEntries error", zap.Error(err), zap.String("vpnGatewayId", vpnGatewayId))
 			return nil
 		}
+		if response == nil {
+			return vpnRouteEntries
+		}
+		pageCount := len(response.VpnRouteEntries.VpnRouteEntry)
 		vpnRouteEntries = append(vpnRouteEntries, response.VpnRouteEntries.VpnRouteEntry...)
 
-		count += len(response.VpnRouteEntries.VpnRouteEntry)
+		count += pageCount
+		if pageCount == 0 {
+			break
+		}
 		if count >= response.TotalCount {
 			break
 		}
 
-		request.PageNumber = requests.NewInteger(response.PageNumber + 1)
+		nextPage := response.PageNumber + 1
+		if nextPage <= 1 {
+			nextPage = count/50 + 1
+		}
+		request.PageNumber = requests.NewInteger(nextPage)
 	}
 
 	return vpnRouteEntries

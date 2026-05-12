@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.elasticsearch_202501081111_791919",
+  "name": "阿里云-Elasticsearch-端口对全网暴露（或ACL设置不当）",
+  "version": "legacy",
+  "description": "Elasticsearch端口对全网暴露（或ACL设置不当）",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "elasticsearch",
+  "asset_type": "elasticsearch",
+  "categories": [
+    "数据保护",
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "elasticsearch"
+  ],
+  "query": "data.es_open_to_pub_2200001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "关闭数据库或中间件公网访问入口，或将白名单收敛到可信业务出口；禁止 0.0.0.0/0，优先使用 VPC 私网连接并开启认证、加密和审计。",
+    "categoryList": [
+      "数据保护",
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_Elasticsearch_202501081111_791919",
+    "context": null,
+    "description": "Elasticsearch端口对全网暴露（或ACL设置不当）",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-Elasticsearch-端口对全网暴露（或ACL设置不当）",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Elasticsearch"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.account_202503171930_977923",
+  "name": "阿里云-RAM-主账号存在长期未调用的Root AccessKey",
+  "version": "legacy",
+  "description": "主账号启用AccessKey，且存在长期未调用的Root AccessKey",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "account",
+  "asset_type": "account",
+  "categories": [
+    "身份安全"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "account"
+  ],
+  "query": "data.root_ak_unused_7200001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "立即评估主账号 AccessKey 是否仍被使用；如无必要请禁用并删除，业务调用迁移到最小权限 RAM User 或 RAM Role，并在迁移后重新扫描确认。",
+    "categoryList": [
+      "身份安全"
+    ],
+    "code": "ALI_CLOUD_Account_202503171930_977923",
+    "context": null,
+    "description": "主账号启用AccessKey，且存在长期未调用的Root AccessKey",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RAM-主账号存在长期未调用的Root AccessKey",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Account"
+  }
+}

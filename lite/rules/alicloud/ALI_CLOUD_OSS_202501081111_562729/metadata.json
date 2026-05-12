@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.oss_202501081111_562729",
+  "name": "阿里云-OSS-Bucket的权限设为公有读(public-read)",
+  "version": "legacy",
+  "description": "bucket的权限设为公有读(public-read)",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "oss",
+  "asset_type": "oss",
+  "categories": [
+    "数据保护",
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "oss"
+  ],
+  "query": "data.cloudrec_2200003.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "将 Bucket ACL 调整为私有，移除 public-read；对确需公开的静态资源使用独立 Bucket、最小化对象范围并开启访问日志。",
+    "categoryList": [
+      "数据保护",
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_562729",
+    "context": null,
+    "description": "bucket的权限设为公有读(public-read)",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-OSS-Bucket的权限设为公有读(public-read)",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+  }
+}

@@ -66,7 +66,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 			d := &Detail{
 				NatGateway:        gateway,
 				ForwardTableEntry: describeForwardTableEntries(ctx, cli, gateway.ForwardTableIds.ForwardTableId),
-				SnatTableEntry:    describeSnatTableEntries(ctx, cli, gateway.ForwardTableIds.ForwardTableId),
+				SnatTableEntry:    describeSnatTableEntries(ctx, cli, gateway.SnatTableIds.SnatTableId),
 			}
 			res <- d
 		}
@@ -106,8 +106,8 @@ func describeForwardTableEntries(ctx context.Context, client *vpc.Client, forwar
 }
 
 // describeSnatTableEntries Query created SNAT entries
-func describeSnatTableEntries(ctx context.Context, client *vpc.Client, forwardTableId []string) (snatTableEntry []vpc.SnatTableEntry) {
-	for _, tableId := range forwardTableId {
+func describeSnatTableEntries(ctx context.Context, client *vpc.Client, snatTableId []string) (snatTableEntry []vpc.SnatTableEntry) {
+	for _, tableId := range snatTableId {
 		req := vpc.CreateDescribeSnatTableEntriesRequest()
 		req.SnatTableId = tableId
 		req.PageSize = requests.NewInteger(50)

@@ -4,8 +4,7 @@
     <img src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square">
     <a href="https://www.cloudrec.cloud/docs/intro"><img src="https://img.shields.io/badge/doc-English-blue?style=flat-square"></a>
     <a href="https://www.cloudrec.cloud/zh-CN/docs/intro/"><img src="https://img.shields.io/badge/文档-简体中文-blue?style=flat-square"></a>
-    <a href="https://discord.gg/WpWT9Q8BkD"><img src="https://img.shields.io/badge/Discord-Join_CloudRec-brightgreen?logo=discord&style=flat-square" /></a>
-    <a href="https://qr.dingtalk.com/action/joingroup?code=v1,k1,rsTf3mOAcQuKrY0//YlclWTUG4zcL9eQGsJIjjDj88A=&_dt_no_comment=1&origin=11"><img src="https://img.shields.io/badge/DingTalk-Join_CloudRec-brightgreen?style=flat-square" /></a>
+    <a href="https://qr.dingtalk.com/action/joingroup?code=v1,k1,rsTf3mOAcQuKrY0//YlclWTUG4zcL9eQGsJIjjDj88A=&_dt_no_comment=1&origin=11"><img src="https://img.shields.io/badge/DingTalk-Join_CloudRec-brightgreen?logo=data:image/svg+xml;base64,PHN2ZyB0PSIxNzQ3NzIxMzEzNDg4IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjcxMzgiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNOTA4LjQ3NCAzODEuOTJjLTEuNzY3IDcuNDctNi4xMjggMTguNDE5LTEyLjI0NiAzMS42MjRoMC4xMzJsLTAuNyAxLjIyM2MtMzUuNjk1IDc2LjQ5Mi0xMjguODk0IDIyNi41MTItMTI4Ljg5NCAyMjYuNTEycy0wLjExOS0wLjM1NC0wLjQ4Ni0wLjkzOGwtMjcuMjM1IDQ3LjQ4NWgxMzEuMjU0TDYxOS42MSAxMDIxLjcwNWw1Ni45MDMtMjI3LjEyOUg1NzMuMjM2bDM1Ljg4Ni0xNTAuMTljLTI5LjAzMyA3LjAxMS02My4zNSAxNi42NTQtMTAzLjk5MyAyOS43NCAwIDAtNTQuOTgyIDMyLjI0OS0xNTguMzgyLTYyLjAzNyAwIDAtNjkuNzM2LTYxLjUzMy0yOS4zMDQtNzYuOTA5IDE3LjE5Ni02LjUzOCA4My40OS0xNC44MzIgMTM1LjY0NS0yMS44OTQgNzAuNDg3LTkuNTQzIDExMy44NDgtMTQuNTk2IDExMy44NDgtMTQuNTk2cy0yMTcuMzE2IDMuMjU1LTI2OC44Ny00Ljg2NmMtNTEuNTU3LTguMTItMTE2Ljk1OS05NC4yNzUtMTMwLjg5LTE3MC4wMTkgMCAwLTIxLjU0Ny00MS41OCA0Ni4zMzQtMjEuODk0czM0OC44NTUgNzYuNjMyIDM0OC44NTUgNzYuNjMyLTM2NS40MjMtMTEyLjIwNC0zODkuNzQtMTM5LjU3OGMtMjQuMzEyLTI3LjM3NC03MS41NTctMTQ5LjQyMy02NS40MS0yMjQuNDIgMCAwIDIuNjY1LTE4LjY5OCAyMS44MDQtMTMuNjg3IDAgMCAyNzAuMTQ5IDEyMy42NCA0NTQuODc1IDE5MS4zMjMgMTg0LjcyNCA2Ny42ODMgMzQ1LjMzIDEwMi4xMDggMzI0LjU4IDE4OS43Mzl6IiBmaWxsPSIjMzI5NkZBIiBwLWlkPSI3MTM5Ij48L3BhdGg+PC9zdmc+Cg==&style=flat-square" /></a>
     <a href="https://demo.cloudrec.cloud"><img src="https://img.shields.io/badge/Demo-Try_CloudRec-orange?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB0PSIxNzQ3NzIxNjg1MDQxIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjkxMzAiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNMjkwLjA5OTIgNDA5LjZIMTU1LjEzNmEzNzEuNDA0OCAzNzEuNDA0OCAwIDAgMC0xNC4yODQ4IDEwMi40YzAgMzUuNTMyOCA0Ljk2NjQgNjkuODg4IDE0LjMzNiAxMDIuNGgxMzQuOTYzMmMtNS42MzItMzIuNzY4LTguNDk5Mi02Ni45MTg0LTguNDk5Mi0xMDIuNCAwLTM1LjQ4MTYgMi44NjcyLTY5LjYzMiA4LjQ5OTItMTAyLjR6IG01Mi4wNzA0IDBhNTQyLjEwNTYgNTQyLjEwNTYgMCAwIDAtOS4zNjk2IDEwMi40YzAgMzUuNzM3NiAzLjA3MiA2OS44ODggOS4zNjk2IDEwMi40SDQ4Ni40VjQwOS42SDM0Mi4xNjk2eiBtNzUuMDA4IDQ2MS4zNjMyQTQ5MS44Nzg0IDQ5MS44Nzg0IDAgMCAxIDMwMS41NjggNjY1LjZIMTczLjk3NzZhMzcyLjA3MDQgMzcyLjA3MDQgMCAwIDAgMjQzLjIgMjA1LjM2MzJ6IG02OS4yMjI0LTMuNTg0VjY2NS42SDM1NC45Njk2YzI0LjA2NCA3Ny4xMDcyIDY3Ljg0IDE0NC4yMzA0IDEzMS40MzA0IDIwMS44MzA0ek00MTcuMTc3NiAxNTMuMDg4QTM3Mi4wNzA0IDM3Mi4wNzA0IDAgMCAwIDE3My45Nzc2IDM1OC40SDMwMS41NjhhNDkxLjg3ODQgNDkxLjg3ODQgMCAwIDEgMTE1LjU1ODQtMjA1LjM2MzJ6IG02OS4yMjI0IDMuNTg0QzQyMi44MDk2IDIxNC4xMTg0IDM3OS4wODQ4IDI4MS4yNDE2IDM1NC45Njk2IDM1OC40SDQ4Ni40VjE1Ni41Njk2ek03MzMuOTAwOCA0MDkuNmM1LjYzMiAzMi43NjggOC40OTkyIDY2LjkxODQgOC40OTkyIDEwMi40IDAgMzUuNDgxNi0yLjg2NzIgNjkuNjMyLTguNDk5MiAxMDIuNGgxMzUuMDE0NGM5LjMxODQtMzIuNTEyIDE0LjI4NDgtNjYuODY3MiAxNC4yODQ4LTEwMi40cy00Ljk2NjQtNjkuODg4LTE0LjMzNi0xMDIuNGgtMTM0Ljk2MzJ6IG0tNTIuMDcwNCAwSDUzNy42djIwNC44aDE0NC4yMzA0YzYuMjQ2NC0zMi41MTIgOS4zNjk2LTY2LjY2MjQgOS4zNjk2LTEwMi40cy0zLjA3Mi02OS44ODgtOS4zNjk2LTEwMi40eiBtLTc1LjAwOCA0NjEuMzYzMkEzNzIuMDcwNCAzNzIuMDcwNCAwIDAgMCA4NTAuMDIyNCA2NjUuNkg3MjIuNDMyYTQ5MS44Nzg0IDQ5MS44Nzg0IDAgMCAxLTExNS41NTg0IDIwNS4zNjMyeiBtLTY5LjIyMjQtMy41ODRjNjMuNTkwNC01Ny41NDg4IDEwNy4zMTUyLTEyNC42NzIgMTMxLjQzMDQtMjAxLjc3OTJINTM3LjZ2MjAxLjgzMDR6TTYwNi44MjI0IDE1My4wODhBNDkxLjg3ODQgNDkxLjg3ODQgMCAwIDEgNzIyLjQzMiAzNTguNGgxMjcuNjQxNmEzNzIuMDcwNCAzNzIuMDcwNCAwIDAgMC0yNDMuMi0yMDUuMzYzMnogbS02OS4yMjI0IDMuNTg0VjM1OC40aDEzMS40MzA0Yy0yNC4wNjQtNzcuMTA3Mi02Ny44NC0xNDQuMjMwNC0xMzEuNDMwNC0yMDEuODMwNHpNNTEyIDk0Ny4yYTQzNS4yIDQzNS4yIDAgMSAxIDAtODcwLjQgNDM1LjIgNDM1LjIgMCAwIDEgMCA4NzAuNHoiIGZpbGw9IiM1MmE4ZjkiIHAtaWQ9IjkxMzEiPjwvcGF0aD48L3N2Zz4K" /></a>
   </p>
 </div>
@@ -14,20 +13,43 @@ CloudRec is an open source multi-cloud security posture management (CSPM) platfo
 
 ## CloudRec Lite
 
-CloudRec Lite is the lightweight local edition for small and mid-sized teams:
-one CLI binary, local SQLite storage, an embedded read-only Web dashboard, and
-Alibaba Cloud rule quality gates that can run offline.
+CloudRec Lite is a brand-new CloudRec edition built around one CLI that
+completes the whole lightweight CSPM workflow. It is local-first by default and
+designed for small and mid-sized teams that need fast cloud risk discovery
+without operating another platform. The loop is intentionally compact: collect
+cloud assets, run policy checks, understand the risky resource path, export
+results, and open a local dashboard in minutes.
 
-```sh
-cd lite
-printf '%s\n' '<access-key-id>' | cloudrec-lite credentials store --provider alicloud --account <account-id> --access-key-id-stdin
-cloudrec-lite doctor --provider alicloud --account <account-id> --rules ./rules/alicloud
-cloudrec-lite scan --provider alicloud --account <account-id> --rules ./rules/alicloud --dry-run=false
-cloudrec-lite serve --rules ./rules/alicloud --provider alicloud
-```
+<div align="center">
+  <a href="doc/videos/cloudrec-lite-promo.mp4" aria-label="Watch the CloudRec Lite demo video">
+    <img src="doc/images/cloudrec-lite-promo-preview.gif" alt="CloudRec Lite animated product preview" width="720">
+  </a>
+  <br>
+  <sub>Animated preview. Click the image to watch the full MP4 demo.</sub>
+</div>
 
-See [lite/README.md](lite/README.md) for the full Lite user guide and
-[RELEASE.md](RELEASE.md) for the maintainer release checklist.
+CloudRec Lite is designed for teams that want a faster starting point before
+running a full CSPM platform:
+
+- **One CLI for everything**: credentials, discovery, risk inspection, asset
+  and finding queries, export, rule quality checks, and local Web review are
+  all driven from the same command line.
+- **No server stack required**: keep scan results in local storage and open an
+  embedded read-only dashboard when you need to investigate.
+- **Asset-aware findings**: connect risks back to impacted resources, regions,
+  accounts, and topology paths instead of showing isolated rule hits.
+- **Rule quality first**: use OPA-based policies with validation gates so rule
+  coverage, evidence, and remediation can be reviewed before release.
+- **Open-source friendly path**: start lightweight with Lite, then move to the
+  full CloudRec deployment when you need multi-user operations, collectors, and
+  enterprise workflows.
+
+CloudRec Lite is especially useful for quick Alibaba Cloud posture checks,
+local demos, CI-style rule validation, and small-team security reviews where a
+single binary is easier to operate than a full server deployment.
+
+Start with the [CloudRec Lite user guide](lite/README.md). Maintainers can use
+the [release checklist](RELEASE.md) before publishing Lite binaries.
 
 ---
 
@@ -154,7 +176,7 @@ To check detailed guidelines for new contributions, please refer (https://www.cl
 
 # **<font style="color:rgb(38, 38, 38);">📬</font>** Community
 
-[https://discord.gg/WpWT9Q8BkD](https://discord.gg/WpWT9Q8BkD)
+[https://qr.dingtalk.com/action/joingroup?code=v1,k1,rsTf3mOAcQuKrY0//YlclWTUG4zcL9eQGsJIjjDj88A=&_dt_no_comment=1&origin=11](https://qr.dingtalk.com/action/joingroup?code=v1,k1,rsTf3mOAcQuKrY0//YlclWTUG4zcL9eQGsJIjjDj88A=&_dt_no_comment=1&origin=11)
 
 # 📜 LICENSE
 

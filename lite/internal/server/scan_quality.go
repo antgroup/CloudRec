@@ -118,13 +118,14 @@ func (h *handler) enrichScanQualityWithRules(response *scanQualityResponse) {
 	if response == nil || strings.TrimSpace(h.rulesDir) == "" {
 		return
 	}
-	if err := ValidateRulesDir(h.rulesDir); err != nil {
+	rulesDir, err := h.resolvedRulesDir(h.provider, true)
+	if err != nil {
 		response.Summary.RuleQualityStatus = "rules_unavailable"
 		return
 	}
-	options := coverageOptions(h.rulesDir, h.provider)
-	options.ReviewLedgerPath = defaultReviewLedgerPath(h.rulesDir)
-	options.SamplesDir = defaultSamplesDir(h.rulesDir, h.provider)
+	options := coverageOptions(rulesDir, h.provider)
+	options.ReviewLedgerPath = defaultReviewLedgerPath(rulesDir)
+	options.SamplesDir = defaultSamplesDir(rulesDir, h.provider)
 	report, err := rule.AnalyzeCoverage(options)
 	if err != nil {
 		response.Summary.RuleQualityStatus = "rules_unavailable"

@@ -77,13 +77,16 @@ By default, scan history is stored under your user configuration directory as
 `cloudrec-lite/cloudrec-lite.db`. You can still pass `--db <path>` when you want
 an explicit database location for testing or automation.
 
+The default Alibaba Cloud rules and validation samples are built into the
+binary. Omit `--rules` and `--samples` unless you are testing a custom local
+rule pack.
+
 Run diagnostics before a live scan:
 
 ```sh
 ./cloudrec-lite doctor \
   --provider alicloud \
-  --account <account-id> \
-  --rules ./rules/alicloud
+  --account <account-id>
 ```
 
 Run a focused Alibaba Cloud scan:
@@ -92,7 +95,6 @@ Run a focused Alibaba Cloud scan:
 ./cloudrec-lite scan \
   --provider alicloud \
   --account <account-id> \
-  --rules ./rules/alicloud \
   --dry-run=false
 ```
 
@@ -113,7 +115,6 @@ Serve the local dashboard from the scan DB:
 
 ```sh
 ./cloudrec-lite serve \
-  --rules ./rules/alicloud \
   --provider alicloud \
   --addr 127.0.0.1:8787
 ```
@@ -131,13 +132,13 @@ The common Web read models are also available from CLI:
 ```sh
 ./cloudrec-lite dashboard --format table
 ./cloudrec-lite risks list --status open --limit 20
-./cloudrec-lite risks show <finding-id> --rules ./rules/alicloud --format json
+./cloudrec-lite risks show <finding-id> --format json
 ./cloudrec-lite assets list --resource-type OSS --limit 20
 ./cloudrec-lite assets show <asset-id> --format json
-./cloudrec-lite rules list --rules ./rules/alicloud --provider alicloud --severity high --format table
-./cloudrec-lite rules show alicloud.oss_202501081111_563734 --rules ./rules/alicloud --provider alicloud --format json
+./cloudrec-lite rules list --provider alicloud --severity high --format table
+./cloudrec-lite rules show alicloud.oss_202501081111_563734 --provider alicloud --format json
 ./cloudrec-lite scans list --limit 20
-./cloudrec-lite scans quality --rules ./rules/alicloud --provider alicloud --format table
+./cloudrec-lite scans quality --provider alicloud --format table
 ./cloudrec-lite facets --format table
 ```
 
@@ -151,25 +152,20 @@ Use rule quality commands before changing rules or trusting a new rule pack:
 
 ```sh
 ./cloudrec-lite rules audit \
-  --rules ./rules/alicloud \
   --provider alicloud \
-  --review-ledger ./rules/alicloud/review-ledger.json \
   --format table
 
 ./cloudrec-lite rules coverage \
-  --rules ./rules/alicloud \
   --provider alicloud \
-  --review-ledger ./rules/alicloud/review-ledger.json \
   --format table
 
 ./cloudrec-lite rules validate \
-  --rules ./rules/alicloud \
   --provider alicloud \
   --format table
 ```
 
-From the source tree, add `--samples ./samples/alicloud` to `coverage` and
-`validate` for field-contract validation against the sanitized sample pack.
+From the source tree, you can still pass `--rules ./rules/alicloud` and
+`--samples ./samples/alicloud` when validating an edited local rule pack.
 
 The current Alibaba Cloud Lite rule pack is release-gated at 84 active rules,
 35 resource types, 84 official reviews, 0 missing data references, and 0 missing
@@ -181,7 +177,6 @@ Generate local repair notes after a scan:
 
 ```sh
 ./cloudrec-lite export remediation \
-  --rules ./rules/alicloud \
   --status open \
   --format markdown \
   --output remediation.md

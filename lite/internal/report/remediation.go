@@ -265,9 +265,6 @@ func verificationCommand(provider string, accountID string, resourceType string)
 	if resourceType != "" {
 		command += " --resource-types " + shellQuote(resourceType)
 	}
-	if provider == "alicloud" {
-		command += " --rules ./rules/alicloud"
-	}
 	return command
 }
 

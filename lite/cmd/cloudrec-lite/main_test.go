@@ -26,6 +26,31 @@ func TestRunScanDryRun(t *testing.T) {
 	}
 }
 
+func TestRunScanDryRunUsesBundledRulesOutsideRepo(t *testing.T) {
+	isolateBundleCache(t)
+	chdir(t, t.TempDir())
+
+	err := run([]string{"scan", "--provider", "mock", "--account", "test", "--dry-run=true"})
+	if err != nil {
+		t.Fatalf("scan returned error without local rules directory: %v", err)
+	}
+}
+
+func TestRunRulesCoverageUsesBundledRulesByDefault(t *testing.T) {
+	isolateBundleCache(t)
+	chdir(t, t.TempDir())
+
+	var out bytes.Buffer
+	if err := runRulesCoverageWithWriter([]string{"--provider", "alicloud", "--format", "json"}, &out); err != nil {
+		t.Fatalf("rules coverage returned error without local rules directory: %v", err)
+	}
+	for _, want := range []string{`"provider": "alicloud"`, `"total_rules"`, `"verified_resources"`} {
+		if !strings.Contains(out.String(), want) {
+			t.Fatalf("bundled coverage output missing %q:\n%s", want, out.String())
+		}
+	}
+}
+
 func TestRunRulesCoverageJSONAndTable(t *testing.T) {
 	dir := t.TempDir()
 	writeCLIRulePack(t, dir, "oss", `{
@@ -143,6 +168,22 @@ func TestParseServeConfigUsesDefaultDBPath(t *testing.T) {
 	}
 }
 
+func TestParseServeConfigUsesBundledRulesByDefault(t *testing.T) {
+	isolateBundleCache(t)
+	chdir(t, t.TempDir())
+
+	config, err := parseServeConfig([]string{})
+	if err != nil {
+		t.Fatalf("parseServeConfig returned error without local rules directory: %v", err)
+	}
+	if _, err := os.Stat(config.RulesDir); err != nil {
+		t.Fatalf("bundled rules dir %q is not usable: %v", config.RulesDir, err)
+	}
+	if filepath.Base(config.RulesDir) != "alicloud" {
+		t.Fatalf("RulesDir = %q, want bundled alicloud provider rules", config.RulesDir)
+	}
+}
+
 func TestParseServeConfigMissingRulesDir(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing")
 
@@ -173,4 +214,27 @@ func writeCLIRulePack(t *testing.T, root string, name string, metadata string, i
 			t.Fatalf("write %q: %v", path, err)
 		}
 	}
+}
+
+func isolateBundleCache(t *testing.T) {
+	t.Helper()
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CACHE_HOME", filepath.Join(home, ".cache"))
+}
+
+func chdir(t *testing.T, dir string) {
+	t.Helper()
+	old, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(dir); err != nil {
+		t.Fatalf("chdir %q: %v", dir, err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(old); err != nil {
+			t.Fatalf("restore cwd %q: %v", old, err)
+		}
+	})
 }

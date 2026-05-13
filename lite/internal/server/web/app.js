@@ -1219,7 +1219,7 @@
       <section class="content-grid equal">
         <article class="panel">
           <h2>Runbook</h2>
-          <div class="json-block">cloudrec-lite serve --db ${escapeHTML(runtime.database || "<user-config>/cloudrec-lite/cloudrec-lite.db")} --rules ${escapeHTML(runtime.rulesDir || "./rules/alicloud")} --provider ${escapeHTML(runtime.provider || "alicloud")} --addr 127.0.0.1:8787</div>
+          <div class="json-block">cloudrec-lite serve --db ${escapeHTML(runtime.database || "<user-config>/cloudrec-lite/cloudrec-lite.db")} --provider ${escapeHTML(runtime.provider || "alicloud")} --addr 127.0.0.1:8787</div>
           <p class="muted">The Lite console is intentionally read-only. It never edits accounts, waivers, rules, or cloud resources.</p>
         </article>
         <article class="panel">
@@ -1963,9 +1963,9 @@
         </div>
         <div class="detail-list">
           ${commandRow("1. Store Credentials", `cloudrec-lite credentials store --provider ${provider} --account <account-id> --access-key-id-stdin`)}
-          ${commandRow("2. Doctor", `cloudrec-lite doctor --provider ${provider} --account <account-id> --rules ${rulesDir} --db ${db}`)}
-          ${commandRow("3. Scan", `cloudrec-lite scan --provider ${provider} --account <account-id> --rules ${rulesDir} --db ${db} --dry-run=false`)}
-          ${commandRow("4. Serve", `cloudrec-lite serve --db ${db} --rules ${rulesDir} --provider ${provider}`)}
+          ${commandRow("2. Doctor", `cloudrec-lite doctor --provider ${provider} --account <account-id> --db ${db}`)}
+          ${commandRow("3. Scan", `cloudrec-lite scan --provider ${provider} --account <account-id> --db ${db} --dry-run=false`)}
+          ${commandRow("4. Serve", `cloudrec-lite serve --db ${db} --provider ${provider}`)}
         </div>
         <p class="muted">Credentials stay in your OS credential store or one-shot shell environment and are never shown in this page.</p>
       </section>
@@ -1985,13 +1985,11 @@
     const provider = item.provider || state.runtime.provider || "alicloud";
     const account = item.account_id || state.filters.account || "<account-id>";
     const resourceType = item.resource_type || item.asset_resource_type || "";
-    const rulesDir = state.runtime.rulesDir || "./rules/alicloud";
     const command = [
       "cloudrec-lite scan",
       `--provider ${shellToken(provider)}`,
       `--account ${shellToken(account)}`,
       resourceType ? `--resource-types ${shellToken(resourceType)}` : "",
-      provider === "alicloud" ? `--rules ${shellToken(rulesDir)}` : "",
       "--dry-run=true",
     ].filter(Boolean).join(" ");
     return `

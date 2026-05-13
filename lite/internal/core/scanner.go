@@ -8,10 +8,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
+	"github.com/antgroup/CloudRec/lite/internal/bundle"
 	"github.com/antgroup/CloudRec/lite/internal/collectorstate"
 	"github.com/antgroup/CloudRec/lite/internal/model"
 	"github.com/antgroup/CloudRec/lite/internal/progress"
@@ -1020,31 +1020,7 @@ func csvValues(value string) []string {
 }
 
 func resolveRulesDir(path string) (string, error) {
-	candidate := strings.TrimSpace(path)
-	if candidate == "" {
-		return bundledRulesDir(), nil
-	}
-	if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-		return candidate, nil
-	}
-
-	clean := filepath.Clean(candidate)
-	if clean == "rules" {
-		bundled := bundledRulesDir()
-		if info, err := os.Stat(bundled); err == nil && info.IsDir() {
-			return bundled, nil
-		}
-	}
-
-	return candidate, nil
-}
-
-func bundledRulesDir() string {
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		return "rules"
-	}
-	return filepath.Clean(filepath.Join(filepath.Dir(file), "..", "..", "rules"))
+	return bundle.ResolveRulesDir(path, "", false)
 }
 
 func stringValue(value any) string {

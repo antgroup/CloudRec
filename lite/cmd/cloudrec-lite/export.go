@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/antgroup/CloudRec/lite/internal/bundle"
 	"github.com/antgroup/CloudRec/lite/internal/core"
 	"github.com/antgroup/CloudRec/lite/internal/model"
 	"github.com/antgroup/CloudRec/lite/internal/report"
@@ -86,7 +87,7 @@ func runExportRemediationWithWriter(args []string, w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	findings.Findings = hydrateRemediationFromRules(findings.Findings, *rules)
+	findings.Findings = hydrateRemediationFromRules(findings.Findings, *rules, *provider)
 
 	writer := w
 	var file *os.File
@@ -101,12 +102,15 @@ func runExportRemediationWithWriter(args []string, w io.Writer) error {
 	return report.RenderRemediationExport(writer, findings.Findings, report.RemediationExportOptions{Format: *format})
 }
 
-func hydrateRemediationFromRules(findings []model.FindingView, rulesDir string) []model.FindingView {
-	rulesDir = strings.TrimSpace(rulesDir)
-	if rulesDir == "" || len(findings) == 0 {
+func hydrateRemediationFromRules(findings []model.FindingView, rulesDir string, provider string) []model.FindingView {
+	if len(findings) == 0 {
 		return findings
 	}
-	packs, err := rule.LoadDirWithOptions(rulesDir, rule.LoadDirOptions{IncludeDisabled: true})
+	resolvedRulesDir, err := bundle.ResolveRulesDir(rulesDir, provider, true)
+	if err != nil {
+		return findings
+	}
+	packs, err := rule.LoadDirWithOptions(resolvedRulesDir, rule.LoadDirOptions{IncludeDisabled: true})
 	if err != nil {
 		return findings
 	}

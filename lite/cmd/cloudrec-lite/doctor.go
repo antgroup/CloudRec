@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/antgroup/CloudRec/lite/internal/bundle"
 	"github.com/antgroup/CloudRec/lite/internal/core"
 	liteprovider "github.com/antgroup/CloudRec/lite/internal/provider"
 	"github.com/antgroup/CloudRec/lite/internal/rule"
@@ -69,7 +70,7 @@ func runDoctorWithWriter(args []string, w io.Writer) error {
 	providerName := fs.String("provider", "alicloud", "cloud provider to diagnose")
 	account := fs.String("account", "default", "account identifier or profile")
 	region := fs.String("region", "", "default cloud region")
-	rules := fs.String("rules", "./rules/alicloud", "rule pack directory")
+	rules := fs.String("rules", "", "optional rule pack directory; defaults to built-in provider rules")
 	db := fs.String("db", core.DefaultDBPath(), "SQLite database path")
 	envFile := fs.String("env-file", "", "optional plaintext env file fallback for credentials; missing files are reported as warnings")
 	credentialSource := fs.String("credential-source", alicloud.CredentialSourceAuto, "credential source: auto, keyring, file, or env")
@@ -193,15 +194,19 @@ func doctorEnvFileCheck(path string, loadErr error) doctorCheck {
 }
 
 func doctorRulesCheck(rulesDir string) doctorCheck {
-	if err := server.ValidateRulesDir(rulesDir); err != nil {
+	resolvedRulesDir, err := bundle.ResolveRulesDir(rulesDir, "alicloud", true)
+	if err != nil {
 		return doctorCheck{
 			Name:    "rules",
 			Status:  doctorStatusFail,
 			Message: err.Error(),
-			Hint:    "Pass --rules ./rules/alicloud from the lite directory, or point to a valid rule pack directory.",
+			Hint:    "Omit --rules to use the built-in rule pack, or point --rules to a valid custom rule pack directory.",
 		}
 	}
-	packs, err := rule.LoadDirWithOptions(rulesDir, rule.LoadDirOptions{IncludeDisabled: true})
+	if err := server.ValidateRulesDir(resolvedRulesDir); err != nil {
+		return doctorCheck{Name: "rules", Status: doctorStatusFail, Message: err.Error()}
+	}
+	packs, err := rule.LoadDirWithOptions(resolvedRulesDir, rule.LoadDirOptions{IncludeDisabled: true})
 	if err != nil {
 		return doctorCheck{Name: "rules", Status: doctorStatusFail, Message: "rule packs failed to load: " + err.Error()}
 	}
@@ -212,7 +217,11 @@ func doctorRulesCheck(rulesDir string) doctorCheck {
 }
 
 func doctorReviewLedgerCheck(rulesDir string) doctorCheck {
-	path := filepath.Join(strings.TrimSpace(rulesDir), "review-ledger.json")
+	resolvedRulesDir, err := bundle.ResolveRulesDir(rulesDir, "alicloud", true)
+	if err != nil {
+		return doctorCheck{Name: "review_ledger", Status: doctorStatusFail, Message: err.Error()}
+	}
+	path := filepath.Join(strings.TrimSpace(resolvedRulesDir), "review-ledger.json")
 	info, err := os.Stat(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return doctorCheck{
@@ -246,23 +255,23 @@ func doctorReviewLedgerCheck(rulesDir string) doctorCheck {
 }
 
 func doctorSamplesCheck(rulesDir string, provider string) doctorCheck {
-	samplesDir := doctorDefaultSamplesDir(rulesDir, provider)
-	if samplesDir == "" {
-		provider = strings.TrimSpace(provider)
-		if provider == "" {
-			provider = "alicloud"
-		}
+	resolvedRulesDir, err := bundle.ResolveRulesDir(rulesDir, provider, true)
+	if err != nil {
+		return doctorCheck{Name: "samples", Status: doctorStatusFail, Message: err.Error()}
+	}
+	samplesDir, err := resolveDoctorSamplesDir(resolvedRulesDir, provider)
+	if err != nil {
 		return doctorCheck{
 			Name:    "samples",
 			Status:  doctorStatusWarn,
-			Message: fmt.Sprintf("no field sample pack found for provider %s", provider),
+			Message: err.Error(),
 			Hint:    "Add sanitized samples under ./samples/<provider> or run rules validate with --samples to verify collector fields.",
 		}
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	report, err := rule.AnalyzeValidation(ctx, rule.ValidationOptions{
-		RulesDir:   rulesDir,
+		RulesDir:   resolvedRulesDir,
 		Provider:   provider,
 		SamplesDir: samplesDir,
 	})
@@ -280,7 +289,7 @@ func doctorSamplesCheck(rulesDir string, provider string) doctorCheck {
 	return doctorCheck{Name: "samples", Status: doctorStatusPass, Message: fmt.Sprintf("%s verifies %d rule(s)", samplesDir, report.Totals.RealFieldVerified)}
 }
 
-func doctorDefaultSamplesDir(rulesDir string, provider string) string {
+func resolveDoctorSamplesDir(rulesDir string, provider string) (string, error) {
 	provider = strings.ToLower(strings.TrimSpace(provider))
 	if provider == "" {
 		provider = "alicloud"
@@ -292,10 +301,10 @@ func doctorDefaultSamplesDir(rulesDir string, provider string) string {
 	}
 	for _, candidate := range candidates {
 		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-			return candidate
+			return candidate, nil
 		}
 	}
-	return ""
+	return bundle.ResolveSamplesDir("", provider)
 }
 
 func doctorDBPathCheck(dbPath string) doctorCheck {

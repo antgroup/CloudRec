@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/antgroup/CloudRec/lite/internal/bundle"
 	"github.com/antgroup/CloudRec/lite/internal/model"
 	"github.com/antgroup/CloudRec/lite/internal/rule"
 	"github.com/antgroup/CloudRec/lite/internal/storage"
@@ -892,17 +893,17 @@ func (h *handler) rules(w http.ResponseWriter, r *http.Request) {
 	if !allowMethod(w, r, http.MethodGet) {
 		return
 	}
-	if err := ValidateRulesDir(h.rulesDir); err != nil {
-		writeError(w, http.StatusServiceUnavailable, err.Error())
-		return
-	}
-
 	filter, err := parseRulesFilter(r, h.provider)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	packs, err := rule.LoadDirWithOptions(h.rulesDir, rule.LoadDirOptions{IncludeDisabled: true})
+	rulesDir, err := h.resolvedRulesDir(filter.Provider, true)
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, err.Error())
+		return
+	}
+	packs, err := rule.LoadDirWithOptions(rulesDir, rule.LoadDirOptions{IncludeDisabled: true})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "load rules failed: "+err.Error())
 		return
@@ -924,7 +925,7 @@ func (h *handler) rules(w http.ResponseWriter, r *http.Request) {
 		Total:    total,
 		Limit:    filter.Limit,
 		Offset:   filter.Offset,
-		RulesDir: h.rulesDir,
+		RulesDir: rulesDir,
 		Provider: filter.Provider,
 	})
 }
@@ -933,20 +934,20 @@ func (h *handler) rulesCoverage(w http.ResponseWriter, r *http.Request) {
 	if !allowMethod(w, r, http.MethodGet) {
 		return
 	}
-	if err := ValidateRulesDir(h.rulesDir); err != nil {
+	provider := normalizeProvider(firstNonEmptyString(r.URL.Query().Get("provider"), h.provider))
+	rulesDir, err := h.resolvedRulesDir(provider, true)
+	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, err.Error())
 		return
 	}
-
-	provider := normalizeProvider(firstNonEmptyString(r.URL.Query().Get("provider"), h.provider))
-	options := coverageOptions(h.rulesDir, provider)
+	options := coverageOptions(rulesDir, provider)
 	options.SamplesDir = strings.TrimSpace(r.URL.Query().Get("samples"))
 	if options.SamplesDir == "" {
-		options.SamplesDir = defaultSamplesDir(h.rulesDir, provider)
+		options.SamplesDir = defaultSamplesDir(rulesDir, provider)
 	}
 	options.ReviewLedgerPath = strings.TrimSpace(r.URL.Query().Get("review_ledger"))
 	if options.ReviewLedgerPath == "" {
-		options.ReviewLedgerPath = defaultReviewLedgerPath(h.rulesDir)
+		options.ReviewLedgerPath = defaultReviewLedgerPath(rulesDir)
 	}
 	report, err := rule.AnalyzeCoverage(options)
 	if err != nil {
@@ -963,14 +964,16 @@ func (h *handler) runtime(w http.ResponseWriter, r *http.Request) {
 
 	rulesAvailable := true
 	rulesError := ""
-	if err := ValidateRulesDir(h.rulesDir); err != nil {
+	rulesDir, err := h.resolvedRulesDir(h.provider, true)
+	if err != nil {
 		rulesAvailable = false
 		rulesError = err.Error()
+		rulesDir = h.rulesDir
 	}
 	writeJSON(w, http.StatusOK, runtimeResponse{
 		Version:         h.version,
 		Provider:        h.provider,
-		RulesDir:        h.rulesDir,
+		RulesDir:        rulesDir,
 		DatabasePath:    h.dbPath,
 		StoreConfigured: h.store != nil,
 		RulesAvailable:  rulesAvailable,
@@ -1595,10 +1598,11 @@ func enrichFindingWithRuleIndex(finding model.Finding, index map[string]string) 
 }
 
 func (h *handler) ruleRemediationIndex() map[string]string {
-	if err := ValidateRulesDir(h.rulesDir); err != nil {
+	rulesDir, err := h.resolvedRulesDir(h.provider, true)
+	if err != nil {
 		return nil
 	}
-	packs, err := rule.LoadDirWithOptions(h.rulesDir, rule.LoadDirOptions{IncludeDisabled: true})
+	packs, err := rule.LoadDirWithOptions(rulesDir, rule.LoadDirOptions{IncludeDisabled: true})
 	if err != nil {
 		return nil
 	}
@@ -1778,6 +1782,9 @@ func defaultSamplesDir(rulesDir string, provider string) string {
 			return candidate
 		}
 	}
+	if samplesDir, err := bundle.ResolveSamplesDir("", provider); err == nil {
+		return samplesDir
+	}
 	return ""
 }
 
@@ -1804,21 +1811,25 @@ func alicloudNativeAdapterMap() map[string]bool {
 }
 
 func ValidateRulesDir(rulesDir string) error {
-	rulesDir = strings.TrimSpace(rulesDir)
-	if rulesDir == "" {
-		return errors.New("rules directory is required")
+	resolved, err := bundle.ResolveRulesDir(rulesDir, defaultProvider, false)
+	if err != nil {
+		return err
 	}
-	info, err := os.Stat(rulesDir)
+	info, err := os.Stat(resolved)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("rules directory %q does not exist; pass --rules to a valid rule pack directory", rulesDir)
+			return fmt.Errorf("rules directory %q does not exist; pass --rules to a valid rule pack directory", resolved)
 		}
-		return fmt.Errorf("stat rules directory %q: %w", rulesDir, err)
+		return fmt.Errorf("stat rules directory %q: %w", resolved, err)
 	}
 	if !info.IsDir() {
-		return fmt.Errorf("rules path %q is not a directory", rulesDir)
+		return fmt.Errorf("rules path %q is not a directory", resolved)
 	}
 	return nil
+}
+
+func (h *handler) resolvedRulesDir(provider string, preferProvider bool) (string, error) {
+	return bundle.ResolveRulesDir(h.rulesDir, provider, preferProvider)
 }
 
 func firstQueryValue(r *http.Request, names ...string) string {

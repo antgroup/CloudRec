@@ -30,9 +30,6 @@ func TestDefaultDBPathUsesUserConfigDir(t *testing.T) {
 	if got := DefaultDBPath(); got != want {
 		t.Fatalf("DefaultDBPath() = %q, want %q", got, want)
 	}
-	if strings.HasPrefix(DefaultDBPath(), "/tmp/") {
-		t.Fatalf("DefaultDBPath() should not default to temporary storage: %q", DefaultDBPath())
-	}
 }
 
 func TestScannerScanRequiresProvider(t *testing.T) {

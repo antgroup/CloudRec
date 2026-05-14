@@ -16,21 +16,75 @@
 package blb
 
 import (
+	"context"
+	"strconv"
+
+	"github.com/baidubce/bce-sdk-go/bce"
+	"github.com/baidubce/bce-sdk-go/services/appblb"
+	"github.com/cloudrec/baidu/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
-	"context"
-	"github.com/baidubce/bce-sdk-go/services/appblb"
-	"github.com/cloudrec/baidu/collector"
 	"go.uber.org/zap"
 )
 
+// enrichedAppBLB embeds appblb.AppBLBModel so existing $.AppBLB.* paths stay
+// intact; the trailing fields are returned by /v1/appblb but not modeled by
+// the baidu SDK's AppBLBModel.
+type enrichedAppBLB struct {
+	appblb.AppBLBModel
+	Type                         string `json:"type"`
+	UnderlayVip                  string `json:"underlayVip"`
+	ExpireTime                   string `json:"expireTime"`
+	BillingMethod                string `json:"billingMethod"`
+	PaymentTiming                string `json:"paymentTiming"`
+	PerformanceLevel             string `json:"performanceLevel"`
+	AllowModify                  bool   `json:"allowModify"`
+	ModificationProtectionReason string `json:"modificationProtectionReason"`
+}
+
+type enrichedAppListener struct {
+	appblb.AppAllListenerModel
+	Description string `json:"description"`
+}
+
+type enrichedAppServerGroupPort struct {
+	appblb.AppServerGroupPort
+	HealthCheckValid int `json:"healthCheckValid"`
+}
+
+// enrichedAppServerGroup mirrors appblb.AppServerGroup but swaps in
+// enrichedAppServerGroupPort so the missing portList[].healthCheckValid
+// is preserved. Fields kept verbatim from the SDK type.
+type enrichedAppServerGroup struct {
+	Id          string                       `json:"id"`
+	Name        string                       `json:"name"`
+	Description string                       `json:"desc"`
+	Status      appblb.BLBStatus             `json:"status"`
+	PortList    []enrichedAppServerGroupPort `json:"portList"`
+}
+
+type enrichedDescribeAppLoadBalancersResult struct {
+	BlbList []enrichedAppBLB `json:"blbList"`
+	appblb.DescribeResultMeta
+}
+
+type enrichedDescribeAppAllListenersResult struct {
+	ListenerList []enrichedAppListener `json:"listenerList"`
+	appblb.DescribeResultMeta
+}
+
+type enrichedDescribeAppServerGroupResult struct {
+	AppServerGroupList []enrichedAppServerGroup `json:"appServerGroupList"`
+	appblb.DescribeResultMeta
+}
+
 type AppBLBDetail struct {
-	AppBLB                   appblb.AppBLBModel
-	ListenerList             []appblb.AppAllListenerModel
+	AppBLB                   enrichedAppBLB
+	ListenerList             []enrichedAppListener
 	SecurityGroups           []appblb.BlbSecurityGroupModel
 	EnterpriseSecurityGroups []appblb.BlbEnterpriseSecurityGroupModel
-	AppServerGroupList       []appblb.AppServerGroup
+	AppServerGroupList       []enrichedAppServerGroup
 }
 
 func GetAppBLBResource() schema.Resource {
@@ -52,9 +106,9 @@ func GetAppBLBResource() schema.Resource {
 		ResourceDetailFunc: func(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 			client := service.(*collector.Services).APPBLBClient
 
-			args := &appblb.DescribeLoadBalancersArgs{}
+			marker := ""
 			for {
-				response, err := client.DescribeLoadBalancers(args)
+				response, err := describeAppLoadBalancersEnriched(ctx, client, marker)
 				if err != nil {
 					log.CtxLogger(ctx).Warn("DescribeLoadBalancers error", zap.Error(err))
 					return err
@@ -72,7 +126,7 @@ func GetAppBLBResource() schema.Resource {
 				if response.NextMarker == "" {
 					break
 				}
-				args.Marker = response.NextMarker
+				marker = response.NextMarker
 			}
 
 			return nil
@@ -86,25 +140,47 @@ func GetAppBLBResource() schema.Resource {
 	}
 }
 
-func describeAppAllListeners(ctx context.Context, client *appblb.Client, blbId string) (listenerList []appblb.AppAllListenerModel) {
-	args := &appblb.DescribeAppListenerArgs{
-		Marker:  "",
-		MaxKeys: 50,
+// describeAppLoadBalancersEnriched mirrors client.DescribeLoadBalancers but
+// decodes into enrichedDescribeAppLoadBalancersResult so the 8 extra fields
+// returned by /v1/appblb are preserved.
+func describeAppLoadBalancersEnriched(ctx context.Context, client *appblb.Client, marker string) (*enrichedDescribeAppLoadBalancersResult, error) {
+	result := &enrichedDescribeAppLoadBalancersResult{}
+	rb := bce.NewRequestBuilder(client).
+		WithMethod("GET").
+		WithURL("/v1/appblb").
+		WithQueryParam("maxKeys", strconv.Itoa(1000)).
+		WithResult(result)
+	if marker != "" {
+		rb = rb.WithQueryParam("marker", marker)
 	}
+	if err := rb.Do(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
 
+func describeAppAllListeners(ctx context.Context, client *appblb.Client, blbId string) (listenerList []enrichedAppListener) {
+	marker := ""
 	for {
-		response, err := client.DescribeAppAllListeners(blbId, args)
-		if err != nil {
+		result := &enrichedDescribeAppAllListenersResult{}
+		rb := bce.NewRequestBuilder(client).
+			WithMethod("GET").
+			WithURL("/v1/appblb/" + blbId + "/listener").
+			WithQueryParam("maxKeys", strconv.Itoa(50)).
+			WithResult(result)
+		if marker != "" {
+			rb = rb.WithQueryParam("marker", marker)
+		}
+		if err := rb.Do(); err != nil {
 			log.CtxLogger(ctx).Warn("DescribeAppAllListeners error", zap.Error(err))
 			return
 		}
-		listenerList = append(listenerList, response.ListenerList...)
-		if response.NextMarker == "" {
+		listenerList = append(listenerList, result.ListenerList...)
+		if result.NextMarker == "" {
 			break
 		}
-		args.Marker = response.NextMarker
+		marker = result.NextMarker
 	}
-
 	return listenerList
 }
 
@@ -128,23 +204,27 @@ func describeAppBLBEnterpriseSecurityGroups(ctx context.Context, client *appblb.
 	return resp.BlbEnterpriseSecurityGroups
 }
 
-func describeAppServerGroup(ctx context.Context, client *appblb.Client, blbId string) (appServerGroupList []appblb.AppServerGroup) {
-	args := &appblb.DescribeAppServerGroupArgs{
-		Marker:  "",
-		MaxKeys: 50,
-	}
+func describeAppServerGroup(ctx context.Context, client *appblb.Client, blbId string) (appServerGroupList []enrichedAppServerGroup) {
+	marker := ""
 	for {
-		response, err := client.DescribeAppServerGroup(blbId, args)
-		if err != nil {
+		result := &enrichedDescribeAppServerGroupResult{}
+		rb := bce.NewRequestBuilder(client).
+			WithMethod("GET").
+			WithURL("/v1/appblb/" + blbId + "/appservergroup").
+			WithQueryParam("maxKeys", strconv.Itoa(50)).
+			WithResult(result)
+		if marker != "" {
+			rb = rb.WithQueryParam("marker", marker)
+		}
+		if err := rb.Do(); err != nil {
 			log.CtxLogger(ctx).Warn("describeAppServerGroup error", zap.Error(err))
 			return
 		}
-		appServerGroupList = append(appServerGroupList, response.AppServerGroupList...)
-		if response.NextMarker == "" {
+		appServerGroupList = append(appServerGroupList, result.AppServerGroupList...)
+		if result.NextMarker == "" {
 			break
 		}
-		args.Marker = response.NextMarker
+		marker = result.NextMarker
 	}
-
 	return appServerGroupList
 }

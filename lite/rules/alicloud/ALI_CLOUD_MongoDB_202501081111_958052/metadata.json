@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.mongo_db_202501081111_958052",
+  "name": "阿里云-MongoDB-实例端口对全网开放",
+  "version": "legacy",
+  "description": "MongoDB实例对全网开放",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "mongo",
+  "asset_type": "mongo_db",
+  "categories": [
+    "数据保护",
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "mongo"
+  ],
+  "query": "data.mongodb_open_network_to_all_1700001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "关闭数据库或中间件公网访问入口，或将白名单收敛到可信业务出口；禁止 0.0.0.0/0，优先使用 VPC 私网连接并开启认证、加密和审计。",
+    "categoryList": [
+      "数据保护",
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_MongoDB_202501081111_958052",
+    "context": null,
+    "description": "MongoDB实例对全网开放",
+    "level": "High",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-MongoDB-实例端口对全网开放",
+    "platform": "ALI_CLOUD",
+    "resourceType": "MongoDB"
+  }
+}

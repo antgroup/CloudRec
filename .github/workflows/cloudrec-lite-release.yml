@@ -1,0 +1,100 @@
+name: CloudRec Lite Release
+
+on:
+  push:
+    tags:
+      - lite-v*
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version, for example v0.1.0
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    name: Build and attest release artifacts
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lite
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: lite/go.mod
+          cache-dependency-path: lite/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [[ -n "${{ inputs.version }}" ]]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#lite-}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Go tests
+        run: go test -p 1 ./...
+      - name: Web syntax check
+        run: node --check internal/server/web/app.js
+      - name: Rule audit
+        run: go run ./cmd/cloudrec-lite rules audit --rules ./rules/alicloud --provider alicloud --review-ledger ./rules/alicloud/review-ledger.json --format json
+      - name: Rule coverage
+        run: go run ./cmd/cloudrec-lite rules coverage --rules ./rules/alicloud --provider alicloud --samples ./samples/alicloud --review-ledger ./rules/alicloud/review-ledger.json --format json
+      - name: Rule validation
+        run: go run ./cmd/cloudrec-lite rules validate --rules ./rules/alicloud --provider alicloud --samples ./samples/alicloud --format json
+      - name: Release quality gate
+        run: go test ./internal/rule -run TestAlicloudReleaseQualityGate -count=1
+      - name: Secret scan
+        working-directory: ${{ github.workspace }}
+        run: |
+          GOTOOLCHAIN=auto GOPROXY=https://proxy.golang.org,direct \
+            go run github.com/zricethezav/gitleaks/v8@latest dir . \
+            --config .gitleaks.toml \
+            --redact \
+            --no-banner \
+            --no-color
+          GOTOOLCHAIN=auto GOPROXY=https://proxy.golang.org,direct \
+            go run github.com/zricethezav/gitleaks/v8@latest git . \
+            --config .gitleaks.toml \
+            --redact \
+            --no-banner \
+            --no-color
+      - name: Build release artifacts
+        run: VERSION="${{ steps.version.outputs.version }}" ./tools/build-release.sh
+      - name: Verify release artifacts
+        run: |
+          cd dist
+          sha256sum -c checksums.txt
+          tar -tzf "cloudrec-lite_${{ steps.version.outputs.version }}_linux_amd64.tar.gz" | grep -E '/(LICENSE|README.md|SECURITY.md)$|/rules/$|/cloudrec-lite$'
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            lite/dist/*.tar.gz
+            lite/dist/checksums.txt
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudrec-lite-${{ steps.version.outputs.version }}
+          path: lite/dist/*
+          if-no-files-found: error
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/checksums.txt \
+            --title "CloudRec Lite ${{ steps.version.outputs.version }}" \
+            --notes-file ../docs/cloudrec-lite-v0.1.0-release-notes.md

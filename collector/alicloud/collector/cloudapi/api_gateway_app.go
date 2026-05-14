@@ -17,6 +17,8 @@ package cloudapi
 
 import (
 	"context"
+	"strconv"
+
 	cloudapi20160714 "github.com/alibabacloud-go/cloudapi-20160714/v5/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
@@ -53,6 +55,7 @@ func GetAPIGatewayAppDetail(ctx context.Context, service schema.ServiceInterface
 	describeAppsRequest := &cloudapi20160714.DescribeAppsRequest{}
 	describeAppsRequest.PageSize = tea.Int32(100)
 	describeAppsRequest.PageNumber = tea.Int32(1)
+	describeAppsRequest.AppOwner = appOwnerFromContext(ctx)
 
 	for {
 		response, err := cli.DescribeApps(describeAppsRequest)
@@ -90,6 +93,23 @@ func GetAPIGatewayAppDetail(ctx context.Context, service schema.ServiceInterface
 		describeAppsRequest.PageNumber = tea.Int32(currentPage + 1)
 	}
 
+	return nil
+}
+
+func appOwnerFromContext(ctx context.Context) *int64 {
+	for _, accountID := range []string{
+		collector.ContextConfigValue(ctx, "cloud_account_id", "cloudAccountId", "alicloud_account_id", "aliyun_account_id"),
+		log.GetCloudAccountId(ctx),
+	} {
+		if accountID == "" {
+			continue
+		}
+		value, err := strconv.ParseInt(accountID, 10, 64)
+		if err != nil {
+			continue
+		}
+		return tea.Int64(value)
+	}
 	return nil
 }
 

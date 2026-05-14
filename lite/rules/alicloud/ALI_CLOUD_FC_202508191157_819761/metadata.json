@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.fc_202508191157_819761",
+  "name": "阿里云-FC-HTTP Trigger 匿名访问",
+  "version": "legacy",
+  "description": "FC 函数匿名访问",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "fc",
+  "asset_type": "fc",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "fc"
+  ],
+  "query": "data.cloudrec_12000002.messages",
+  "entrypoint": "messages",
+  "legacy": {
+    "advice": "根据规则命中的资源配置执行修复，优先遵循最小权限、最小公网暴露、默认加密和可审计原则；变更后重新运行 CloudRec Lite 扫描确认风险关闭。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_FC_202508191157_819761",
+    "context": null,
+    "description": "FC 函数匿名访问",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-FC-HTTP Trigger 匿名访问",
+    "platform": "ALI_CLOUD",
+    "resourceType": "FC"
+  }
+}

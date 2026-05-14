@@ -1,0 +1,30 @@
+[
+  {
+    "name": "public-endpoint-enabled",
+    "want_findings": 1,
+    "input": {
+      "DBCluster": {
+        "DBClusterDescription": "clickhouse-public-demo"
+      },
+      "NetInfoItem": [
+        {
+          "NetType": "Public"
+        }
+      ]
+    }
+  },
+  {
+    "name": "private-endpoint-only",
+    "want_findings": 0,
+    "input": {
+      "DBCluster": {
+        "DBClusterDescription": "clickhouse-private-demo"
+      },
+      "NetInfoItem": [
+        {
+          "NetType": "Private"
+        }
+      ]
+    }
+  }
+]

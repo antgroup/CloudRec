@@ -43,9 +43,51 @@ func GetInstanceDetail(ctx context.Context, cancel context.CancelFunc, service s
 
 	cli := service.(*collector.Services).Cloudfw
 	direction := []string{"in", "out"}
-	for _, d := range direction {
+	err := collectControlPolicies(ctx, direction, 50, func(d string, page int, size int) ([]*cloudfw20171207.DescribeControlPolicyResponseBodyPolicys, int, error) {
+		req := &cloudfw20171207.DescribeControlPolicyRequest{}
+		req.CurrentPage = tea.String(strconv.Itoa(page))
+		req.PageSize = tea.String(strconv.Itoa(size))
+		req.Direction = tea.String(d)
+		resp, err := cli.DescribeControlPolicyWithOptions(req, collector.RuntimeObject)
+		if err != nil {
+			return nil, 0, err
+		}
+		if resp == nil || resp.Body == nil {
+			return nil, 0, nil
+		}
+		totalCount := 0
+		if resp.Body.TotalCount != nil {
+			totalCount, err = strconv.Atoi(*resp.Body.TotalCount)
+			if err != nil {
+				return nil, 0, err
+			}
+		}
+		return resp.Body.Policys, totalCount, nil
+	}, func(policy *cloudfw20171207.DescribeControlPolicyResponseBodyPolicys) {
+		res <- Detail{
+			Policy: policy,
+		}
+	}, time.Sleep)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("DescribeControlPolicyWithOptions error", zap.Error(err))
+		cancel()
+		return err
+	}
+
+	return nil
+}
+
+type controlPolicyFetcher func(direction string, page int, size int) ([]*cloudfw20171207.DescribeControlPolicyResponseBodyPolicys, int, error)
+
+func collectControlPolicies(ctx context.Context, directions []string, pageSize int, fetch controlPolicyFetcher, emit func(*cloudfw20171207.DescribeControlPolicyResponseBodyPolicys), sleep func(time.Duration)) error {
+	if pageSize <= 0 {
+		pageSize = 50
+	}
+	if sleep == nil {
+		sleep = func(time.Duration) {}
+	}
+	for _, d := range directions {
 		page := 1
-		size := 50
 		count := 0
 		for {
 			select {
@@ -53,38 +95,23 @@ func GetInstanceDetail(ctx context.Context, cancel context.CancelFunc, service s
 				log.CtxLogger(ctx).Warn("time out !!! please check your code")
 				return nil
 			default:
-				req := &cloudfw20171207.DescribeControlPolicyRequest{}
-				req.CurrentPage = tea.String(strconv.Itoa(page))
-				req.PageSize = tea.String(strconv.Itoa(size))
-				req.Direction = tea.String(d)
-				resp, err := cli.DescribeControlPolicyWithOptions(req, collector.RuntimeObject)
-				if err != nil {
-					log.CtxLogger(ctx).Warn("DescribeControlPolicyWithOptions error", zap.Error(err))
-					cancel()
-					return err
-				}
-
-				bd := resp.Body
-				count += len(bd.Policys)
-				req.PageSize = tea.String(strconv.Itoa(size))
-				for i := 0; i < len(bd.Policys); i++ {
-					res <- Detail{
-						Policy: bd.Policys[i],
-					}
-				}
-
-				if bd.TotalCount == nil || strconv.Itoa(count) >= *bd.TotalCount {
-					cancel()
-					return nil
-				}
-
-				page += 1
-				req.CurrentPage = tea.String(strconv.Itoa(page))
-				time.Sleep(1 * time.Second)
 			}
+
+			policies, totalCount, err := fetch(d, page, pageSize)
+			if err != nil {
+				return err
+			}
+			count += len(policies)
+			for _, policy := range policies {
+				emit(policy)
+			}
+			if totalCount <= 0 || count >= totalCount || len(policies) == 0 {
+				break
+			}
+			page += 1
+			sleep(1 * time.Second)
 		}
 	}
-
 	return nil
 }
 

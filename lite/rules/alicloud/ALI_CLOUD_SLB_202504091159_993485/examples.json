@@ -1,0 +1,130 @@
+[
+  {
+    "name": "standard-port-acl-off",
+    "want_findings": 1,
+    "input": {
+      "LoadBalancer": {
+        "AddressType": "internet"
+      },
+      "LoadBalancerAttribute": {
+        "LoadBalancerId": "lb-standard-open",
+        "LoadBalancerName": "standard-open",
+        "Address": "203.0.113.20"
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 80,
+            "AclStatus": "off"
+          }
+        }
+      ],
+      "EipAddress": []
+    }
+  },
+  {
+    "name": "non-standard-port-acl-off-is-not-this-rule",
+    "want_findings": 0,
+    "input": {
+      "LoadBalancer": {
+        "AddressType": "internet"
+      },
+      "LoadBalancerAttribute": {
+        "LoadBalancerId": "lb-non-standard",
+        "LoadBalancerName": "non-standard",
+        "Address": "203.0.113.21"
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 3306,
+            "AclStatus": "off"
+          }
+        }
+      ],
+      "EipAddress": []
+    }
+  },
+  {
+    "name": "standard-port-wide-whitelist",
+    "want_findings": 1,
+    "input": {
+      "LoadBalancerAttribute": {
+        "AddressType": "internet",
+        "LoadBalancerId": "lb-wide-whitelist",
+        "LoadBalancerName": "wide-whitelist",
+        "Address": "203.0.113.22"
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 443,
+            "AclType": "white"
+          },
+          "AclList": [
+            {
+              "AclEntrys": {
+                "AclEntry": [
+                  {
+                    "AclEntryIP": "0.0.0.0/0"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "EipAddress": []
+    }
+  },
+  {
+    "name": "standard-port-acl-off-intranet",
+    "want_findings": 0,
+    "input": {
+      "LoadBalancer": {
+        "AddressType": "intranet"
+      },
+      "LoadBalancerAttribute": {
+        "LoadBalancerId": "lb-intranet",
+        "LoadBalancerName": "intranet",
+        "Address": "10.0.0.20"
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 80,
+            "AclStatus": "off"
+          }
+        }
+      ],
+      "EipAddress": []
+    }
+  },
+  {
+    "name": "standard-port-acl-off-with-eip",
+    "want_findings": 1,
+    "input": {
+      "LoadBalancer": {
+        "AddressType": "intranet"
+      },
+      "LoadBalancerAttribute": {
+        "LoadBalancerId": "lb-eip",
+        "LoadBalancerName": "eip-bound",
+        "Address": "10.0.0.21"
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 443,
+            "AclStatus": "off"
+          }
+        }
+      ],
+      "EipAddress": [
+        {
+          "IpAddress": "203.0.113.23"
+        }
+      ]
+    }
+  }
+]

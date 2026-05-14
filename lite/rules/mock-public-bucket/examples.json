@@ -1,0 +1,32 @@
+[
+  {
+    "name": "public bucket",
+    "input": {
+      "id": "bucket-public",
+      "name": "customer-export-public",
+      "provider": "mock",
+      "account_id": "mock-account",
+      "region": "local",
+      "type": "storage_bucket",
+      "attributes": {
+        "public": true
+      }
+    },
+    "want_findings": 1
+  },
+  {
+    "name": "private bucket",
+    "input": {
+      "id": "bucket-private",
+      "name": "customer-export-private",
+      "provider": "mock",
+      "account_id": "mock-account",
+      "region": "local",
+      "type": "storage_bucket",
+      "attributes": {
+        "public": false
+      }
+    },
+    "want_findings": 0
+  }
+]

@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["网络访问"],"code":"ALI_CLOUD_Redis_202501081111_459624","context":null,"description":"Redis 开启公网代理","level":"High","link":null,"linkedDataList":null,"name":"阿里云-Redis-实例开启公网代理","platform":"ALI_CLOUD","resourceType":"Redis"}
+{"advice":"关闭数据库或中间件公网访问入口，或将白名单收敛到可信业务出口；禁止 0.0.0.0/0，优先使用 VPC 私网连接并开启认证、加密和审计。","categoryList":["网络访问"],"code":"ALI_CLOUD_Redis_202501081111_459624","context":null,"description":"Redis 开启公网IP","level":"High","link":null,"linkedDataList":null,"name":"阿里云-Redis-实例开启公网IP","platform":"ALI_CLOUD","resourceType":"Redis"}

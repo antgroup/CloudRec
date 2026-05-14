@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ecs_202501081111_432000",
+  "name": "阿里云-ECS-实例安全组对公网开放高危端口",
+  "version": "legacy",
+  "description": "ECS 高危端口开放",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "ecs",
+  "asset_type": "ecs",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ecs"
+  ],
+  "query": "data.ecs_open_risk_port_to_pub_2200007.messages",
+  "entrypoint": "messages",
+  "legacy": {
+    "advice": "收敛安全组或 ACL 入方向规则，删除 0.0.0.0/0 的高危端口开放；确需公网访问时仅放行可信来源，并优先通过堡垒机、VPN 或负载均衡入口访问。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_ECS_202501081111_432000",
+    "context": "{$.messages}",
+    "description": "ECS 高危端口开放",
+    "level": "High",
+    "link": null,
+    "linkedDataList": "[{\"associativeMode\":\"仅关联一次\",\"linkedKey1\":\"$.Instance.SecurityGroupIds.SecurityGroupId[*]\",\"linkedKey2\":\"$.SecurityGroup.SecurityGroupId\",\"newKeyName\":\"SecurityGroups\",\"resourceType\":[\"NET\",\"Security Group\"]}]",
+    "name": "阿里云-ECS-实例安全组对公网开放高危端口",
+    "platform": "ALI_CLOUD",
+    "resourceType": "ECS"
+  }
+}

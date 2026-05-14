@@ -1,0 +1,188 @@
+{
+  "resource_type": "nas",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "NfsAcl": {
+      "Enabled": false
+    },
+    "AccessGroup": {
+      "AccessGroup": [
+        {
+          "RuleCount": 1,
+          "AccessGroupType": "IuL",
+          "Description": "urZOfuPo5UUyC7mzrtAwwymuV",
+          "AccessGroupName": "7teApBpAYeNHwz94fr9bLk",
+          "CreateTime": "Qo3nA9Pt5KAFJlUN2Fy1",
+          "FileSystemType": "FEyTMcbv",
+          "RegionId": "0aqgHCiDhCr",
+          "MountTargetCount": 20
+        },
+        {
+          "RuleCount": 1,
+          "AccessGroupType": "TlQ",
+          "Description": "P02Wye1qSO0dCCMYWgtmo8whc",
+          "AccessGroupName": "4pgL8DXo6pGF8JyQKt07Mq",
+          "CreateTime": "r95ABlUQUxrKxwaRwr7z",
+          "FileSystemType": "ujuCIC4K",
+          "RegionId": "rvvdbt9cy0P",
+          "MountTargetCount": 20
+        },
+        {
+          "RuleCount": 1,
+          "AccessGroupType": "2bA",
+          "Description": "VNHRtVEW3xWx91oYtWih8llgv",
+          "AccessGroupName": "w9lZvWwbMwmeC3ofnhPs2e",
+          "CreateTime": "yBeWSAZ1XUnCBtN1KdyZ",
+          "FileSystemType": "GoyGqWTL",
+          "RegionId": "NffHw3eYi9A",
+          "MountTargetCount": 20
+        }
+      ]
+    },
+    "ResourceName": "k9NqytzgVbpIWIe8SU",
+    "AccessPoint": [],
+    "FileSystem": {
+      "Options": {},
+      "Description": "8zW5Sh4CWfRqbPfInNM",
+      "KMSKeyId": "",
+      "ResourceGroupId": "U8JWi6Dzmp00MaB8WO",
+      "MeteredSize": 1441996689408,
+      "Capacity": 10485760,
+      "Packages": {},
+      "ExpiredTime": "",
+      "FileSystemId": "7cbl0IP4Tp",
+      "MeteredArchiveSize": 0,
+      "Tags": {
+        "Tag": [
+          {
+            "Value": "2yw3",
+            "Key": "8n7"
+          },
+          {
+            "Value": "w6DRaF8",
+            "Key": "VJZ7ir9"
+          },
+          {
+            "Value": "VvYdgqwZBGxzkATy",
+            "Key": "xSt"
+          },
+          {
+            "Value": "hdnNv7hpbNO5CzJ",
+            "Key": "3mGSWOVl"
+          },
+          {
+            "Value": "a7RI0xjQnxzP5au",
+            "Key": "8OS"
+          },
+          {
+            "Value": "Km9Z",
+            "Key": "FeJ"
+          },
+          {
+            "Value": "OdGYYg9",
+            "Key": "xnDqdpJ"
+          },
+          {
+            "Value": "ALqa6cuTM5Z9o8v0",
+            "Key": "PPk"
+          },
+          {
+            "Value": "LxqKkXJ8lHUrsC3",
+            "Key": "qYMDfzgj"
+          },
+          {
+            "Value": "DGBOol2pEvxEnYG",
+            "Key": "5zB"
+          },
+          {
+            "Value": "nlkV",
+            "Key": "62g"
+          },
+          {
+            "Value": "cBxopM9",
+            "Key": "2XnMpkl"
+          },
+          {
+            "Value": "dLRbte9Z2scJ6JhJ",
+            "Key": "tjW"
+          },
+          {
+            "Value": "HljesAZWXY2YQpR",
+            "Key": "K4ZgHhTx"
+          },
+          {
+            "Value": "QPbe4bv2jEolrwq",
+            "Key": "eAk"
+          }
+        ]
+      },
+      "Status": "ifkjkea",
+      "AccessPointCount": "J",
+      "Ldap": {},
+      "StorageType": "5tkayv5a",
+      "ZoneId": "uab2Yz53tS8E8",
+      "CreateTime": "gTLl8ykEowgD74UUfdlyam",
+      "MeteredIASize": 32041836269568,
+      "SupportedFeatures": {
+        "SupportedFeature": [
+          "Peo0GTWfK",
+          "asdsv",
+          "xXH",
+          "z8MLIqUuq",
+          "Cc3bB",
+          "dc8",
+          "6Xpl9m3BF",
+          "RZqnv",
+          "CAz"
+        ]
+      },
+      "MountTargets": {
+        "MountTarget": [
+          {
+            "Status": "mz6u8x",
+            "VpcId": "6PQrZNdFiPFGlMPu9mLDHIdPn",
+            "VswId": "NplcKZAPpJwUyn2LcJRpTWgtH",
+            "MountTargetDomain": "a9YJd3QXhOcOqPu6ZnI6drhKZwhrDMGPs1JtvVoBuTXYS",
+            "NetworkType": "fWN",
+            "AccessGroupName": "jFKuQfX1fEaGRWYJcgvaKC",
+            "ClientMasterNodes": {},
+            "Tags": {}
+          },
+          {
+            "Status": "Ws3dKN",
+            "VpcId": "Jc3iBoV13FBIltO2UpzCqFGXv",
+            "VswId": "QI98ue9mqe3pslnCxJxGlaps5",
+            "MountTargetDomain": "WZU5fBzEemTX03PdjGtlCnO5e6hBkY6aUBA3KHDhQQlBR",
+            "NetworkType": "TN6",
+            "AccessGroupName": "y0Zj4uVzAfLgdVPnshDF53",
+            "ClientMasterNodes": {},
+            "Tags": {}
+          },
+          {
+            "Status": "44caGm",
+            "VpcId": "OhMJUb76e6SY4uS4hC9iX96Yf",
+            "VswId": "SfUtnHFrzW2caNWRilfLOzjia",
+            "MountTargetDomain": "fZT951PICkpnFKrIxHJE83tIe7V4czdOFpT3RD5M478Z8",
+            "NetworkType": "WD5",
+            "AccessGroupName": "USZAQ2KrsMDWeuanIDWp3N",
+            "ClientMasterNodes": {},
+            "Tags": {}
+          }
+        ]
+      },
+      "AutoSnapshotPolicyId": "",
+      "EncryptType": 0,
+      "VpcId": "",
+      "ChargeType": "Og8ToPSofS",
+      "ProtocolType": "osM",
+      "FileSystemType": "ZGLQOjmA",
+      "RegionId": "eX9owhZt5s2"
+    },
+    "RegionId": "2DiXw0FtAWk",
+    "SmbAcl": {
+      "Enabled": false
+    }
+  }
+}

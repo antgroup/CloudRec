@@ -246,7 +246,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		}
 		s.ECS.SetHttpProxy(cloudAccountParam.ProxyConfig)
 		s.ECS.SetHttpsProxy(cloudAccountParam.ProxyConfig)
-	case VPC, NAT, EIP, VpnConnection, PhysicalConnection:
+	case VPC, NAT, EIP, VPNGateway, VpnConnection, PhysicalConnection:
 		s.VPC, err = vpc.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init vpc client failed", zap.Error(err))

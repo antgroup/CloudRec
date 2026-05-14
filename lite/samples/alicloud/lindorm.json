@@ -1,0 +1,43 @@
+{
+  "resource_type": "lindorm",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "EngineList": "sample",
+    "Instance": {
+      "ExpiredMilliseconds": 32493801600000,
+      "EnableLts": false,
+      "InstanceStorage": "ta",
+      "ResourceGroupId": "V4eFK1kb0Zc07Iy3OL",
+      "ZoneId": "MBBdESvgH6g0o",
+      "InstanceId": "ww1hh3NYxf5MdSafrRMf",
+      "CreateTime": "iMYjh3BN6vIGqXbPgCE",
+      "EnableMessage": false,
+      "PayType": "bdXxdCH",
+      "EnableCompute": false,
+      "VpcId": "mxdE8TcX9L9wVcWs10ckgKMWS",
+      "InstanceAlias": "pw0cNkbQaEpNLIugwb",
+      "InstanceStatus": "JLb4YSlDIx",
+      "NetworkType": "Guj",
+      "ServiceType": "EaMvj6pxfMxbLU4C4X",
+      "EnableStream": false,
+      "EnableVector": false,
+      "EngineType": "Tl",
+      "RegionId": "u9GgkouT1W1",
+      "CreateMilliseconds": 1666011590000,
+      "EnableColumn": false,
+      "Tags": [
+        {
+          "Value": "iPs4jGHPRD6iVvfVMM",
+          "Key": "7vja47dlvxt"
+        }
+      ],
+      "AliUid": 1911457494796656
+    },
+    "InstanceIpWhiteList": {
+      "GroupList": [],
+      "IpList": []
+    }
+  }
+}

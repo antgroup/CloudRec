@@ -80,7 +80,11 @@ type SubClusterDetail struct {
 func GetPrometheusDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).ARMS
 
-	request := &arms20190808.ListPrometheusInstancesRequest{}
+	regionId := prometheusRegionID(ctx, cli)
+	request := &arms20190808.ListPrometheusInstancesRequest{
+		RegionId:       tea.String(regionId),
+		ShowGlobalView: tea.Bool(true),
+	}
 
 	response, err := cli.ListPrometheusInstancesWithOptions(request, &util.RuntimeOptions{})
 	if err != nil {
@@ -135,6 +139,16 @@ func GetPrometheusDetail(ctx context.Context, service schema.ServiceInterface, r
 	}
 
 	return nil
+}
+
+func prometheusRegionID(ctx context.Context, cli *arms20190808.Client) string {
+	if regionID, ok := ctx.Value(constant.RegionId).(string); ok && regionID != "" && regionID != "global" {
+		return regionID
+	}
+	if cli != nil && cli.RegionId != nil && tea.StringValue(cli.RegionId) != "" {
+		return tea.StringValue(cli.RegionId)
+	}
+	return "cn-hangzhou"
 }
 
 func getPrometheusInstance(ctx context.Context, cli *arms20190808.Client, clusterId string) *arms20190808.GetPrometheusInstanceResponseBodyData {

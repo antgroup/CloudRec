@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.oss_202503031637_689177",
+  "name": "阿里云-OSS-Bucket 未启用版本控制",
+  "version": "legacy",
+  "description": "Bucket未启用版本控制",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "oss",
+  "asset_type": "oss",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "oss"
+  ],
+  "query": "data.ali_cloud_versioning_enable_6500006.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "为 OSS Bucket 开启版本控制，配合生命周期规则控制历史版本保留周期；重要数据建议同时启用备份、日志和删除保护。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_OSS_202503031637_689177",
+    "context": null,
+    "description": "Bucket未启用版本控制",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-OSS-Bucket 未启用版本控制",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+  }
+}

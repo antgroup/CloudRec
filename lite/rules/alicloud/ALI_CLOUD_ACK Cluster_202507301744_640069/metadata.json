@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ack_cluster_202507301744_640069",
+  "name": "阿里云-ACK-Cluster API 公网暴露",
+  "version": "legacy",
+  "description": "ACK Cluster API 暴露在公网",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "ack",
+  "asset_type": "ack_cluster",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ack"
+  ],
+  "query": "data.cloudrec_11200001.messages",
+  "entrypoint": "messages",
+  "legacy": {
+    "advice": "关闭 ACK API Server 公网访问或将访问控制收敛到可信运维出口；如依赖公网入口，请开启审计、最小化白名单并定期复核。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_ACK Cluster_202507301744_640069",
+    "context": null,
+    "description": "ACK Cluster API 暴露在公网",
+    "level": "High",
+    "link": null,
+    "linkedDataList": "[{\"associativeMode\":\"仅关联一次\",\"linkedKey1\":\"$.AssociatedResource[*].instance_id\",\"linkedKey2\":\"$.LoadBalancer.LoadBalancerId\",\"newKeyName\":\"LoadBalancer\",\"resourceType\":[\"NET\",\"SLB\"]}]",
+    "name": "阿里云-ACK-Cluster API 公网暴露",
+    "platform": "ALI_CLOUD",
+    "resourceType": "ACK Cluster"
+  }
+}

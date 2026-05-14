@@ -17,6 +17,8 @@ package vod
 
 import (
 	"context"
+	"strings"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
 	"github.com/cloudrec/alicloud/collector"
@@ -105,6 +107,17 @@ type Detail struct {
 	CertificateList vod.CertificateListModel
 }
 
+var defaultVodDomainConfigFunctions = []string{
+	"referer_white_list_set",
+	"referer_black_list_set",
+	"filetype_based_ttl_set",
+	"path_based_ttl_set",
+	"ip_black_list_set",
+	"ip_allow_list_set",
+	"https_force",
+	"https_option",
+}
+
 func describeVodDomainDetail(ctx context.Context, cli *vod.Client, domainName string) vod.DomainDetail {
 	request := vod.CreateDescribeVodDomainDetailRequest()
 	request.Scheme = "https"
@@ -122,6 +135,7 @@ func describeVodDomainConfigs(ctx context.Context, cli *vod.Client, domainName s
 	request := vod.CreateDescribeVodDomainConfigsRequest()
 	request.Scheme = "https"
 	request.DomainName = domainName
+	request.FunctionNames = strings.Join(defaultVodDomainConfigFunctions, ",")
 
 	response, err := cli.DescribeVodDomainConfigs(request)
 	if err != nil {

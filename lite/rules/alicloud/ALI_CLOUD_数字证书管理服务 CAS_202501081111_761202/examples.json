@@ -1,0 +1,52 @@
+[
+  {
+    "name": "already-expired",
+    "want_findings": 1,
+    "input": {
+      "NowDate": "2026-05-09",
+      "CertificateOrder": {
+        "EndDate": "2026-05-08"
+      }
+    }
+  },
+  {
+    "name": "expires-in-30-days",
+    "want_findings": 1,
+    "input": {
+      "NowDate": "2026-05-09",
+      "CertificateOrder": {
+        "EndDate": "2026-06-08"
+      }
+    }
+  },
+  {
+    "name": "expires-in-90-days",
+    "want_findings": 1,
+    "input": {
+      "NowDate": "2026-05-09",
+      "CertificateOrder": {
+        "EndDate": "2026-08-07"
+      }
+    }
+  },
+  {
+    "name": "expires-after-91-days",
+    "want_findings": 0,
+    "input": {
+      "NowDate": "2026-05-09",
+      "CertificateOrder": {
+        "EndDate": "2026-08-08"
+      }
+    }
+  },
+  {
+    "name": "invalid-end-date",
+    "want_findings": 0,
+    "input": {
+      "NowDate": "2026-05-09",
+      "CertificateOrder": {
+        "EndDate": "not-a-date"
+      }
+    }
+  }
+]

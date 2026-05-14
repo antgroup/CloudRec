@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.redis_202503062130_462923",
+  "name": "阿里云-Redis-实例未启用审计日志",
+  "version": "legacy",
+  "description": "实例未启用审计日志",
+  "severity": "low",
+  "provider": "alicloud",
+  "service": "redis",
+  "asset_type": "redis",
+  "categories": [
+    "日志审计"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "redis"
+  ],
+  "query": "data.enable_audit_log_6800006.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "为Redis 实例开启审计日志或访问日志，并投递到受保护的日志存储；设置合理保留周期和访问权限，确保安全事件可追溯。",
+    "categoryList": [
+      "日志审计"
+    ],
+    "code": "ALI_CLOUD_Redis_202503062130_462923",
+    "context": null,
+    "description": "实例未启用审计日志",
+    "level": "Low",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-Redis-实例未启用审计日志",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Redis"
+  }
+}

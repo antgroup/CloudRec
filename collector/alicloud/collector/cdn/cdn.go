@@ -72,6 +72,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 	req.PageSize = requests.NewInteger(50)
 	req.PageNumber = requests.NewInteger(1)
 	count := 0
+	deletedDomains := describeCdnDeletedDomains(ctx, cli)
 	for {
 		response, err := cli.DescribeUserDomains(req)
 		if err != nil {
@@ -82,7 +83,7 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 			d := &Detail{
 				UserDomains:       i,
 				DomainConfig:      describeCdnDomainConfigs(ctx, cli, i.DomainName),
-				CdnDeletedDomains: describeCdnDeletedDomains(ctx, cli, i.DomainName),
+				CdnDeletedDomains: deletedDomains,
 			}
 			res <- d
 		}
@@ -118,9 +119,8 @@ func describeCdnDomainConfigs(ctx context.Context, cli *cdn.Client, domain strin
 	return response.DomainConfigs.DomainConfig
 }
 
-func describeCdnDeletedDomains(ctx context.Context, cli *cdn.Client, domain string) (PageData []cdn.PageData) {
+func describeCdnDeletedDomains(ctx context.Context, cli *cdn.Client) (PageData []cdn.PageData) {
 	request := cdn.CreateDescribeCdnDeletedDomainsRequest()
-	request.Domain = domain
 	request.Scheme = "https"
 	response, err := cli.DescribeCdnDeletedDomains(request)
 	if err != nil {

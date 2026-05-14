@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.nat_202508191105_542880",
+  "name": "阿里云-NAT-Gateway 存在 DNAT 公网入口",
+  "version": "legacy",
+  "description": "公网 NAT Gateway 存在 DNAT 端口映射入口。DNAT 是正常发布服务能力，本规则仅作为公网入口证据和排查提示，不直接等同于高危暴露。",
+  "severity": "low",
+  "advice": "确认 DNAT 映射的公网 IP、端口、协议、目标私网 IP 和业务预期；如映射高危端口或敏感资产，应结合安全组、云防火墙、访问控制和资产拓扑进一步收敛。",
+  "link": "https://www.alibabacloud.com/help/en/nat-gateway/user-guide/create-and-manage-dnat-entries",
+  "provider": "alicloud",
+  "service": "nat",
+  "asset_type": "nat",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "nat"
+  ],
+  "query": "data.cloudrec_12000001.messages",
+  "entrypoint": "messages",
+  "legacy": {
+    "advice": "确认 DNAT 映射的公网 IP、端口、协议、目标私网 IP 和业务预期；如映射高危端口或敏感资产，应结合安全组、云防火墙、访问控制和资产拓扑进一步收敛。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_NAT_202508191105_542880",
+    "context": "{$.messages}",
+    "description": "公网 NAT Gateway 存在 DNAT 端口映射入口",
+    "level": "Low",
+    "link": "https://www.alibabacloud.com/help/en/nat-gateway/user-guide/create-and-manage-dnat-entries",
+    "linkedDataList": null,
+    "name": "阿里云-NAT-Gateway 存在 DNAT 公网入口",
+    "platform": "ALI_CLOUD",
+    "resourceType": "NAT"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ram_user_202503172212_146913",
+  "name": "阿里云-RAM-RAM User拥有大权限AK但未设置调用来源ACL",
+  "version": "legacy",
+  "description": "拥有 AliyunRAMFullAccess、AdministratorAccess权限的RAM User没有设置调用来源ACL",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "ram",
+  "asset_type": "ram_user",
+  "categories": [
+    "身份安全"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ram"
+  ],
+  "query": "data.ram_user_with_high_risk_access_has_no_acl_7200004.messages",
+  "entrypoint": "messages",
+  "legacy": {
+    "advice": "为 AccessKey 对应身份增加来源 IP 条件限制，或禁用该 AK 并迁移到 STS/RAM Role；高权限 AK 必须同时收敛权限和调用来源。",
+    "categoryList": [
+      "身份安全"
+    ],
+    "code": "ALI_CLOUD_RAM User_202503172212_146913",
+    "context": null,
+    "description": "拥有 AliyunRAMFullAccess、AdministratorAccess权限的RAM User没有设置调用来源ACL",
+    "level": "High",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RAM-RAM User拥有大权限AK但未设置调用来源ACL",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RAM User"
+  }
+}

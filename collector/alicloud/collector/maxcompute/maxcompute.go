@@ -17,7 +17,11 @@ package maxcompute
 
 import (
 	"context"
+	"os"
+	"strings"
+
 	maxcompute20220104 "github.com/alibabacloud-go/maxcompute-20220104/client"
+	"github.com/alibabacloud-go/tea/tea"
 	"github.com/cloudrec/alicloud/collector"
 	"github.com/core-sdk/constant"
 	"github.com/core-sdk/log"
@@ -25,8 +29,9 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/alibabacloud-go/maxcompute-20220104/client"
-	"github.com/alibabacloud-go/tea/tea"
 )
+
+const envMaxComputeTenantID = "ALIBABA_CLOUD_MAXCOMPUTE_TENANT_ID"
 
 type Detail struct {
 	Project                    *maxcompute20220104.ListProjectsResponseBodyDataProjects
@@ -76,25 +81,70 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 	cli := service.(*collector.Services).Maxcompute
 	req := &client.ListProjectsRequest{}
 	req.MaxItem = tea.Int32(50)
+	if region := maxComputeRegion(ctx); region != "" {
+		req.Region = tea.String(region)
+	}
+	if tenantID := maxComputeTenantID(ctx); tenantID != "" {
+		req.TenantId = tea.String(tenantID)
+	}
 	headers := make(map[string]*string)
-	resp, err := cli.ListProjectsWithOptions(req, headers, collector.RuntimeObject)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("ListProjectsWithOptions error", zap.Error(err))
-		return err
-	}
-	if resp.Body == nil || len(resp.Body.Data.Projects) == 0 {
-		return nil
-	}
 
-	// get security check info
-	for _, p := range resp.Body.Data.Projects {
-		res <- Detail{
-			Project:                    p,
-			GetProjectResponseBodyData: getProject(ctx, cli, p.Name),
+	for {
+		resp, err := cli.ListProjectsWithOptions(req, headers, collector.RuntimeObject)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("ListProjectsWithOptions error", zap.Error(err))
+			return err
 		}
+		if resp == nil || resp.Body == nil || resp.Body.Data == nil || len(resp.Body.Data.Projects) == 0 {
+			return nil
+		}
+
+		// get security check info
+		for _, p := range resp.Body.Data.Projects {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case res <- Detail{
+				Project:                    p,
+				GetProjectResponseBodyData: getProject(ctx, cli, p.Name),
+			}:
+			}
+		}
+
+		nextToken := tea.StringValue(resp.Body.Data.NextToken)
+		if nextToken == "" {
+			break
+		}
+		req.Marker = tea.String(nextToken)
 	}
 
 	return nil
+}
+
+func maxComputeTenantID(ctx context.Context) string {
+	return firstNonEmptyString(
+		collector.ContextConfigValue(ctx, "maxcompute_tenant_id", "maxcomputeTenantId", "maxcompute_tenant", "maxcomputeTenant"),
+		os.Getenv(envMaxComputeTenantID),
+	)
+}
+
+func maxComputeRegion(ctx context.Context) string {
+	if regionID, ok := ctx.Value(constant.RegionId).(string); ok {
+		regionID = strings.TrimSpace(regionID)
+		if regionID != "" && regionID != "global" {
+			return regionID
+		}
+	}
+	return ""
+}
+
+func firstNonEmptyString(values ...string) string {
+	for _, value := range values {
+		if trimmed := strings.TrimSpace(value); trimmed != "" {
+			return trimmed
+		}
+	}
+	return ""
 }
 
 // Get project details
@@ -107,7 +157,7 @@ func getProject(ctx context.Context, cli *maxcompute20220104.Client, name *strin
 		log.CtxLogger(ctx).Warn("GetProjectWithOptions error", zap.Error(err))
 		return
 	}
-	if r.Body == nil || r.Body.Data == nil {
+	if r == nil || r.Body == nil || r.Body.Data == nil {
 		return
 	}
 

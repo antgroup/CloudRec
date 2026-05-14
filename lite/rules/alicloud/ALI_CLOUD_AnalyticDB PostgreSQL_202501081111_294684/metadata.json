@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.analytic_db_postgre_sql_202501081111_294684",
+  "name": "阿里云-AnalyticDB PostgreSQL-实例对公网开放",
+  "version": "legacy",
+  "description": "云原生数据仓库 AnalyticDB PostgreSQL 对公网开放",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "analytic",
+  "asset_type": "analytic_db_postgre_sql",
+  "categories": [
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "analytic"
+  ],
+  "query": "data.adb_postgreSQL_open_to_pub_2200005.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "关闭数据库或中间件公网访问入口，或将白名单收敛到可信业务出口；禁止 0.0.0.0/0，优先使用 VPC 私网连接并开启认证、加密和审计。",
+    "categoryList": [
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_AnalyticDB PostgreSQL_202501081111_294684",
+    "context": null,
+    "description": "云原生数据仓库 AnalyticDB PostgreSQL 对公网开放",
+    "level": "High",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-AnalyticDB PostgreSQL-实例对公网开放",
+    "platform": "ALI_CLOUD",
+    "resourceType": "AnalyticDB PostgreSQL"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ramuser_202502051725_1037615",
+  "name": "阿里云-RAM-User 超一年未使用",
+  "version": "legacy",
+  "description": "Ram User 超一年未登录控制台、未调用AK",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "ram",
+  "asset_type": "ram_user",
+  "categories": [
+    "身份安全"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ram"
+  ],
+  "query": "data.user_not_using_for_365_days_5700002.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "如该用户无使用需求，参考 https://help.aliyun.com/zh/ram/user-guide/delete-a-ram-user 进行删除。",
+    "categoryList": [
+      "身份安全"
+    ],
+    "code": "ALI_CLOUD_RAMUser_202502051725_1037615",
+    "context": "用户 {$.user_name} 超过一年未使用",
+    "description": "Ram User 超一年未登录控制台、未调用AK",
+    "level": "Medium",
+    "link": "https://help.aliyun.com/zh/ram/user-guide/delete-a-ram-user",
+    "linkedDataList": null,
+    "name": "阿里云-RAM-User 超一年未使用",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RAM User"
+  }
+}

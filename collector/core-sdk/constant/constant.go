@@ -35,13 +35,14 @@ type contextKey string
 const DefaultCloudAccountMaxConcurrent = 4
 
 const (
-	StartTime       contextKey = "StartTime"
-	EndTime         contextKey = "EndTime"
-	Duration        contextKey = "Duration"
-	Platform        contextKey = "Platform"
-	CloudAccountId  contextKey = "CloudAccountId"
-	RegionId        contextKey = "RegionId"
-	ResourceType    contextKey = "ResourceType"
-	TraceId         contextKey = "TraceId"
-	CollectRecordId contextKey = "CollectRecordId"
+	StartTime          contextKey = "StartTime"
+	EndTime            contextKey = "EndTime"
+	Duration           contextKey = "Duration"
+	Platform           contextKey = "Platform"
+	CloudAccountId     contextKey = "CloudAccountId"
+	CloudAccountConfig contextKey = "CloudAccountConfig"
+	RegionId           contextKey = "RegionId"
+	ResourceType       contextKey = "ResourceType"
+	TraceId            contextKey = "TraceId"
+	CollectRecordId    contextKey = "CollectRecordId"
 )

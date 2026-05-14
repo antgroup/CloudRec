@@ -1,1 +1,1 @@
-{"advice":null,"categoryList":["数据保护"],"code":"ALI_CLOUD_OSS_202501081111_313311","context":null,"description":"阿里云-OSS-任意VPC访问","level":"High","link":null,"linkedDataList":null,"name":"阿里云-OSS-任意VPC访问","platform":"ALI_CLOUD","resourceType":"OSS"}
+{"advice":"收敛 OSS Bucket Policy 或访问点策略中的 VPC 条件，仅允许可信 VPC/VPC Endpoint；删除任意 VPC 或过宽条件的访问授权。","categoryList":["数据保护"],"code":"ALI_CLOUD_OSS_202501081111_313311","context":null,"description":"阿里云-OSS-任意VPC访问","level":"High","link":null,"linkedDataList":null,"name":"阿里云-OSS-任意VPC访问","platform":"ALI_CLOUD","resourceType":"OSS"}

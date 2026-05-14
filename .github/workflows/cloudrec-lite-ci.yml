@@ -1,0 +1,45 @@
+name: CloudRec Lite CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - lite-v*
+
+permissions:
+  contents: read
+
+jobs:
+  lite:
+    name: Lite tests and release smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lite
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: lite/go.mod
+          cache-dependency-path: lite/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Go tests
+        run: go test -p 1 ./...
+      - name: Web syntax check
+        run: node --check internal/server/web/app.js
+      - name: Rule audit
+        run: go run ./cmd/cloudrec-lite rules audit --rules ./rules/alicloud --provider alicloud --review-ledger ./rules/alicloud/review-ledger.json --format json
+      - name: Rule coverage
+        run: go run ./cmd/cloudrec-lite rules coverage --rules ./rules/alicloud --provider alicloud --samples ./samples/alicloud --review-ledger ./rules/alicloud/review-ledger.json --format json
+      - name: Rule validation
+        run: go run ./cmd/cloudrec-lite rules validate --rules ./rules/alicloud --provider alicloud --samples ./samples/alicloud --format json
+      - name: Release build smoke
+        run: |
+          LITE_RELEASE_TARGETS="linux/amd64" VERSION="v0.0.0-ci" DIST="$RUNNER_TEMP/cloudrec-lite-dist" ./tools/build-release.sh
+          cd "$RUNNER_TEMP/cloudrec-lite-dist"
+          sha256sum -c checksums.txt
+          tar -tzf cloudrec-lite_v0.0.0-ci_linux_amd64.tar.gz | grep -E '/(LICENSE|README.md|SECURITY.md)$|/rules/$|/cloudrec-lite$'

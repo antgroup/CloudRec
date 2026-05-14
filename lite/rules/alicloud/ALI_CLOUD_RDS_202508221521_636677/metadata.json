@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.rds_202508221521_636677",
+  "name": "阿里云-RDS-SSL加密未开启",
+  "version": "legacy",
+  "description": "阿里云-RDS-SSL加密未开启",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "rds",
+  "asset_type": "rds",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "rds"
+  ],
+  "query": "data.rds_ssl_encryption_12200005.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "为 RDS 实例开启 SSL/TLS 加密连接，更新客户端连接串和证书配置；确认业务兼容后关闭明文连接路径并重新扫描。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_RDS_202508221521_636677",
+    "context": null,
+    "description": "阿里云-RDS-SSL加密未开启",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RDS-SSL加密未开启",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RDS"
+  }
+}

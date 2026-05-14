@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.oss_202508201612_324403",
+  "name": "阿里云-OSS-OSS存储桶未使用服务端加密",
+  "version": "legacy",
+  "description": "阿里云-OSS-OSS存储桶未使用服务端加密",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "oss",
+  "asset_type": "oss",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "oss"
+  ],
+  "query": "data.oss_sse_algorithm_check_12100001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "为 OSS Bucket 开启服务端加密，优先使用 KMS 托管密钥或符合企业要求的加密方式；对新增对象强制加密，并评估历史对象补加密。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_OSS_202508201612_324403",
+    "context": null,
+    "description": "阿里云-OSS-OSS存储桶未使用服务端加密",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-OSS-OSS存储桶未使用服务端加密",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+  }
+}

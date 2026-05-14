@@ -48,6 +48,9 @@ CloudRec Lite is especially useful for quick Alibaba Cloud posture checks,
 local demos, CI-style rule validation, and small-team security reviews where a
 single binary is easier to operate than a full server deployment.
 
+Start with the [CloudRec Lite user guide](lite/README.md). Maintainers can use
+the [release checklist](RELEASE.md) before publishing Lite binaries.
+
 ---
 
 # Features
@@ -69,7 +72,16 @@ single binary is easier to operate than a full server deployment.
 ---
 
 # 🚀 Quick Start
-### Deploy Server
+
+Choose the path that matches your team:
+
+- **CloudRec Lite**: local single-binary CSPM for quick Alibaba Cloud posture
+  checks, no server stack required. Start with [lite/README.md](lite/README.md).
+- **Full CloudRec**: server, collector, multi-user workflows, and enterprise
+  operations. Use the deployment steps below.
+
+### Full CloudRec Server
+
 ```
 git clone https://github.com/antgroup/CloudRec.git
 
@@ -78,7 +90,9 @@ cd CloudRec
 MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16) docker-compose up -d
 ```
 Access http://localhost:8080 after deployment.
-### Deploy Collector
+
+### Full CloudRec Collector
+
 Login and get AccessToken for authentication of collector.
 ![accesstoken](doc/images/accesstoken.jpg)
 ```

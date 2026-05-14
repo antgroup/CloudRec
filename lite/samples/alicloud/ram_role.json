@@ -1,0 +1,81 @@
+{
+  "resource_type": "ram_role",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "Role": {
+      "MaxSessionDuration": 3600,
+      "UpdateDate": "Lftdd6VSziYqF7gebk7k",
+      "RoleName": "B441gkrOg44FwFLfhfvAuK7hw3vCLrT",
+      "Description": "2BMHRrVoB9ig1cv",
+      "AttachDate": "",
+      "AssumeRolePolicyDocument": "DVvF5pYIDAH7kX5GRzvPam3RevgF4vFQKn5oUmsvCZZwN3dIuySmxO9fD6Bj7EuLkzY0FrRu8b0cIET7hlOQjXVyMFRvGYcHLSuocGm07CfWddoBhmvDSnGr58aPA6L6hxc7GHukF3RrUMA39HHXg1PxzeCUQvy9CRTEF9Hl7vhOOI",
+      "Arn": "sqh0yNcDDR8OB49cwSW06In4XX0YM8I6gGgODl1pZNYZr5k342m1DH85jWoMOo",
+      "CreateDate": "I7m9bxTAoD75bY0pN7PG",
+      "RoleId": "glNWGqEy4Q5b2EM8wt"
+    },
+    "Policies": [
+      {
+        "Policy": {
+          "PolicyType": "4mjU4a",
+          "UpdateDate": "7POUJrXU8h4Zg71jFKc2",
+          "Description": "x2hiNdJpHCWBbKefLr3cP5",
+          "AttachmentCount": 1,
+          "AttachDate": "",
+          "DefaultVersion": "z4",
+          "PolicyName": "YY39of4a8LwNc8v824v6IJZ77yru7F",
+          "PolicyDocument": "",
+          "CreateDate": "G28OTflud945HRcAlF0V"
+        },
+        "DefaultPolicyVersion": {
+          "VersionId": "Rv",
+          "IsDefaultVersion": true,
+          "PolicyDocument": "iABcamKppkyP5qUbVBXGjAV4K0ZOfQkIEZKxAveUYovAe5AEOFgOcxGjmF9OF27U4R4MJDRJt5Tx2oHB5gGsxUhSct0WlRJ2doonCZQuiCuNVbvvbDljM6qm364ibZWUVWY6hXvuZNdO4tyvK2KgjrQRRmtnz9mUEL0r474FLAfQr4Du0pQu0SLKXjuyy4BfZ8fiAZCOjHNL5BRfJwg68dUQO9KHHO00gI4iklGZKDexFmeB1LXVukVw4qVeA5TkHVwNg2TYNSfsyb4boDQLCrqUJGKunML4SDxw6Of2XsPboSLdlhSrDpfdQ4Gsz3aAALJBJmI8fwmvoyzT9iEEsM6NtsPkUNHEj54aGcM7QESrZkUL2yupLKLhdSqJkryzQcXWULlf4yAp8kJoP6OxRKWgHZbxf8VKs2eipwHcXuPhRmb34NkAlD2apl5zeWjD8vDZCUAZbJ4Rinu5OrFDozHGUp6AJghBW6l",
+          "CreateDate": "6r9g7v2xX6WOBdWcYa4N"
+        },
+        "Source": "8AfYh5aXTTjJsCMzVw2ojD8Ihs5XHsoHPQBW"
+      },
+      {
+        "Policy": {
+          "PolicyType": "9YGt91",
+          "UpdateDate": "HvNg1Xzu5MRlEk7Ki16K",
+          "Description": "2y52kFbjmUXqw1LbMZzC23",
+          "AttachmentCount": 1,
+          "AttachDate": "",
+          "DefaultVersion": "IM",
+          "PolicyName": "BbOrODDMGyT3bJEwUVwBCszKmUDl30",
+          "PolicyDocument": "",
+          "CreateDate": "QsZV8AJovd5b1KelVlvN"
+        },
+        "DefaultPolicyVersion": {
+          "VersionId": "Pb",
+          "IsDefaultVersion": true,
+          "PolicyDocument": "3XbCnOGd3Oyfwbmt2VcRGvy1mMVJpAtpVMiiz9CgvP0KqekebgZVc3w53VnDSN93xElPtSKIqs3ZGoftz6HBqX7ekJkybIrKBP9SlhygmpSTkzO4TwbeFTxNSB6fPq8sLsOcItywr7n7GOZV4FktcgwvaKCRTZdZSV6AOAFfQPT91FtbKVUKreV7yUt98LdMJ0SRj1Rt6fINPLqggAAvaIcVOfm6zhGIpfEtUw5N3fTEYzDctfOS7vWv7wUoZ5AlaL2nxjGSge9JGEQhRU3m6m3qffYdHSMoPnzAfslCif3WwZyGwgC4gr21IhQGhlKOzHr8nxC2yyAVFT1LwszpyCibfVHAHfG2oDTlxF9ykiXpbdFGGRLJHJCWCQZJehg21m4sDGCs3hy3LCozk4JCep61w8umo9APfYmbYw3vpzmmJTlnWzt4Uqm9Bafw91TTshGLOjRH0dEYP2zvk9rWpSPbEMaWpRvsiTv",
+          "CreateDate": "oKDuDSJROwwSLYYy4BX3"
+        },
+        "Source": "GKsujba9HAVrWbYUiJGzRz4S0an6sVmx1N28"
+      },
+      {
+        "Policy": {
+          "PolicyType": "in54GN",
+          "UpdateDate": "zimlkSluiGrmKOckrZVQ",
+          "Description": "7w2gZ2JR7GIqyvKulo2LLL",
+          "AttachmentCount": 1,
+          "AttachDate": "",
+          "DefaultVersion": "Wy",
+          "PolicyName": "acYMNWwJVgo2Q1JIbU9x2ZlNPzkx1g",
+          "PolicyDocument": "",
+          "CreateDate": "MpCmLvQsGoiVZkZz0jU3"
+        },
+        "DefaultPolicyVersion": {
+          "VersionId": "3G",
+          "IsDefaultVersion": true,
+          "PolicyDocument": "qpTSIeY4XcfG5MCTHE6joqHcoWs58JgIbGFokiXc0e2zfWoUr48XWzjFCm9lXe9ipOqkxwcJ5ETytDZ3oRgOEbueZlwvgUEIk1RWQ63TY84UjPuZwufzvvdqbBiT23kXFFbJh7itUERAF7DoWdbBoIIPGoN2ft596Np6goAf1fFWipBruZx7cUMRoPze7LEd7alhWKYCYeXDR0J1xMiJNGwT8i3DHedzyHCreAABBgKgR3xzrcQwrGBBe6wZkwpzraO9iRbNyi6CkbSgzbqp496vFWJOEgut6hQBcmt7X4Pr9Bvz9RuORTrWLmVybezdbneHWrtfN7TCZaFuZd5V73uTuPjhc0S6SemzMq49XQqWOklm6Jj97mHMNfc8NvoeFHZO5ndTQz7sjWOIxuEZ9UneRZlt4bHNGVk058oeaT9jlT7YWBerRdGjZFR6zLCBuHjOarjoGx2fcVYdt2VDY2tfBz9ycEzBWCE",
+          "CreateDate": "FXdwdTbQgqTWkJczIYyb"
+        },
+        "Source": "OXe1tMl6YXTpmjPz6uBknzfPQRuvbmsAEobY"
+      }
+    ]
+  }
+}

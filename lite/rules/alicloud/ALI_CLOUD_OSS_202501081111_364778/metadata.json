@@ -1,0 +1,37 @@
+{
+  "id": "alicloud.oss_202501081111_364778",
+  "name": "阿里云-OSS-未配置网络策略风险",
+  "version": "legacy",
+  "description": "OSS未配置网络策略风险",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "oss",
+  "asset_type": "oss",
+  "categories": [
+    "数据保护",
+    "网络访问"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "oss"
+  ],
+  "query": "data.oss_bucket_policy_without_network_condition_2900001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "为 OSS Bucket 配置明确的网络访问策略，优先限制到可信 VPC、访问点或来源网段；避免依赖默认可达路径承载敏感数据访问。",
+    "categoryList": [
+      "数据保护",
+      "网络访问"
+    ],
+    "code": "ALI_CLOUD_OSS_202501081111_364778",
+    "context": "Bucket {$.ResourceName} 未设置网络访问控制",
+    "description": "OSS未配置网络策略风险",
+    "level": "High",
+    "link": "",
+    "linkedDataList": null,
+    "name": "阿里云-OSS-未配置网络策略风险",
+    "platform": "ALI_CLOUD",
+    "resourceType": "OSS"
+  }
+}

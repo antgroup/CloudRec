@@ -1,0 +1,113 @@
+{
+  "resource_type": "kafka",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "AllowedList": {
+      "DeployType": 4,
+      "InternetList": [
+        {
+          "AllowedIpList": [
+            "haNYBhIem"
+          ],
+          "PortRange": "gJUFSEgG1",
+          "AllowedIpGroup": {
+            "sasl-port": [
+              "IbeycIpmR"
+            ]
+          }
+        }
+      ],
+      "VpcList": [
+        {
+          "AllowedIpList": [
+            "n9n3U2PhIsDEL6"
+          ],
+          "PortRange": "qsRc6Bv9O",
+          "AllowedIpGroup": {
+            "alikafka_post-cn-qs34eq97a003": [
+              "jpG3yA52zvKKAx"
+            ]
+          }
+        }
+      ]
+    },
+    "InstanceVO": {
+      "DeployType": 4,
+      "ReservedPublishCapacity": 0,
+      "ResourceGroupId": "gL9JZVmGdeCFyovuCq",
+      "SpecType": "zyEq5w",
+      "IoMax": 20,
+      "AllConfig": "w2QewbYU5hHF9HfeWSSpdaBH0Xmt9f2DVg2J6pzuVeCD1jUvkInBH3XfuY6iSRkwEAddNy7eO0i6r2k6IQjlDJBplnHnGy9uutIPNUjZvHcALuOIn77doCVZQVM64LPvNl5TUagcWIlWGjqASJQ1s5jsFB7fjiUhRYDLEEVLJKIjtNS0r1v3iEuYI4MyxtKpaJB4B562UuGfWqXvWfrh04drQM3iRnc26q5PAx4B93PxWoE6WBEk4VMv2zzjxdWbuYJ5oofXVJvliM2PvDgLGuNjSz8qKqWm6rLTAOosuQyw7Ps4boV1H2NdFwUqrTaqHRPjfQ1JJciIWRRkVWjoL0vtcMWadQn8OqEZYo4JmKDv",
+      "EndPoint": "qKJ6kSC8CeB7bdlfZ18KTcb7ldwkMYr2B1zpBVz2ZzyeXjRFRLbKinqO",
+      "UpgradeServiceDetailInfo": {
+        "Current2OpenSourceVersion": "aLcA7"
+      },
+      "SaslDomainEndpoint": "",
+      "Name": "NcWHLG0ZHqc6qBxNEwoqQq",
+      "ViewInstanceStatusCode": 2,
+      "ConfluentConfig": {
+        "KsqlStorage": 0,
+        "KafkaRestProxyCU": 0,
+        "ZooKeeperReplica": 0,
+        "KafkaReplica": 0,
+        "ConnectReplica": 0,
+        "ControlCenterStorage": 0,
+        "SchemaRegistryCU": 0,
+        "ConnectCU": 0,
+        "KafkaCU": 0,
+        "KsqlCU": 0,
+        "ControlCenterReplica": 0,
+        "KsqlReplica": 0,
+        "SchemaRegistryReplica": 0,
+        "KafkaRestProxyReplica": 0,
+        "ZooKeeperCU": 0,
+        "ZooKeeperStorage": 0,
+        "ControlCenterCU": 0,
+        "KafkaStorage": 0
+      },
+      "DiskType": 0,
+      "SslDomainEndpoint": "68adwXNzino0DzpzWTh1X6vi5m3LCTcy2ekZlOKy4eDlTUTwKMcm3L5vEpyUTRfqJTUnuSEKJpGxEg1yIyVa8IcQ9mihmdy2qe5aCA85Zzgtoa6KFndHLwKpnujSePT99yNpxjhiPH8se1mdsUyUwdYRmch4uEm2uEqs1p652FeiJH3l",
+      "ReservedSubscribeCapacity": 0,
+      "ServiceStatus": 5,
+      "ExpiredTime": 2071644312000,
+      "MsgRetain": 72,
+      "DiskSize": 500,
+      "TopicNumLimit": 1000,
+      "Tags": {
+        "TagVO": [
+          {
+            "Value": "d7OX5X",
+            "Key": "UEG"
+          },
+          {
+            "Value": "77e",
+            "Key": "lFX"
+          },
+          {
+            "Value": "pEe",
+            "Key": "yobmNzc"
+          }
+        ]
+      },
+      "UsedPartitionCount": 72,
+      "SslEndPoint": "giRvzo0gmZy7xJuXUiSFfX3B4Basn3ElYr3FyRRRlkVlcZIvVvgMRY",
+      "EipMax": 3,
+      "KmsKeyId": "",
+      "ZoneId": "vWblG",
+      "InstanceId": "bAoNsJthJBK8RWyfuNvtYytgLyJC5",
+      "CreateTime": 1756111513000,
+      "VSwitchId": "LDxkW3rW5a9T98wxiSkjQB1B8",
+      "UsedTopicCount": 18,
+      "SecurityGroup": "jTx7gwZFJljAfEUeMADhiXg",
+      "UsedGroupCount": 1,
+      "DomainEndpoint": "r3J1X0QJ29B6QSbyVxMSwQYRkBpJJJ4rcUUEdpycPi0bQYRmk6gvENTxCtpTFxzTorZwEFdDk4ijvUxcFVpzDpGigU5yiBaXT9Lo0K8RAmsNmfEuxQFFkoRCg2et3uKSDLlGYSRBBXpTH9vmkV7Eq68HTEfS49whf7juMsDN2lnrNitIl7FHVsKCDgXh",
+      "VpcId": "7CuGdtJNvilxk00K4kjtEdxIc",
+      "PaidType": 1,
+      "IoMaxSpec": "dA0LbQsvGqNcfcz2JFa",
+      "StandardZoneId": "LHvHTb4LkpLH1",
+      "RegionId": "WB3c89D8Fbf"
+    }
+  }
+}

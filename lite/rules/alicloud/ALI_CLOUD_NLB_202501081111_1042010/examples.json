@@ -1,0 +1,100 @@
+[
+  {
+    "name": "internet-listener-high-risk-port-without-security-group",
+    "want_findings": 1,
+    "input": {
+      "LoadBalancer": {
+        "AddressType": "Internet"
+      },
+      "LoadBalancerAttribute": {
+        "SecurityGroupIds": []
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 22,
+            "ListenerProtocol": "TCP"
+          },
+          "ServerGroupServers": [
+            {
+              "Port": 8080,
+              "ServerId": "i-backend"
+            }
+          ]
+        }
+      ],
+      "SecurityGroups": null
+    }
+  },
+  {
+    "name": "backend-high-risk-port-does-not-mean-public-listener-risk",
+    "want_findings": 0,
+    "input": {
+      "LoadBalancer": {
+        "AddressType": "Internet"
+      },
+      "LoadBalancerAttribute": {
+        "SecurityGroupIds": []
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 80,
+            "ListenerProtocol": "TCP"
+          },
+          "ServerGroupServers": [
+            {
+              "Port": 22,
+              "ServerId": "i-backend"
+            }
+          ]
+        }
+      ],
+      "SecurityGroups": null
+    }
+  },
+  {
+    "name": "security-group-drop-covers-public-listener-port",
+    "want_findings": 0,
+    "input": {
+      "LoadBalancer": {
+        "AddressType": "Internet"
+      },
+      "LoadBalancerAttribute": {
+        "SecurityGroupIds": [
+          "sg-deny-ssh"
+        ]
+      },
+      "Listeners": [
+        {
+          "Listener": {
+            "ListenerPort": 22,
+            "ListenerProtocol": "TCP"
+          },
+          "ServerGroupServers": [
+            {
+              "Port": 22,
+              "ServerId": "i-backend"
+            }
+          ]
+        }
+      ],
+      "SecurityGroups": [
+        {
+          "SecurityGroup": {
+            "SecurityGroupId": "sg-deny-ssh"
+          },
+          "Permissions": [
+            {
+              "Direction": "ingress",
+              "Policy": "Drop",
+              "SourceCidrIp": "0.0.0.0/0",
+              "PortRange": "22/22",
+              "Priority": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

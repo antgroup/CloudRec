@@ -1,0 +1,36 @@
+{
+  "id": "alicloud.ens_instance_202501241146_999147",
+  "name": "阿里云-ENS-实例未接入或离线云安全中心 Agent",
+  "version": "legacy",
+  "description": "ENS 实例关联的云安全中心 Agent 未安装或处于离线状态；Lite 默认不强制要求旗舰版。",
+  "severity": "medium",
+  "advice": "为 ENS 实例安装并保持云安全中心 Agent 在线；如业务需要使用特定付费版本，应通过独立基线配置检查，不作为 Lite 默认风险。",
+  "provider": "alicloud",
+  "service": "ens",
+  "asset_type": "ens_instance",
+  "categories": [
+    "安全防护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ens"
+  ],
+  "query": "data.ens_instance_didnt_install_aegis_5600001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "根据规则命中的资源配置执行修复，优先遵循最小权限、最小公网暴露、默认加密和可审计原则；变更后重新运行 CloudRec Lite 扫描确认风险关闭。",
+    "categoryList": [
+      "安全防护"
+    ],
+    "code": "ALI_CLOUD_ENS Instance_202501241146_999147",
+    "context": "ENS 实例：{$.ResourceId} 未接入或离线云安全中心 Agent",
+    "description": "ENS 实例关联的云安全中心 Agent 未安装或处于离线状态",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": "[{\"associativeMode\":\"仅关联一次\",\"linkedKey1\":\"$.Instance.InstanceId\",\"linkedKey2\":\"$.Instance.InstanceId\",\"newKeyName\":\"InstanceInstalledAegis\",\"resourceType\":[\"SECURITY\",\"Sas\"]}]",
+    "name": "阿里云-ENS-实例未接入或离线云安全中心 Agent",
+    "platform": "ALI_CLOUD",
+    "resourceType": "ENS Instance"
+  }
+}

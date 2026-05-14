@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ecs_image_202508142013_698823",
+  "name": "阿里云-ECS-自定义Image镜像开启共享",
+  "version": "legacy",
+  "description": "自定义镜像共享给外部可能导致数据泄漏",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "ecs",
+  "asset_type": "ecs_image",
+  "categories": [
+    "数据保护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ecs"
+  ],
+  "query": "data.cloudrec_11800001.messages",
+  "entrypoint": "messages",
+  "legacy": {
+    "advice": "核查自定义镜像共享目标，删除非业务必需的外部共享账号；共享前清理镜像中的密钥、配置和敏感数据，并记录审批依据。",
+    "categoryList": [
+      "数据保护"
+    ],
+    "code": "ALI_CLOUD_ECS Image_202508142013_698823",
+    "context": "$.messages",
+    "description": "自定义镜像共享给外部可能导致数据泄漏",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-ECS-自定义Image镜像开启共享",
+    "platform": "ALI_CLOUD",
+    "resourceType": "ECS Image"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.sas_202501081111_427603",
+  "name": "阿里云-SAS-ECS安全中心Agent未在线或未安装",
+  "version": "legacy",
+  "description": "ECS安全中心Agent未在线或未安装",
+  "severity": "medium",
+  "provider": "alicloud",
+  "service": "sas",
+  "asset_type": "sas",
+  "categories": [
+    "安全防护"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "sas"
+  ],
+  "query": "data.cloudrec_2200006.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "确认云安全中心Agent已安装并在线。如Agent离线或未安装，请重新安装或排查主机网络、进程和安全中心接入状态。",
+    "categoryList": [
+      "安全防护"
+    ],
+    "code": "ALI_CLOUD_Sas_202501081111_427603",
+    "context": "实例 {$.InstanceId} 安全中心Agent未在线或未安装",
+    "description": "ECS安全中心Agent未在线或未安装",
+    "level": "Medium",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-SAS-ECS安全中心Agent未在线或未安装",
+    "platform": "ALI_CLOUD",
+    "resourceType": "Sas"
+  }
+}

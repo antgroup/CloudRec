@@ -1,0 +1,35 @@
+{
+  "id": "alicloud.ram_user_202505081354_731990",
+  "name": "阿里云-RAM Role-拥有RAM敏感操作（前提可被扮演登录控制台）",
+  "version": "legacy",
+  "description": "RAM Role拥有能创建、赋权其他ram用户的权限",
+  "severity": "high",
+  "provider": "alicloud",
+  "service": "ram",
+  "asset_type": "ram_role",
+  "categories": [
+    "身份安全"
+  ],
+  "tags": [
+    "legacy",
+    "alicloud",
+    "ram"
+  ],
+  "query": "data.ram_user_with_high_risk_access_has_no_acl_8900001.risk",
+  "entrypoint": "risk",
+  "legacy": {
+    "advice": "审查该 RAM Role 的信任策略和绑定权限，移除 AdministratorAccess、AliyunRAMFullAccess、*:* 等高危授权；确需保留时限定可扮演主体、条件和有效范围。",
+    "categoryList": [
+      "身份安全"
+    ],
+    "code": "ALI_CLOUD_RAM User_202505081354_731990",
+    "context": "实例：{$.ResourceId} ，名称：{$.ResourceName} 存在xxx风险。",
+    "description": "RAM Role拥有能创建、赋权其他ram用户的权限",
+    "level": "High",
+    "link": null,
+    "linkedDataList": null,
+    "name": "阿里云-RAM Role-拥有RAM敏感操作（前提可被扮演登录控制台）",
+    "platform": "ALI_CLOUD",
+    "resourceType": "RAM Role"
+  }
+}

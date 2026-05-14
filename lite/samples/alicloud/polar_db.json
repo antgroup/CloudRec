@@ -1,0 +1,333 @@
+{
+  "resource_type": "polar_db",
+  "provider": "alicloud",
+  "source": "synthetic_rule_field_contract",
+  "generated_at": "2026-05-09",
+  "input": {
+    "DBCluster": {
+      "DeletionLock": 0,
+      "Category": "LbxVYw",
+      "ResourceGroupId": "4UiuVKctUxfb0UGDNO",
+      "StoragePayType": "ylF5Oguz",
+      "DBClusterId": "O0qVMTr2bgCtLN0QPMsc",
+      "HotStandbyCluster": "she",
+      "DBClusterNetworkType": "wCU",
+      "DBType": "PcQT4",
+      "DBVersion": "0Wh",
+      "DBNodes": {
+        "DBNode": [
+          {
+            "ZoneId": "MxPCGtPSkEcAfYe",
+            "DBNodeRole": "LhiEJn",
+            "ImciSwitch": "YfU",
+            "DBNodeId": "Au4jIJaJ6JdLWU4HOCIB",
+            "RegionId": "96N93sy4TgF02H",
+            "Serverless": "",
+            "HotReplicaMode": "UCE",
+            "DBNodeClass": "nkYkp2kuKz50W5bk8o7B"
+          },
+          {
+            "ZoneId": "wRm7EKEKIZpuHdH",
+            "DBNodeRole": "ZlipV6",
+            "ImciSwitch": "x0n",
+            "DBNodeId": "P64A6GXBhj5e0X5zhNLM",
+            "RegionId": "ZkJN1I0EvmG87i",
+            "Serverless": "",
+            "HotReplicaMode": "ug",
+            "DBNodeClass": "6z3ewzii4TKTsvV9rLis"
+          },
+          {
+            "ZoneId": "Gz2ZPdKuiCy3NXy",
+            "DBNodeRole": "l6pEXG",
+            "ImciSwitch": "HBD",
+            "DBNodeId": "9oVO1SA9nA9f5l1JP0Ki",
+            "RegionId": "TNCSPLUJeKAcUQ",
+            "Serverless": "",
+            "HotReplicaMode": "p7x",
+            "DBNodeClass": "l6zHy2VG5yUanbeTpkwH"
+          },
+          {
+            "ZoneId": "OwmMUl8FKqi8Ieh",
+            "DBNodeRole": "KjJpbB",
+            "ImciSwitch": "z5w",
+            "DBNodeId": "uSLXkpj8dnYzCsEQagKl",
+            "RegionId": "umHvJsYdrvyKaA",
+            "Serverless": "",
+            "HotReplicaMode": "Wf",
+            "DBNodeClass": "E39gZI7vixtHDluhgv2b"
+          }
+        ]
+      },
+      "Engine": "bxc8N3L",
+      "Tags": {},
+      "MemorySize": "BOODB",
+      "StorageType": "m5RfvH6x4Hn6d5F",
+      "ZoneId": "APVDRIazrcegF5p",
+      "DBClusterStatus": "GrejjXM",
+      "CreateTime": "388pFaTjOJ5ku33eatmd",
+      "DBClusterDescription": "b5wyIBhshWdpJg5rVSE5",
+      "Expired": "LdNUi",
+      "LockMode": "SEnIq1",
+      "PayType": "OyYP2IN",
+      "StrictConsistency": "VvW",
+      "VswitchId": "dffvlSbse9fyITR8gLHVuq5w7",
+      "DBNodeClass": "ezmsd7oCKwnuzuEEek5e",
+      "StorageUsed": 2527068160,
+      "DBNodeNumber": 2,
+      "VpcId": "N9AM5McUsCXsqPHdFr8PcaEOp",
+      "CpuCores": "4",
+      "SubCategory": "0cSqsMtXO",
+      "RegionId": "4PaRy2x1dTdOeP",
+      "ExpireTime": "jv9sR2YujSPWMiOQaJQd"
+    },
+    "DBClusterAccessWhitelist": {
+      "RequestId": "3ClBC2kspmMzFEPX0trFWQMovOAKFFGyFDP9",
+      "Items": {
+        "DBClusterIPArray": [
+          {
+            "SecurityIps": "ryk6tFe0xQGppo5Y2mZJcba3VZkEpYDcWqMfs0Rvt1w2vIGpQBa",
+            "DBClusterIPArrayName": "dYu1n53",
+            "DBClusterIPArrayAttribute": ""
+          },
+          {
+            "SecurityIps": "Jb0p3tntOBmLt9kWRCFIZlx892Qojcfu",
+            "DBClusterIPArrayName": "4WiMZKjrPJcLV2l1",
+            "DBClusterIPArrayAttribute": "e8Bf8N"
+          },
+          {
+            "SecurityIps": "Fbuvy065xeDgEY1axAfgcgP7QIdEWQu8BGWwJ5X7qqzyTgsdbpp",
+            "DBClusterIPArrayName": "sMhQSng",
+            "DBClusterIPArrayAttribute": ""
+          },
+          {
+            "SecurityIps": "n62ogBWjITnGF25IxMkxSBDDvVnm5zJ1",
+            "DBClusterIPArrayName": "WJqvIIGUdld6wbVi",
+            "DBClusterIPArrayAttribute": "XWjpQe"
+          }
+        ]
+      },
+      "DBClusterSecurityGroups": {}
+    },
+    "DBClusterTDE": {
+      "TDEStatus": "Mq4gw8SV",
+      "RequestId": "FG1bMY330FIZ2irpn1yiiBXLDpIDNQwZOOcG",
+      "EncryptNewTables": "",
+      "TDERegion": "KxXe95ezOeDrAo",
+      "DBClusterId": "oHRIYBtRGcdMW20b3nVN",
+      "EncryptionKey": ""
+    },
+    "DBClusterAuditLogCollector": {
+      "CollectorStatus": "WsUZEGDW",
+      "RequestId": "JNvpTLiMRuLGtiz6PkUxp2JMCqOSJJNqrxIh"
+    },
+    "DBClusterAttribute": {
+      "DeletionLock": 0,
+      "Category": "qNgW7u",
+      "CompressStorageUsed": 2541748224,
+      "Orca": "5NE",
+      "ResourceGroupId": "1RKh05QMcSltMhwSkh",
+      "StoragePayType": "kARfMFrb",
+      "DataLevel1BackupChainSize": 45088768,
+      "DBClusterId": "a2qxogffsHTAQi1ORDhv",
+      "HotStandbyCluster": "S9z0tpxJrhmhlktTp",
+      "ProxyStatus": "SnMQP2M",
+      "DBClusterNetworkType": "omh",
+      "DBType": "9NvrZ",
+      "BlktagUsed": 1243,
+      "StandbyHAMode": "",
+      "IsLatestVersion": true,
+      "DBVersion": "kuh",
+      "StorageMax": 109951162777600,
+      "DBNodes": [
+        {
+          "MemorySize": "O5yl6",
+          "DBNodeStatus": "JATSSzE",
+          "AddedCpuCores": "",
+          "MaxConnections": 8000,
+          "ZoneId": "18RztpKOaI2ZNPt",
+          "DBNodeRole": "2EO9JJ",
+          "SubCluster": "wUBIW6W",
+          "ImciSwitch": "HMJ",
+          "DBNodeId": "0TApurxTDZHFBqZGyRGL",
+          "DBNodeClass": "0PQAwAH9hhFhunqwircZ",
+          "MaxIOPS": 64000,
+          "CpuCores": "w",
+          "CreationTime": "NELDNN1i32tDCctp8LL0",
+          "SccMode": "1Gh",
+          "FailoverPriority": 1,
+          "HotReplicaMode": "tir",
+          "ServerWeight": "W"
+        },
+        {
+          "MemorySize": "qcoPw",
+          "DBNodeStatus": "xnum51k",
+          "AddedCpuCores": "",
+          "MaxConnections": 8000,
+          "ZoneId": "CkibVPkRHvgAKn6",
+          "DBNodeRole": "HoJBI2",
+          "SubCluster": "3pTbN0j",
+          "ImciSwitch": "mG2",
+          "DBNodeId": "HmEmTLDb1vaxqklqpCLK",
+          "DBNodeClass": "JSHkvHHwR6gjxzDgHWhR",
+          "MaxIOPS": 64000,
+          "CpuCores": "c",
+          "CreationTime": "Lf1Lk07v0sffCyU8yMlx",
+          "SccMode": "QC4",
+          "FailoverPriority": 1,
+          "HotReplicaMode": "cu",
+          "ServerWeight": "g"
+        },
+        {
+          "MemorySize": "2A0dM",
+          "DBNodeStatus": "frz0CKg",
+          "AddedCpuCores": "",
+          "MaxConnections": 8000,
+          "ZoneId": "70YpFvFnUikgoEC",
+          "DBNodeRole": "Z4OVom",
+          "SubCluster": "2Jc7iLg",
+          "ImciSwitch": "P26",
+          "DBNodeId": "TiXBbN28VqYdLW1MoVZn",
+          "DBNodeClass": "XWn2mwAdFAwYQWBatFSt",
+          "MaxIOPS": 64000,
+          "CpuCores": "K",
+          "CreationTime": "8qLq4kNlAEetEfQNLST9",
+          "SccMode": "g5M",
+          "FailoverPriority": 1,
+          "HotReplicaMode": "3CB",
+          "ServerWeight": "c"
+        },
+        {
+          "MemorySize": "G8Zm6",
+          "DBNodeStatus": "tCrcB5g",
+          "AddedCpuCores": "",
+          "MaxConnections": 8000,
+          "ZoneId": "to3gbOj3MTCiXt4",
+          "DBNodeRole": "HpHszt",
+          "SubCluster": "OGcI3lV",
+          "ImciSwitch": "TER",
+          "DBNodeId": "ufNtPqkarQBUmPCCfFbE",
+          "DBNodeClass": "ZAng8t9Sac4BlVrkdAcT",
+          "MaxIOPS": 64000,
+          "CpuCores": "P",
+          "CreationTime": "bXrJlhBJHJ0ZHqn0ItBc",
+          "SccMode": "cRo",
+          "FailoverPriority": 1,
+          "HotReplicaMode": "uy",
+          "ServerWeight": "9"
+        }
+      ],
+      "ImciAutoIndex": "dGW",
+      "ZoneIds": "opvSnOKFiBfdZKp",
+      "InodeUsed": 413,
+      "MaintainTime": "d3wWmF3jhxYsB",
+      "Engine": "zqnqiuY",
+      "BlktagTotal": 26214400,
+      "StorageType": "V7RBqwJzzyF3LZT",
+      "Architecture": "Cpc",
+      "RequestId": "40YcrVFPQtQ4N9EmZBFvMM7Y5WcivGV0rmDk",
+      "DataSyncMode": "",
+      "VPCId": "UlMdQicnvEutqOHBVKjl3bIyD",
+      "DBClusterStatus": "b6w6BQc",
+      "VSwitchId": "hZMjvhlf2OD6SK1wThpcl1120",
+      "DBClusterDescription": "0sSSj6yrRxucL0UDeKQP",
+      "Expired": "VFNYP",
+      "ProxyCpuCores": "r",
+      "LockMode": "rppy57",
+      "PayType": "YUFM7Ij",
+      "InodeTotal": 20971520,
+      "StorageUsed": 2541748224,
+      "IsProxyLatestVersion": true,
+      "CompressStorageMode": "sG4",
+      "DBVersionStatus": "LCZxX0",
+      "ProxyServerlessType": "TgoKv4ZgOigD2AqI",
+      "CreationTime": "VprkIcoWAvvTn41zPAWs",
+      "SubCategory": "dWYnTrMYU",
+      "ProxyType": "TsoLUeg",
+      "RegionId": "cpda5wexQj568u",
+      "SQLSize": -1,
+      "ExpireTime": "StSWQwt9T20ML3JcFJow"
+    },
+    "LogBackupPolicy": {
+      "LogBackupAnotherRegionRegion": "",
+      "LogBackupRetentionPeriod": 7,
+      "LogBackupAnotherRegionRetentionPeriod": "z",
+      "RequestId": "oefi99Lc8uMNLJ5IpeC0IfImJup2OpWv2Ixh",
+      "EnableBackupLog": 1
+    },
+    "DBClusterSSL": [],
+    "DBClusterEndpoints": [
+      {
+        "DBEndpointId": "kQDs2Z17x4aRqAPbDxRZ",
+        "AutoAddNewNodes": "vF9I4O",
+        "EndpointType": "Kyq23lW",
+        "AddressItems": [
+          {
+            "VPCId": "s6IbhHEpTjBCY0DhadB3TI6hy",
+            "Port": "0aAi",
+            "VSwitchId": "I2qSeXCRZfkGAyDVnx9tp3yz8",
+            "VpcInstanceId": "EDlI9QDSZRq5y3NhSRmY",
+            "ConnectionString": "PDLb2IGuGVwy5sN8HfwSiEavv7DddIoAUyekKwDjjUnan4xBjY9K",
+            "IPAddress": "jrBaakxu4dpJ9",
+            "NetType": "CMygXJB"
+          }
+        ],
+        "EndpointConfig": "LQTerzQw9AW5GAIqtMr43es0Vl9x4sEqhpCvu3A6EEa4xPFBDAnG7bpCvBig20oy1TPg9SwsnVUv1DXuW5uc912wRFIsOOtKuZfdFNOc3hNXc1rrxm1gL5u0Zh3OPUBuWy8Lfw7dyH7zfhsbjex7TeeQYtkYp3YVB3UmBrn4DbS8RVRpL1vQdqzB9YqLdc7aTSsVp2Cfv8GPgKYgddYwlqLX6Fe4axwrKaco4n4IrhZn6tVM0nnN0p5tM93gTiegykLosCqfvC8S0y7VwlnRoCNOdVgFemDokekFk19EtSiOk3bMIf3ItTQALbIgkP0ut7qvQExXwo3CGZe9G2nzmX3CxpAraMrudsySCXpvH9djDO3HiWCTXsk2ao23AvGSKcLxkAnnYgdTougNg2e4XIzJe9OBBfeTQeVI9uxCkxiKYYzgKpSGeLQSIDfOLgiOokoJvnxz8LMlCtgNPYiVEzyZXaI9WhfUvTWgGfR1tzgh3mDyDOkLDrxoS5YPv0fkpHtCcDyAmxwqpvO5cWEYNRllWsoibwtqAAW7yYSFTTeMBuJMTDUnJiVWVsfsVDHobZmiWCSz83DYPFV2XvWPFlvkkeJ2CXau0M1teNJTkrneeNgVdSm94XN8L4a4mG1lusNhMalWFr9cf5rrYvUJIhIn4NCr9SBBXh8olUIvdFDcYF0D9Pj2Gmfttj0qU5eDD7kIOr8N4Q84mlrs1lSpzqrbgShKspKOLft7sF2kJZeiYkameT9D02mRuo5QBJ0Uc9ov1PVAu6JbaRheEKH57GODpL0OFYIAX6adodg2ltFxvusNEYpbq5SxnkuYvsokqNg8mEWyEosbwnGWmmLKW7bhJ7Ike0ZaZI6mzr0hCSQ5",
+        "Nodes": "BEfNPQQWatadBNU1Xuu19Ow9X4xR6XB4T6KlK1nOo",
+        "ReadWriteMode": "obxzR6n3h"
+      },
+      {
+        "DBEndpointId": "3PvW8RltPqNSJVCbUAat",
+        "EndpointType": "Ki6DPuJ",
+        "AddressItems": [
+          {
+            "VPCId": "id5Qdg1xCxuNZJln8NLSXWQRp",
+            "Port": "O0Dp",
+            "VSwitchId": "rN2wOzqTN6vmi9u2covK56KU4",
+            "VpcInstanceId": "w8Abr2JICeyQ8tUZX5hv",
+            "ConnectionString": "rB06wwoxUmQiuIWsLbOwxWvpOvlpajUiSuvDiTtt9ymxDksViacnpdZwbBwZq",
+            "IPAddress": "U5e0U3XF5bNDl",
+            "NetType": "5aYiN1r"
+          }
+        ],
+        "EndpointConfig": "I9",
+        "Nodes": "h9mG4iEtJ7DapkseEBRr"
+      },
+      {
+        "DBEndpointId": "3XHjs1gNpKcBxAptitMl",
+        "AutoAddNewNodes": "m2oT1c",
+        "EndpointType": "OOFQlrN",
+        "AddressItems": [
+          {
+            "VPCId": "jEKRhiWG4s5gvHYBbglguhykw",
+            "Port": "FH7L",
+            "VSwitchId": "Ssttd0z7fKJuYA5AiA0rwtktX",
+            "VpcInstanceId": "Vcd5k7zwhSgMaHxJlzel",
+            "ConnectionString": "64RsANW9m9yYTlSsSaOiLuDoXR9Oo7ikGCQwFa5PJ2g9z0M3xGIa",
+            "IPAddress": "tTnfqQEBNjNlO",
+            "NetType": "uvOzIfM"
+          }
+        ],
+        "EndpointConfig": "oaMNzTtSwqDzoEMmRxo4UPcExIUQDSyshMKe5g6MHvf7HpgYBP70mZXEkY8O9IUrreIvAhbQkkbNVgwilhGaKPLYgDbfcxLZlHOhAUPJWGOCVqUQlzK3QO341sXhzIXeMgnnoq5u3HlV7KhAIjk1oyn48A4htN0eDOVD3DOdSHKFLskZrSsIVlPvX6w5J7SjmZERwLVFZj9J8yGVWB00oYhWGR2AAwP9B5fUMj5ob9fCSWnO6is61jrZ7bfe2Phmu9MUXG4BbBLmVrlAAvbVtOlOeJs97iT4Skzzp2BTwJ00wELZlcQlNmplt3QH5Hpg2BQd2WVChvRIfZQnzjTt4cERy02X8zi7M5q0Ic623bqgkoE1Nf4TDekUEihCEZt1CbcgJfuuCw0fp1e8NeDJFmAWbRBV2rnV8L5mrodMYed2hysUCq22gebxquWMCGXmW8JWr5InhI2tbAQ2ubfIwVSrYpj3lTlVpe1ImpzccdNPz5dIMV4ptw8I4ZCj5BCjuDMGBmcgNJiIrUedPI55qDj1Nn3J7JaKQcnsIb2wlorGJcJ1G1i7eNoCyG9BmWqE0Hupp3190UPSVJFGbt6ZkE9L6CwNfikNvQDt7CJpvsfLewr8exsqmFBcPGXLd3JCRDG1dd9HLzSZduT46RBs1dtoGSQkUPtQoqIYWCPeFv21m9W8lJQSvIrClG7nfHBfjpEH6tLtG17kexCh2VuNWBJVJRy2QjeEZ0Vqy3jbUem36mIyr4apvlmhwrBze7ErPJ9xQ3gkxYXt2NXrITnINzgYoLnGrbig5Bkuco9zftSeren65Kxv0xz44sibyVI9HZOytVhhGVPB9CkADTURIFF6brrAp209uWTmk7pMUOfv",
+        "Nodes": "798a7Xr4OiD1kgaJfo6W9ARl0e0Z2423B5t3sAmtG",
+        "ReadWriteMode": "CQ4GPct4C"
+      },
+      {
+        "DBEndpointId": "fUtcJRW2Aaf8olRg0dOK",
+        "EndpointType": "yh9XhlI",
+        "AddressItems": [
+          {
+            "VPCId": "BmVE21tx5PUt0sAiBoSTDTi4a",
+            "Port": "81Cc",
+            "VSwitchId": "bV30UIH54bPQftEUt95a4xz6W",
+            "VpcInstanceId": "44HJY01rV90KtlcE0nHd",
+            "ConnectionString": "6IJzZPh86oAoXRjGi7SBfO0kNg5enUCdHQk3TJS9zT1shlxTUxZfUffndcxNd",
+            "IPAddress": "5PCKLT51jZBDh",
+            "NetType": "UtcK6vr"
+          }
+        ],
+        "EndpointConfig": "4p",
+        "Nodes": "hZRIZuxsZytnhyY1uCzc"
+      }
+    ]
+  }
+}

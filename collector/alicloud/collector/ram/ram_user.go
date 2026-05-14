@@ -17,6 +17,9 @@ package ram
 
 import (
 	"context"
+	"strings"
+	"sync"
+
 	ims20190815 "github.com/alibabacloud-go/ims-20190815/v4/client"
 
 	ram20150501 "github.com/alibabacloud-go/ram-20150501/v2/client"
@@ -27,6 +30,8 @@ import (
 	"github.com/core-sdk/schema"
 	"go.uber.org/zap"
 )
+
+const ramDetailConcurrency = 8
 
 func GetRAMUserResource() schema.Resource {
 	return schema.Resource{
@@ -66,34 +71,79 @@ type AccessKeyDetail struct {
 	LastUsedDate string
 }
 
+type policyDetailCache struct {
+	mu     sync.Mutex
+	values map[string]cachedPolicyDetail
+}
+
+type cachedPolicyDetail struct {
+	Policy               *ram20150501.GetPolicyResponseBodyPolicy
+	DefaultPolicyVersion *ram20150501.GetPolicyResponseBodyDefaultPolicyVersion
+}
+
+func newPolicyDetailCache() *policyDetailCache {
+	return &policyDetailCache{values: map[string]cachedPolicyDetail{}}
+}
+
+func (c *policyDetailCache) get(ctx context.Context, cli *ram20150501.Client, policyName *string, policyType *string, source string) (PolicyDetail, bool) {
+	if policyName == nil || policyType == nil {
+		return PolicyDetail{}, false
+	}
+	key := tea.StringValue(policyType) + "\x00" + tea.StringValue(policyName)
+	c.mu.Lock()
+	cached, ok := c.values[key]
+	c.mu.Unlock()
+	if ok {
+		return PolicyDetail{
+			Policy:               cached.Policy,
+			DefaultPolicyVersion: cached.DefaultPolicyVersion,
+			Source:               source,
+		}, true
+	}
+
+	r := &ram20150501.GetPolicyRequest{
+		PolicyName: policyName,
+		PolicyType: policyType,
+	}
+	resp, err := cli.GetPolicyWithOptions(r, collector.RuntimeObject)
+	if err != nil {
+		log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
+		return PolicyDetail{}, false
+	}
+	if resp == nil || resp.Body == nil {
+		return PolicyDetail{}, false
+	}
+	cached = cachedPolicyDetail{
+		Policy:               resp.Body.Policy,
+		DefaultPolicyVersion: resp.Body.DefaultPolicyVersion,
+	}
+	c.mu.Lock()
+	c.values[key] = cached
+	c.mu.Unlock()
+	return PolicyDetail{
+		Policy:               cached.Policy,
+		DefaultPolicyVersion: cached.DefaultPolicyVersion,
+		Source:               source,
+	}, true
+}
+
 func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).RAM
 	imsCli := service.(*collector.Services).IMS
 
 	request := &ram20150501.ListUsersRequest{}
+	policyCache := newPolicyDetailCache()
 	for {
 		response, err := cli.ListUsersWithOptions(request, collector.RuntimeObject)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("ListUsers error", zap.Error(err))
 			return err
 		}
-		for _, i := range response.Body.Users.User {
-			//groups := listGroupsForUser(ctx, cli, i.UserName)
-			accessKeys := listAccessKeys(ctx, cli, tea.StringValue(i.UserName))
-			d := UserDetail{
-				User:       i,
-				UserDetail: getUser(ctx, cli, tea.StringValue(i.UserName)),
-				//Groups:           groups,
-				LoginProfile:         getLoginProfile(ctx, imsCli, i.UserId),
-				Policies:             listAttachedPolicies(ctx, cli, tea.StringValue(i.UserName), []*ram20150501.ListGroupsForUserResponseBodyGroupsGroup{}),
-				AccessKeys:           accessKeys,
-				ExistActiveAccessKey: existActiveAccessKey(accessKeys),
-				CloudAccountId:       log.GetCloudAccountId(ctx),
-			}
-
-			d.ConsoleLogin = d.LoginProfile != nil && d.LoginProfile.Status != nil && *d.LoginProfile.Status == "Active"
-
-			res <- d
+		if response == nil || response.Body == nil || response.Body.Users == nil {
+			return nil
+		}
+		if err := collectUserDetails(ctx, cli, imsCli, response.Body.Users.User, policyCache, res); err != nil {
+			return err
 		}
 		if !tea.BoolValue(response.Body.IsTruncated) {
 			break
@@ -101,6 +151,52 @@ func GetUserDetail(ctx context.Context, service schema.ServiceInterface, res cha
 		request.Marker = response.Body.Marker
 	}
 	return nil
+}
+
+func collectUserDetails(ctx context.Context, cli *ram20150501.Client, imsCli *ims20190815.Client, users []*ram20150501.ListUsersResponseBodyUsersUser, policyCache *policyDetailCache, res chan<- any) error {
+	sem := make(chan struct{}, ramDetailConcurrency)
+	var wg sync.WaitGroup
+
+	for _, user := range users {
+		if user == nil {
+			continue
+		}
+		select {
+		case <-ctx.Done():
+			wg.Wait()
+			return ctx.Err()
+		case sem <- struct{}{}:
+		}
+
+		wg.Add(1)
+		go func(user *ram20150501.ListUsersResponseBodyUsersUser) {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			username := tea.StringValue(user.UserName)
+			accessKeys := listAccessKeys(ctx, cli, username)
+			d := UserDetail{
+				User:       user,
+				UserDetail: getUser(ctx, cli, username),
+				//Groups:           groups,
+				LoginProfile:         getLoginProfile(ctx, imsCli, user.UserId),
+				Policies:             listAttachedPolicies(ctx, cli, username, []*ram20150501.ListGroupsForUserResponseBodyGroupsGroup{}, policyCache),
+				AccessKeys:           accessKeys,
+				ExistActiveAccessKey: existActiveAccessKey(accessKeys),
+				CloudAccountId:       log.GetCloudAccountId(ctx),
+			}
+
+			d.ConsoleLogin = d.LoginProfile != nil && d.LoginProfile.Status != nil && *d.LoginProfile.Status == "Active"
+
+			select {
+			case <-ctx.Done():
+			case res <- d:
+			}
+		}(user)
+	}
+
+	wg.Wait()
+	return ctx.Err()
 }
 
 func existActiveAccessKey(keys []AccessKeyDetail) bool {
@@ -112,11 +208,11 @@ func existActiveAccessKey(keys []AccessKeyDetail) bool {
 	return false
 }
 
-func listAttachedPolicies(ctx context.Context, cli *ram20150501.Client, name string, groups []*ram20150501.ListGroupsForUserResponseBodyGroupsGroup) (policies []PolicyDetail) {
-	policiesForUser := listPoliciesForUser(ctx, cli, name)
+func listAttachedPolicies(ctx context.Context, cli *ram20150501.Client, name string, groups []*ram20150501.ListGroupsForUserResponseBodyGroupsGroup, policyCache *policyDetailCache) (policies []PolicyDetail) {
+	policiesForUser := listPoliciesForUser(ctx, cli, name, policyCache)
 	policies = append(policies, policiesForUser...)
 	for _, group := range groups {
-		policiesForGroup := listPoliciesForGroup(ctx, cli, tea.StringValue(group.GroupName))
+		policiesForGroup := listPoliciesForGroup(ctx, cli, tea.StringValue(group.GroupName), policyCache)
 		policies = append(policies, policiesForGroup...)
 	}
 
@@ -132,6 +228,9 @@ func listGroupsForUser(ctx context.Context, cli *ram20150501.Client, username st
 		log.CtxLogger(ctx).Warn("ListGroupsForUser error", zap.Error(err))
 		return
 	}
+	if response == nil || response.Body == nil || response.Body.Groups == nil {
+		return nil
+	}
 	return response.Body.Groups.Group
 }
 
@@ -144,6 +243,9 @@ func getUser(ctx context.Context, cli *ram20150501.Client, username string) (Use
 		log.CtxLogger(ctx).Warn("GetUser error", zap.Error(err))
 		return
 	}
+	if response == nil || response.Body == nil {
+		return nil
+	}
 	return response.Body.User
 }
 
@@ -151,7 +253,7 @@ func getLoginProfile(ctx context.Context, cli *ims20190815.Client, userId *strin
 	userPrincipalInfo, err := cli.GetUser(&ims20190815.GetUserRequest{
 		UserId: userId,
 	})
-	if err != nil || userPrincipalInfo.Body.User == nil {
+	if err != nil || userPrincipalInfo == nil || userPrincipalInfo.Body == nil || userPrincipalInfo.Body.User == nil {
 		log.CtxLogger(ctx).Warn("GetUser error", zap.Error(err))
 		return
 	}
@@ -162,14 +264,27 @@ func getLoginProfile(ctx context.Context, cli *ims20190815.Client, userId *strin
 
 	response, err := cli.GetLoginProfile(request)
 	if err != nil {
+		if isExpectedMissingLoginProfile(err) {
+			log.CtxLogger(ctx).Debug("GetLoginProfile skipped because login profile does not exist")
+			return
+		}
 		log.CtxLogger(ctx).Warn("GetLoginProfile error", zap.Error(err))
 		return
 	}
 	return response.Body.LoginProfile
 }
 
+func isExpectedMissingLoginProfile(err error) bool {
+	if err == nil {
+		return false
+	}
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "entitynotexist.user.loginprofile") ||
+		strings.Contains(message, "login profile does not exist")
+}
+
 // query ram user policies
-func listPoliciesForUser(ctx context.Context, cli *ram20150501.Client, username string) (policies []PolicyDetail) {
+func listPoliciesForUser(ctx context.Context, cli *ram20150501.Client, username string, policyCache *policyDetailCache) (policies []PolicyDetail) {
 	request := &ram20150501.ListPoliciesForUserRequest{
 		UserName: tea.String(username),
 	}
@@ -179,27 +294,18 @@ func listPoliciesForUser(ctx context.Context, cli *ram20150501.Client, username 
 		return
 	}
 
-	return getPolicyDetailsForUser(ctx, cli, response.Body.Policies.Policy, "User:"+username)
+	if response == nil || response.Body == nil || response.Body.Policies == nil {
+		return nil
+	}
+	return getPolicyDetailsForUser(ctx, cli, response.Body.Policies.Policy, "User:"+username, policyCache)
 }
 
-func getPolicyDetailsForUser(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForUserResponseBodyPoliciesPolicy, source string) (policies []PolicyDetail) {
+func getPolicyDetailsForUser(ctx context.Context, cli *ram20150501.Client, policy []*ram20150501.ListPoliciesForUserResponseBodyPoliciesPolicy, source string, policyCache *policyDetailCache) (policies []PolicyDetail) {
 	for i := 0; i < len(policy); i++ {
 		if policy[i].PolicyName != nil && policy[i].PolicyType != nil {
-			r := &ram20150501.GetPolicyRequest{
-				PolicyName: policy[i].PolicyName,
-				PolicyType: policy[i].PolicyType,
+			if p, ok := policyCache.get(ctx, cli, policy[i].PolicyName, policy[i].PolicyType, source); ok {
+				policies = append(policies, p)
 			}
-			resp, err := cli.GetPolicyWithOptions(r, collector.RuntimeObject)
-			if err != nil {
-				log.CtxLogger(ctx).Warn("GetPolicy error", zap.Error(err))
-				continue
-			}
-			p := PolicyDetail{
-				Policy:               resp.Body.Policy,
-				DefaultPolicyVersion: resp.Body.DefaultPolicyVersion,
-				Source:               source,
-			}
-			policies = append(policies, p)
 		}
 	}
 	return policies
@@ -215,6 +321,9 @@ func listAccessKeys(ctx context.Context, cli *ram20150501.Client, username strin
 		log.CtxLogger(ctx).Warn("ListAccessKeys error", zap.Error(err))
 		return
 	}
+	if response == nil || response.Body == nil || response.Body.AccessKeys == nil {
+		return nil
+	}
 	for i := 0; i < len(response.Body.AccessKeys.AccessKey); i++ {
 		accessKey := response.Body.AccessKeys.AccessKey[i]
 		// query AK last used time
@@ -225,6 +334,9 @@ func listAccessKeys(ctx context.Context, cli *ram20150501.Client, username strin
 		resp, err := cli.GetAccessKeyLastUsedWithOptions(r, collector.RuntimeObject)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("GetAccessKeyLastUsed error", zap.Error(err))
+			continue
+		}
+		if resp == nil || resp.Body == nil || resp.Body.AccessKeyLastUsed == nil {
 			continue
 		}
 

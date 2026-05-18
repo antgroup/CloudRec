@@ -1,4 +1,4 @@
-# CloudRec Lite v0.1.0 Release Notes Draft
+# CloudRec Lite v0.1.0 Release Notes
 
 CloudRec Lite is a local, single-binary CSPM scanner and dashboard for teams
 that want to quickly inspect cloud asset posture without deploying the full
@@ -16,16 +16,23 @@ CloudRec platform.
 - Asset topology views for public traffic exposure and AK permission paths.
 - OS credential store support through `cloudrec-lite credentials
   store/status/delete`; plaintext `.env.local` is fallback-only.
+- Rules and validation samples are bundled into the binary, so default scans,
+  rule checks, exports, and the Web dashboard work without a separate rules
+  directory.
 
 ## Quickstart
 
 ```sh
 cloudrec-lite version
-printf '%s\n' '<access-key-id>' | cloudrec-lite credentials store --provider alicloud --account <account-id> --access-key-id-stdin
-cloudrec-lite doctor --provider alicloud --account <account-id> --rules ./rules/alicloud
-cloudrec-lite scan --provider alicloud --account <account-id> --rules ./rules/alicloud --dry-run=false
-cloudrec-lite serve --rules ./rules/alicloud --provider alicloud
+cloudrec-lite credentials store --provider alicloud --account <account-id> --access-key-id <access-key-id>
+cloudrec-lite doctor --provider alicloud --account <account-id>
+cloudrec-lite scan --provider alicloud --account <account-id> --dry-run=false
+cloudrec-lite serve --provider alicloud
 ```
+
+`credentials store` reads the AccessKey secret through an interactive hidden
+prompt by default. For automation, pass `--access-key-id-stdin` and
+`--secret-stdin` so credential values do not appear in shell history.
 
 The default SQLite database is stored under the user's configuration directory
 as `cloudrec-lite/cloudrec-lite.db`; pass `--db <path>` for temporary or

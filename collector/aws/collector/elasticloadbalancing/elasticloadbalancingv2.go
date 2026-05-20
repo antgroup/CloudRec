@@ -19,7 +19,6 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	ec2_2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	types2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
@@ -84,47 +83,12 @@ func GetELBDetail(ctx context.Context, iService schema.ServiceInterface, res cha
 	elbClient := iService.(*collector.Services).ELB
 	ec2Client := iService.(*collector.Services).EC2
 
-	ELBDetails, err := describeELBDetails(ctx, elbClient, ec2Client)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeELBDetails error", zap.Error(err))
-		return err
-	}
-
-	for _, elb := range ELBDetails {
-		res <- elb
-	}
-
-	return nil
-}
-
-func GetELBListenerDetail(ctx context.Context, iService schema.ServiceInterface, res chan<- any) error {
-	elbClient := iService.(*collector.Services).ELB
-
-	listeners, err := describeELBListeners(ctx, elbClient)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeELBListeners error", zap.Error(err))
-		return err
-	}
-
-	for _, listener := range listeners {
-		res <- ELBListenerDetail{Listener: listener}
-	}
-
-	return nil
-}
-
-func describeELBDetails(ctx context.Context, elbClient *elasticloadbalancingv2.Client, ec2Client *ec2_2.Client) (ELBDetails []ELBDetail, err error) {
-	elbs, err := describeELBs(ctx, elbClient)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, elb := range elbs {
+	return forEachELB(ctx, elbClient, func(elb types.LoadBalancer) error {
 		listeners, err := describeELBListenersByLoadBalancerArn(ctx, elbClient, elb.LoadBalancerArn)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeListeners error", zap.Error(err), zap.String("loadBalancerArn", aws.ToString(elb.LoadBalancerArn)))
 		}
-		ELBDetails = append(ELBDetails, ELBDetail{
+		res <- ELBDetail{
 			ELB:       elb,
 			Listeners: listeners,
 			VPC: ec2.DescribeVPCDetailsByFilters(ctx, ec2Client, []types2.Filter{
@@ -139,25 +103,25 @@ func describeELBDetails(ctx context.Context, elbClient *elasticloadbalancingv2.C
 					Values: elb.SecurityGroups,
 				},
 			}),
-		})
-	}
-	return ELBDetails, nil
+		}
+		return nil
+	})
 }
 
-func describeELBListeners(ctx context.Context, c *elasticloadbalancingv2.Client) (listeners []types.Listener, err error) {
-	elbs, err := describeELBs(ctx, c)
-	if err != nil {
-		return nil, err
-	}
-	for _, elb := range elbs {
-		lbListeners, err := describeELBListenersByLoadBalancerArn(ctx, c, elb.LoadBalancerArn)
+func GetELBListenerDetail(ctx context.Context, iService schema.ServiceInterface, res chan<- any) error {
+	elbClient := iService.(*collector.Services).ELB
+
+	return forEachELB(ctx, elbClient, func(elb types.LoadBalancer) error {
+		listeners, err := describeELBListenersByLoadBalancerArn(ctx, elbClient, elb.LoadBalancerArn)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeListeners error", zap.Error(err), zap.String("loadBalancerArn", aws.ToString(elb.LoadBalancerArn)))
-			continue
+			return nil
 		}
-		listeners = append(listeners, lbListeners...)
-	}
-	return listeners, nil
+		for _, listener := range listeners {
+			res <- ELBListenerDetail{Listener: listener}
+		}
+		return nil
+	})
 }
 
 func describeELBListenersByLoadBalancerArn(ctx context.Context, c *elasticloadbalancingv2.Client, loadBalancerArn *string) (listeners []types.Listener, err error) {
@@ -184,24 +148,24 @@ func describeELBListenersByLoadBalancerArn(ctx context.Context, c *elasticloadba
 	return listeners, nil
 }
 
-func describeELBs(ctx context.Context, c *elasticloadbalancingv2.Client) (elbs []types.LoadBalancer, err error) {
+func forEachELB(ctx context.Context, c *elasticloadbalancingv2.Client, handle func(types.LoadBalancer) error) error {
 	input := &elasticloadbalancingv2.DescribeLoadBalancersInput{
 		PageSize: aws.Int32(400),
 	}
-	output, err := c.DescribeLoadBalancers(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("DescribeLoadBalancers error", zap.Error(err))
-		return nil, err
-	}
-	elbs = append(elbs, output.LoadBalancers...)
-	for output.NextMarker != nil {
-		input.Marker = output.NextMarker
-		output, err = c.DescribeLoadBalancers(ctx, input)
+	for {
+		output, err := c.DescribeLoadBalancers(ctx, input)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("DescribeLoadBalancers error", zap.Error(err))
-			return nil, err
+			return err
 		}
-		elbs = append(elbs, output.LoadBalancers...)
+		for _, elb := range output.LoadBalancers {
+			if err := handle(elb); err != nil {
+				return err
+			}
+		}
+		if output.NextMarker == nil {
+			return nil
+		}
+		input.Marker = output.NextMarker
 	}
-	return elbs, nil
 }

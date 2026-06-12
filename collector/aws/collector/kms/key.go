@@ -51,18 +51,25 @@ type KeyDetail struct {
 	Tags            []types.Tag
 }
 
-// GetKeyDetail fetches the details for all KMS keys in a region.
+// GetKeyDetail fetches the details for all KMS keys in a region. The
+// ListKeys pagination streams per page and each key is pushed to res as
+// its Describe / Rotation / Policy / Tags calls finish; do not refactor
+// back to a build-slice-then-push pattern, as that would risk the 30s
+// consumer idle timeout in core-sdk schema/platform.go (see commit
+// 8295d1b).
 func GetKeyDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).KMS
 
-	keys, err := listKeys(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list kms keys", zap.Error(err))
-		return err
-	}
-
-	for _, key := range keys {
-		res <- describeKeyDetail(ctx, client, key.KeyId)
+	paginator := kms.NewListKeysPaginator(client, &kms.ListKeysInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to list kms keys", zap.Error(err))
+			return err
+		}
+		for _, key := range page.Keys {
+			res <- describeKeyDetail(ctx, client, key.KeyId)
+		}
 	}
 
 	return nil
@@ -94,20 +101,6 @@ func describeKeyDetail(ctx context.Context, client *kms.Client, keyId *string) *
 		Policy:          policy,
 		Tags:            tags,
 	}
-}
-
-// listKeys retrieves all KMS keys in a region.
-func listKeys(ctx context.Context, c *kms.Client) ([]types.KeyListEntry, error) {
-	var keys []types.KeyListEntry
-	paginator := kms.NewListKeysPaginator(c, &kms.ListKeysInput{})
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-		keys = append(keys, page.Keys...)
-	}
-	return keys, nil
 }
 
 // describeKey retrieves the metadata for a single KMS key.

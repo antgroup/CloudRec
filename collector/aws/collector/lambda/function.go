@@ -27,6 +27,18 @@ import (
 	"go.uber.org/zap"
 )
 
+// lambdaAPI is the narrow subset of the lambda client used by this collector,
+// declared so the streaming helper can be exercised with a fake in tests. The
+// signatures mirror the SDK exactly so the concrete *lambda.Client satisfies
+// it, including the paginator-client interfaces ListFunctionsAPIClient and
+// ListFunctionUrlConfigsAPIClient.
+type lambdaAPI interface {
+	ListFunctions(context.Context, *lambda.ListFunctionsInput, ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error)
+	GetPolicy(context.Context, *lambda.GetPolicyInput, ...func(*lambda.Options)) (*lambda.GetPolicyOutput, error)
+	ListFunctionUrlConfigs(context.Context, *lambda.ListFunctionUrlConfigsInput, ...func(*lambda.Options)) (*lambda.ListFunctionUrlConfigsOutput, error)
+	ListTags(context.Context, *lambda.ListTagsInput, ...func(*lambda.Options)) (*lambda.ListTagsOutput, error)
+}
+
 // GetFunctionResource returns a Function Resource
 func GetFunctionResource() schema.Resource {
 	return schema.Resource{
@@ -55,22 +67,32 @@ type FunctionDetail struct {
 func GetFunctionDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).Lambda
 
-	functions, err := listFunctions(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list lambda functions", zap.Error(err))
-		return err
-	}
+	return streamFunctions(ctx, client, res)
+}
 
-	for _, function := range functions {
-		functionDetail := describeFunctionDetail(ctx, client, function)
-		res <- functionDetail
+// streamFunctions paginates ListFunctions and pushes each function to res as
+// its GetPolicy / ListFunctionURLConfigs / ListTags calls finish, both per
+// page and per function; do not refactor back to a build-slice-then-push
+// pattern, as that would risk the 30s consumer idle timeout in core-sdk
+// schema/platform.go (see commit 8295d1b).
+func streamFunctions(ctx context.Context, client lambdaAPI, res chan<- any) error {
+	paginator := lambda.NewListFunctionsPaginator(client, &lambda.ListFunctionsInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to list lambda functions", zap.Error(err))
+			return err
+		}
+		for _, function := range page.Functions {
+			res <- describeFunctionDetail(ctx, client, function)
+		}
 	}
 
 	return nil
 }
 
 // describeFunctionDetail fetches all details for a single function.
-func describeFunctionDetail(ctx context.Context, client *lambda.Client, function types.FunctionConfiguration) *FunctionDetail {
+func describeFunctionDetail(ctx context.Context, client lambdaAPI, function types.FunctionConfiguration) *FunctionDetail {
 	var policy map[string]interface{}
 	var urlConfigs []types.FunctionUrlConfig
 	var tags map[string]string
@@ -87,22 +109,8 @@ func describeFunctionDetail(ctx context.Context, client *lambda.Client, function
 	}
 }
 
-// listFunctions retrieves all Lambda functions in a region.
-func listFunctions(ctx context.Context, c *lambda.Client) ([]types.FunctionConfiguration, error) {
-	var functions []types.FunctionConfiguration
-	paginator := lambda.NewListFunctionsPaginator(c, &lambda.ListFunctionsInput{})
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-		functions = append(functions, page.Functions...)
-	}
-	return functions, nil
-}
-
 // getPolicy retrieves the resource-based policy for a function.
-func getPolicy(ctx context.Context, c *lambda.Client, functionName *string) (map[string]interface{}, error) {
+func getPolicy(ctx context.Context, c lambdaAPI, functionName *string) (map[string]interface{}, error) {
 	output, err := c.GetPolicy(ctx, &lambda.GetPolicyInput{FunctionName: functionName})
 	if err != nil {
 		// It's common for a function not to have a policy, so we just log it as debug.
@@ -120,7 +128,7 @@ func getPolicy(ctx context.Context, c *lambda.Client, functionName *string) (map
 }
 
 // listFunctionURLConfigs retrieves the URL configs for a function.
-func listFunctionURLConfigs(ctx context.Context, c *lambda.Client, functionName *string) ([]types.FunctionUrlConfig, error) {
+func listFunctionURLConfigs(ctx context.Context, c lambdaAPI, functionName *string) ([]types.FunctionUrlConfig, error) {
 	var urlConfigs []types.FunctionUrlConfig
 	paginator := lambda.NewListFunctionUrlConfigsPaginator(c, &lambda.ListFunctionUrlConfigsInput{FunctionName: functionName})
 	for paginator.HasMorePages() {
@@ -135,7 +143,7 @@ func listFunctionURLConfigs(ctx context.Context, c *lambda.Client, functionName 
 }
 
 // listTags retrieves all tags for a function.
-func listTags(ctx context.Context, c *lambda.Client, functionArn *string) (map[string]string, error) {
+func listTags(ctx context.Context, c lambdaAPI, functionArn *string) (map[string]string, error) {
 	output, err := c.ListTags(ctx, &lambda.ListTagsInput{Resource: functionArn})
 	if err != nil {
 		log.CtxLogger(ctx).Warn("failed to list lambda tags", zap.String("functionArn", *functionArn), zap.Error(err))

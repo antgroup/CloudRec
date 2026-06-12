@@ -50,35 +50,31 @@ type RepositoryDetail struct {
 	RepositoryPolicy *string
 }
 
+// GetRepositoryDetail streams each ECR repository detail as the
+// DescribeRepositories pagination yields it and its policy fetch
+// completes, avoiding the 30s consumer idle timeout in core-sdk
+// schema/platform.go when a region has many repositories.
 func GetRepositoryDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).ECR
-	repositoryDetails, err := describeRepositoryDetails(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeRepositoryDetails error", zap.Error(err))
-		return err
-	}
-	for _, repositoryDetail := range repositoryDetails {
 
-		res <- repositoryDetail
+	input := &ecr.DescribeRepositoriesInput{}
+	for {
+		output, err := client.DescribeRepositories(ctx, input)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("DescribeRepositories error", zap.Error(err))
+			return err
+		}
+		for _, repository := range output.Repositories {
+			res <- RepositoryDetail{
+				Repository:       repository,
+				RepositoryPolicy: getRepositoryPolicy(ctx, client, repository),
+			}
+		}
+		if output.NextToken == nil {
+			return nil
+		}
+		input.NextToken = output.NextToken
 	}
-
-	return nil
-}
-
-func describeRepositoryDetails(ctx context.Context, c *ecr.Client) (repositoryDetails []RepositoryDetail, err error) {
-	repositories, err := describeRepositories(ctx, c)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeRepositories error", zap.Error(err))
-		return nil, err
-	}
-	for _, repository := range repositories {
-		repositoryDetails = append(repositoryDetails, RepositoryDetail{
-			Repository:       repository,
-			RepositoryPolicy: getRepositoryPolicy(ctx, c, repository),
-		})
-	}
-
-	return repositoryDetails, nil
 }
 
 func getRepositoryPolicy(ctx context.Context, c *ecr.Client, repository types.Repository) *string {
@@ -97,25 +93,4 @@ func getRepositoryPolicy(ctx context.Context, c *ecr.Client, repository types.Re
 	}
 
 	return nil
-}
-
-func describeRepositories(ctx context.Context, svc *ecr.Client) (repositories []types.Repository, err error) {
-	input := &ecr.DescribeRepositoriesInput{}
-	output, err := svc.DescribeRepositories(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("DescribeRepositories error", zap.Error(err))
-		return nil, err
-	}
-	repositories = append(repositories, output.Repositories...)
-	for output.NextToken != nil {
-		input.NextToken = output.NextToken
-		output, err = svc.DescribeRepositories(ctx, input)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("DescribeRepositories error", zap.Error(err))
-			return nil, err
-		}
-		repositories = append(repositories, output.Repositories...)
-	}
-
-	return repositories, nil
 }

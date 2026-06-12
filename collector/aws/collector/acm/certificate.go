@@ -49,42 +49,31 @@ type CertificateDetail struct {
 }
 
 // GetCertificateDetail fetches the details for all ACM certificates.
+// Both the ListCertificates pagination and the per-certificate Describe /
+// ListTags calls stream incrementally — each certificate is pushed to res
+// as soon as its page is listed and its detail calls finish. Do not
+// refactor back to a build-slice-then-push pattern, as that would risk the
+// 30s consumer idle timeout in core-sdk schema/platform.go (see commit
+// 8295d1b).
 func GetCertificateDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).ACM
 
-	certificates, err := listCertificates(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list certificates", zap.Error(err))
-		return err
-	}
-
-	for _, certificate := range certificates {
-
-		certificateDetail := describeCertificate(ctx, client, certificate.CertificateArn)
-
-		tags := listCertificateTags(ctx, client, certificate.CertificateArn)
-
-		res <- &CertificateDetail{
-			Certificate: certificateDetail,
-			Tags:        tags,
+	paginator := acm.NewListCertificatesPaginator(client, &acm.ListCertificatesInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to list certificates", zap.Error(err))
+			return err
+		}
+		for _, certificate := range page.CertificateSummaryList {
+			res <- &CertificateDetail{
+				Certificate: describeCertificate(ctx, client, certificate.CertificateArn),
+				Tags:        listCertificateTags(ctx, client, certificate.CertificateArn),
+			}
 		}
 	}
 
 	return nil
-}
-
-// listCertificates retrieves all ACM certificates.
-func listCertificates(ctx context.Context, c *acm.Client) ([]types.CertificateSummary, error) {
-	var certificates []types.CertificateSummary
-	paginator := acm.NewListCertificatesPaginator(c, &acm.ListCertificatesInput{})
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-		certificates = append(certificates, page.CertificateSummaryList...)
-	}
-	return certificates, nil
 }
 
 // describeCertificate retrieves detailed information for a certificate.

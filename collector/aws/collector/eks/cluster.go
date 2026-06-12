@@ -48,39 +48,31 @@ type ClusterDetail struct {
 }
 
 // GetClusterDetail fetches the details for all EKS clusters in a region.
+// The ListClusters pagination streams per page and each cluster is pushed
+// to res as its DescribeCluster call finishes; do not refactor back to a
+// build-slice-then-push pattern, as that would risk the 30s consumer idle
+// timeout in core-sdk schema/platform.go (see commit 8295d1b).
 func GetClusterDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).EKS
 
-	clusterNames, err := listClusters(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list eks clusters", zap.Error(err))
-		return err
-	}
-
-	for _, name := range clusterNames {
-		detail, err := describeCluster(ctx, client, name)
-		if err != nil {
-			log.CtxLogger(ctx).Error("failed to describe eks cluster", zap.Error(err))
-			continue
-		}
-		res <- detail
-	}
-
-	return nil
-}
-
-// listClusters retrieves all EKS cluster names in a region.
-func listClusters(ctx context.Context, c *eks.Client) ([]string, error) {
-	var clusterNames []string
-	paginator := eks.NewListClustersPaginator(c, &eks.ListClustersInput{})
+	paginator := eks.NewListClustersPaginator(client, &eks.ListClustersInput{})
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			log.CtxLogger(ctx).Error("failed to list eks clusters", zap.Error(err))
+			return err
 		}
-		clusterNames = append(clusterNames, page.Clusters...)
+		for _, name := range page.Clusters {
+			detail, err := describeCluster(ctx, client, name)
+			if err != nil {
+				log.CtxLogger(ctx).Error("failed to describe eks cluster", zap.Error(err))
+				continue
+			}
+			res <- detail
+		}
 	}
-	return clusterNames, nil
+
+	return nil
 }
 
 // describeCluster retrieves the details for a single cluster.

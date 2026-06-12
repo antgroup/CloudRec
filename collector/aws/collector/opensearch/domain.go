@@ -26,6 +26,15 @@ import (
 	"go.uber.org/zap"
 )
 
+// opensearchAPI is the narrow subset of the opensearch client used by this
+// collector, declared so the streaming helper can be exercised with a fake in
+// tests. The signatures mirror the SDK exactly so the concrete
+// *opensearch.Client satisfies it.
+type opensearchAPI interface {
+	ListDomainNames(context.Context, *opensearch.ListDomainNamesInput, ...func(*opensearch.Options)) (*opensearch.ListDomainNamesOutput, error)
+	DescribeDomain(context.Context, *opensearch.DescribeDomainInput, ...func(*opensearch.Options)) (*opensearch.DescribeDomainOutput, error)
+}
+
 // GetDomainResource returns AWS OpenSearch domain resource definition
 func GetDomainResource() schema.Resource {
 	return schema.Resource{
@@ -51,6 +60,17 @@ type DomainDetail struct {
 func GetDomainDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).OpenSearch
 
+	return streamDomains(ctx, client, res)
+}
+
+// streamDomains lists every OpenSearch domain (ListDomainNames returns them all
+// in one shot — this API has no pagination) and pushes each DomainDetail as its
+// per-domain DescribeDomain call finishes; do not refactor into a
+// build-slice-then-push pattern, as that would risk the 30s consumer idle
+// timeout in core-sdk schema/platform.go (see commit 8295d1b). A domain whose
+// DescribeDomain fails is skipped (describeDomain returns nil) so one failure
+// neither panics nor aborts the rest of the region.
+func streamDomains(ctx context.Context, client opensearchAPI, res chan<- any) error {
 	domains, err := listDomains(ctx, client)
 	if err != nil {
 		log.CtxLogger(ctx).Error("failed to list OpenSearch domains", zap.Error(err))
@@ -59,6 +79,12 @@ func GetDomainDetail(ctx context.Context, service schema.ServiceInterface, res c
 
 	for _, domain := range domains {
 		describeOutput := describeDomain(ctx, client, domain)
+		// describeDomain returns nil when DescribeDomain fails; skip rather
+		// than dereference (a single failed domain must not panic and abort
+		// the whole region's collection).
+		if describeOutput == nil {
+			continue
+		}
 		res <- DomainDetail{
 			DomainStatus: describeOutput.DomainStatus,
 		}
@@ -67,7 +93,7 @@ func GetDomainDetail(ctx context.Context, service schema.ServiceInterface, res c
 }
 
 // listDomains retrieves all OpenSearch domains in a region.
-func listDomains(ctx context.Context, c *opensearch.Client) ([]types.DomainInfo, error) {
+func listDomains(ctx context.Context, c opensearchAPI) ([]types.DomainInfo, error) {
 	input := &opensearch.ListDomainNamesInput{}
 
 	output, err := c.ListDomainNames(ctx, input)
@@ -79,7 +105,7 @@ func listDomains(ctx context.Context, c *opensearch.Client) ([]types.DomainInfo,
 }
 
 // describeDomain fetches all details for a single domain.
-func describeDomain(ctx context.Context, client *opensearch.Client, domain types.DomainInfo) *opensearch.DescribeDomainOutput {
+func describeDomain(ctx context.Context, client opensearchAPI, domain types.DomainInfo) *opensearch.DescribeDomainOutput {
 	// Get detailed domain information
 	describeInput := &opensearch.DescribeDomainInput{
 		DomainName: domain.DomainName,

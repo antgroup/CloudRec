@@ -52,19 +52,25 @@ type SNSTopicDetail struct {
 	Tags          []types.Tag
 }
 
-// GetSNSTopicDetail fetches the details for all SNS topics.
+// GetSNSTopicDetail fetches the details for all SNS topics. The ListTopics
+// pagination streams per page and each topic is pushed to res as its
+// GetAttributes / ListSubscriptions / ListTags calls finish; do not
+// refactor back to a build-slice-then-push pattern, as that would risk the
+// 30s consumer idle timeout in core-sdk schema/platform.go (see commit
+// 8295d1b).
 func GetSNSTopicDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).SNS
 
-	topics, err := listTopics(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list SNS topics", zap.Error(err))
-		return err
-	}
-
-	for _, topic := range topics {
-		detail := describeSNSTopicDetail(ctx, client, topic)
-		res <- detail
+	paginator := sns.NewListTopicsPaginator(client, &sns.ListTopicsInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to list SNS topics", zap.Error(err))
+			return err
+		}
+		for _, topic := range page.Topics {
+			res <- describeSNSTopicDetail(ctx, client, topic)
+		}
 	}
 
 	return nil
@@ -113,20 +119,6 @@ func describeSNSTopicDetail(ctx context.Context, client *sns.Client, topic types
 		Subscriptions: subscriptions,
 		Tags:          tags,
 	}
-}
-
-// listTopics retrieves all SNS topics.
-func listTopics(ctx context.Context, c *sns.Client) ([]types.Topic, error) {
-	var topics []types.Topic
-	paginator := sns.NewListTopicsPaginator(c, &sns.ListTopicsInput{})
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-		topics = append(topics, page.Topics...)
-	}
-	return topics, nil
 }
 
 // getTopicAttributes retrieves attributes for a topic.

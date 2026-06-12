@@ -70,53 +70,51 @@ type VPCDetail struct {
 	VPNConnections []types.VpnConnection
 }
 
+// GetVPCDetail streams each VPC detail incrementally as the DescribeVpcs
+// pagination yields it; each VPC fans out to six secondary describe calls
+// (Subnets/ACLs/Endpoints/Peering/VPN/RouteTables), so buffering the list
+// or the details before pushing would risk the core-sdk consumer's 30s
+// idle timeout (see schema/platform.go).
 func GetVPCDetail(ctx context.Context, iService schema.ServiceInterface, res chan<- any) error {
 	client := iService.(*collector.Services).EC2
 
-	VPCDetails, err := describeVPCDetails(ctx, client)
-	if err != nil {
-		return err
+	input := &ec2.DescribeVpcsInput{}
+	for {
+		output, err := client.DescribeVpcs(ctx, input)
+		if err != nil {
+			return err
+		}
+		for _, vpc := range output.Vpcs {
+			if vpc.VpcId == nil {
+				continue
+			}
+			vpcId := *vpc.VpcId
+			res <- VPCDetail{
+				VPC:  vpc,
+				Name: utils.GetNameFromTags(vpc.Tags),
+				Subnets: DescribeSubnetsByFilters(ctx, client, []types.Filter{
+					{
+						Name:   aws.String("vpc-id"),
+						Values: []string{vpcId},
+					},
+				}),
+				ACLs: DescribeNetworkAclsByFilters(ctx, client, []types.Filter{
+					{
+						Name:   aws.String("vpc-id"),
+						Values: []string{vpcId},
+					},
+				}),
+				VPCEndpoints:          describeVpcEndpoints(ctx, client, vpcId),
+				VPCPeeringConnections: describeVpcPeeringConnections(ctx, client, vpcId),
+				VPNConnections:        describeVpnConnections(ctx, client, vpcId),
+				RouteTables:           describeRouteTablesByVpc(ctx, client, vpcId),
+			}
+		}
+		if output.NextToken == nil {
+			return nil
+		}
+		input.NextToken = output.NextToken
 	}
-
-	for _, vpc := range VPCDetails {
-		res <- vpc
-	}
-
-	return nil
-}
-
-// describeVPCDetails Describe VPCDetail with all your vpc.
-// // If you want to expand VPCDetail, expand this function.
-func describeVPCDetails(ctx context.Context, c *ec2.Client) (VPCDetails []VPCDetail, err error) {
-
-	vpcs, err := describeVpcs(ctx, c)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, vpc := range vpcs {
-		VPCDetails = append(VPCDetails, VPCDetail{
-			VPC:  vpc,
-			Name: utils.GetNameFromTags(vpc.Tags),
-			Subnets: DescribeSubnetsByFilters(ctx, c, []types.Filter{
-				{
-					Name:   aws.String("vpc-id"),
-					Values: []string{*vpc.VpcId},
-				},
-			}),
-			ACLs: DescribeNetworkAclsByFilters(ctx, c, []types.Filter{
-				{
-					Name:   aws.String("vpc-id"),
-					Values: []string{*vpc.VpcId},
-				},
-			}),
-			VPCEndpoints:          describeVpcEndpoints(ctx, c, *vpc.VpcId),
-			VPCPeeringConnections: describeVpcPeeringConnections(ctx, c, *vpc.VpcId),
-			VPNConnections:        describeVpnConnections(ctx, c, *vpc.VpcId),
-			RouteTables:           describeRouteTablesByVpc(ctx, c, *vpc.VpcId),
-		})
-	}
-	return VPCDetails, nil
 }
 
 func DescribeVPCDetailsByFilters(ctx context.Context, c *ec2.Client, filters []types.Filter) (VPCDetails []VPCDetail) {
@@ -158,24 +156,6 @@ func DescribeSubnetsByFilters(ctx context.Context, c *ec2.Client, filters []type
 		subnets = append(subnets, page.Subnets...)
 	}
 	return subnets
-}
-
-func describeVpcs(ctx context.Context, c *ec2.Client) (vpcs []types.Vpc, err error) {
-	input := &ec2.DescribeVpcsInput{}
-	output, err := c.DescribeVpcs(ctx, input)
-	if err != nil {
-		return nil, err
-	}
-	vpcs = append(vpcs, output.Vpcs...)
-	for output.NextToken != nil {
-		input.NextToken = output.NextToken
-		output, err = c.DescribeVpcs(ctx, input)
-		if err != nil {
-			return nil, err
-		}
-		vpcs = append(vpcs, output.Vpcs...)
-	}
-	return vpcs, nil
 }
 
 func DescribeVpcsByFilters(ctx context.Context, c *ec2.Client, filters []types.Filter) (vpcs []types.Vpc) {

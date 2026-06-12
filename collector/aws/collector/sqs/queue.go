@@ -54,19 +54,42 @@ type SQSQueueDetail struct {
 	Tags       map[string]string
 }
 
-// GetSQSQueueDetail fetches the details for all SQS queues.
+// GetSQSQueueDetail fetches the details for all SQS queues. The ListQueues
+// pagination streams per page and each queue is pushed to res as its
+// GetAttributes / ListQueueTags calls finish; do not refactor back to a
+// build-slice-then-push pattern, as that would risk the 30s consumer idle
+// timeout in core-sdk schema/platform.go (see commit 8295d1b).
 func GetSQSQueueDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).SQS
 
-	queues, err := listQueues(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list SQS queues", zap.Error(err))
-		return err
+	region := client.Options().Region
+	maxResults := int32(1000)
+	input := &sqs.ListQueuesInput{
+		MaxResults: &maxResults,
 	}
 
-	for _, queue := range queues {
-		queueDetail := describeSQSQueueDetail(ctx, client, queue)
-		res <- queueDetail
+	paginator := sqs.NewListQueuesPaginator(client, input)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to list SQS queues", zap.Error(err))
+			return err
+		}
+		for _, queueUrl := range page.QueueUrls {
+			// Extract queue name from URL
+			queueName := queueUrl
+			if len(queueUrl) > 0 {
+				parts := strings.Split(queueUrl, "/")
+				if len(parts) > 0 {
+					queueName = parts[len(parts)-1]
+				}
+			}
+			res <- describeSQSQueueDetail(ctx, client, SQSQueueDetail{
+				Url:    queueUrl,
+				Name:   queueName,
+				Region: region,
+			})
+		}
 	}
 
 	return nil
@@ -105,46 +128,6 @@ func describeSQSQueueDetail(ctx context.Context, client *sqs.Client, queue SQSQu
 	queue.Tags = tags
 
 	return &queue
-}
-
-// listQueues retrieves all SQS queues.
-func listQueues(ctx context.Context, c *sqs.Client) ([]SQSQueueDetail, error) {
-	var queues []SQSQueueDetail
-
-	// Get the region from the client
-	region := c.Options().Region
-
-	maxResults := int32(1000)
-	input := &sqs.ListQueuesInput{
-		MaxResults: &maxResults,
-	}
-
-	paginator := sqs.NewListQueuesPaginator(c, input)
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, queueUrl := range page.QueueUrls {
-			// Extract queue name from URL
-			queueName := queueUrl
-			if len(queueUrl) > 0 {
-				parts := strings.Split(queueUrl, "/")
-				if len(parts) > 0 {
-					queueName = parts[len(parts)-1]
-				}
-			}
-
-			queues = append(queues, SQSQueueDetail{
-				Url:    queueUrl,
-				Name:   queueName,
-				Region: region,
-			})
-		}
-	}
-
-	return queues, nil
 }
 
 // getQueueAttributes retrieves attributes for a queue.

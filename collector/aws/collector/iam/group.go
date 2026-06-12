@@ -50,35 +50,35 @@ type GroupDetail struct {
 	Users []types.User
 }
 
+// GetGroupDetail streams each IAM group as the GetAccountAuthorizationDetails
+// pagination yields it and its user lookup completes, avoiding the 30s
+// consumer idle timeout in core-sdk schema/platform.go when an account has
+// many groups.
 func GetGroupDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).IAM
 
-	groupDetails, err := describeGroupDetails(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeGroupDetails error", zap.Error(err))
-		return err
+	input := &iam.GetAccountAuthorizationDetailsInput{
+		Filter: []types.EntityType{
+			types.EntityTypeGroup,
+		},
 	}
-
-	for _, groupDetail := range groupDetails {
-		res <- groupDetail
+	for {
+		out, err := client.GetAccountAuthorizationDetails(ctx, input)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("GetAccountAuthorizationDetails error", zap.Error(err))
+			return err
+		}
+		for _, group := range out.GroupDetailList {
+			res <- GroupDetail{
+				Group: group,
+				Users: getGroupUsers(ctx, client, group.GroupName),
+			}
+		}
+		if !out.IsTruncated {
+			return nil
+		}
+		input.Marker = out.Marker
 	}
-	return nil
-}
-
-func describeGroupDetails(ctx context.Context, c *iam.Client) (groupDetails []GroupDetail, err error) {
-	groups, err := getGroupAuthorizationDetails(ctx, c)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("getGroupAuthorizationDetails error", zap.Error(err))
-		return nil, err
-	}
-	for _, group := range groups {
-		groupDetails = append(groupDetails, GroupDetail{
-			Group: group,
-			Users: getGroupUsers(ctx, c, group.GroupName),
-		})
-	}
-
-	return groupDetails, nil
 }
 
 func getGroupUsers(ctx context.Context, c *iam.Client, groupName *string) []types.User {
@@ -89,29 +89,4 @@ func getGroupUsers(ctx context.Context, c *iam.Client, groupName *string) []type
 		return nil
 	}
 	return getGroupOutput.Users
-}
-
-func getGroupAuthorizationDetails(ctx context.Context, c *iam.Client) (groupDetailList []types.GroupDetail, err error) {
-	input := &iam.GetAccountAuthorizationDetailsInput{
-		Filter: []types.EntityType{
-			types.EntityTypeGroup,
-		},
-	}
-	out, err := c.GetAccountAuthorizationDetails(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("GetAccountAuthorizationDetails error", zap.Error(err))
-		return nil, err
-	}
-	groupDetailList = append(groupDetailList, out.GroupDetailList...)
-	for out.IsTruncated {
-		input.Marker = out.Marker
-		out, err = c.GetAccountAuthorizationDetails(ctx, input)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("GetAccountAuthorizationDetails error", zap.Error(err))
-			return nil, err
-		}
-		groupDetailList = append(groupDetailList, out.GroupDetailList...)
-	}
-
-	return groupDetailList, err
 }

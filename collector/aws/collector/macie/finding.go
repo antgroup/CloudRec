@@ -49,51 +49,41 @@ type FindingDetail struct {
 	Tags    map[string]string
 }
 
-// GetFindingDetail fetches the details for all Macie findings in a region.
+// GetFindingDetail streams each Macie finding detail page-by-page,
+// pushing each batch of findings to the channel as soon as the
+// per-page GetFindings call returns. This avoids the 30s consumer
+// idle timeout in core-sdk schema/platform.go that would otherwise
+// fire when the account has many pages of findings (the per-page
+// secondary GetFindings call accumulates serial latency).
 func GetFindingDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).Macie
 
-	findings, err := listFindings(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list Macie findings", zap.Error(err))
-		return err
-	}
-
-	for _, finding := range findings {
-		findingDetail := describeFindingDetail(ctx, client, finding)
-		res <- findingDetail
-	}
-
-	return nil
-}
-
-// listFindings retrieves all Macie findings in a region.
-func listFindings(ctx context.Context, c *macie2.Client) ([]types.Finding, error) {
-	var findings []types.Finding
 	input := &macie2.ListFindingsInput{
 		MaxResults: aws.Int32(50),
 	}
-
-	paginator := macie2.NewListFindingsPaginator(c, input)
+	paginator := macie2.NewListFindingsPaginator(client, input)
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			log.CtxLogger(ctx).Error("failed to list Macie findings", zap.Error(err))
+			return err
 		}
-
-		// Get detailed finding information
-		if len(page.FindingIds) > 0 {
-			getInput := &macie2.GetFindingsInput{
-				FindingIds: page.FindingIds,
-			}
-			getOutput, err := c.GetFindings(ctx, getInput)
-			if err != nil {
-				return nil, err
-			}
-			findings = append(findings, getOutput.Findings...)
+		if len(page.FindingIds) == 0 {
+			continue
+		}
+		getOutput, err := client.GetFindings(ctx, &macie2.GetFindingsInput{
+			FindingIds: page.FindingIds,
+		})
+		if err != nil {
+			log.CtxLogger(ctx).Warn("failed to get Macie findings", zap.Error(err))
+			continue
+		}
+		for _, finding := range getOutput.Findings {
+			res <- describeFindingDetail(ctx, client, finding)
 		}
 	}
-	return findings, nil
+
+	return nil
 }
 
 // describeFindingDetail fetches all details for a single finding.

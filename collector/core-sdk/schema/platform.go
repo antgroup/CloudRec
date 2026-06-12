@@ -358,7 +358,44 @@ func (p *Platform) handleResource(ctx context.Context, account CloudAccount, res
 		// for region chan
 		regionCh := make(chan interface{}, constant.DefaultPageSize)
 
-		// Consumer
+		// Producer slot pre-acquire — MUST happen before starting Consumer.
+		//
+		// The Consumer goroutine below has a 30s idle timer (`time.After`) that
+		// begins ticking the moment the goroutine runs. If we acquired the
+		// per-region semaphore AFTER starting Consumer and the region's slot
+		// was already saturated (10 active producers per region), the blocking
+		// `limiter <- struct{}{}` could exceed 30s. Consumer would then fire
+		// the timeout branch, close(regionCh), and any subsequent Producer
+		// push would panic with "send on closed channel" — yielding 0 inserts
+		// for this (account, region, ResourceType) and causing all previously
+		// known resources in that tuple to be soft-deleted on the next merge
+		// pass (since the framework treats an empty collector result as a
+		// signal that those resources no longer exist).
+		//
+		// This was observed in prod on 2026-05-21 after the streaming refactor
+		// (commit 5f3db2f) let us-east-1 EC2 (181 instances) hold a slot for
+		// ~240s, knocking out ELB / ELB Listener / ElastiCache / EFS in the
+		// same region (boto3 confirmed 115 / 150 / 20 / 7 live there).
+		loopRegionWait.Add(1)
+		// Create timeout context based on the input context to preserve account information
+		regionCtx, cancel := context.WithTimeout(ctx, 240*time.Second)
+		// Add region-specific information to the context
+		regionCtx = context.WithValue(regionCtx, constant.RegionId, region)
+		regionCtx = context.WithValue(regionCtx, constant.TraceId, version)
+		// Get rate limiter for this region
+		limiter := p.getRegionLimiter(region)
+
+		// Acquire semaphore. Time the wait so it can be attached to the
+		// "send on closed channel" warn below if and only if slot contention
+		// actually caused data loss — keeping the log noise to real-loss
+		// events rather than every saturated slot acquisition (which, with
+		// the pre-acquire ordering above, no longer threatens data integrity
+		// on its own).
+		limiterWaitStart := time.Now()
+		limiter <- struct{}{}
+		limiterWait := time.Since(limiterWaitStart)
+
+		// Consumer (30s idle timer only begins ticking now, after the slot is acquired)
 		go func() {
 			defer func() {
 				// Panic recovery mechanism to prevent program crash
@@ -403,17 +440,7 @@ func (p *Platform) handleResource(ctx context.Context, account CloudAccount, res
 			}
 		}()
 
-		// Producer
-		loopRegionWait.Add(1)
-		// Create timeout context based on the input context to preserve account information
-		regionCtx, cancel := context.WithTimeout(ctx, 240*time.Second)
-		// Get rate limiter for this region
-		limiter := p.getRegionLimiter(region)
-		// Acquire semaphore
-		limiter <- struct{}{}
-		// Add region-specific information to the context
-		regionCtx = context.WithValue(regionCtx, constant.RegionId, region)
-		regionCtx = context.WithValue(regionCtx, constant.TraceId, version)
+		// Producer (slot already acquired above; this goroutine releases it on defer)
 		go func(regionCtx context.Context, regionService ServiceInterface) {
 			defer func() {
 				cancel()
@@ -424,7 +451,13 @@ func (p *Platform) handleResource(ctx context.Context, account CloudAccount, res
 				if r := recover(); r != nil {
 					errMsg := fmt.Sprintf("%v", r)
 					if strings.Contains(errMsg, "send on closed channel") {
-						log.CtxLogger(ctx).Warn(fmt.Sprintf("Timeout, more than %d seconds !!!", constant.TimeOut))
+						// Data loss event: Consumer closed regionCh while Producer was still pushing.
+						// Attach the prior limiter wait so we can tell at a glance whether this loss
+						// was caused by slot contention (large wait) or by the Producer's own API
+						// latency being > 30s between pushes (small wait).
+						log.CtxLogger(ctx).Warn(fmt.Sprintf(
+							"Timeout, more than %d seconds !!! (RegionLimiter wait was %v)",
+							constant.TimeOut, limiterWait))
 					} else {
 						errmsg := fmt.Sprintf("Code:[%s] Recovered from panic of unknown type: %s", UnknownError, r)
 						log.CtxLogger(ctx).Error(errmsg)

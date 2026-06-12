@@ -50,17 +50,23 @@ type SecretDetail struct {
 }
 
 // GetSecretDetail fetches the details for all Secrets Manager secrets.
+// The ListSecrets pagination streams per page and each secret is pushed
+// to res as its GetResourcePolicy finishes; do not refactor back to a
+// build-slice-then-push pattern, as that would risk the 30s consumer idle
+// timeout in core-sdk schema/platform.go (see commit 8295d1b).
 func GetSecretDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).SecretsManager
 
-	secrets, err := listSecrets(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Error("failed to list secrets", zap.Error(err))
-		return err
-	}
-
-	for _, secret := range secrets {
-		res <- describeSecretDetail(ctx, client, secret)
+	paginator := secretsmanager.NewListSecretsPaginator(client, &secretsmanager.ListSecretsInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			log.CtxLogger(ctx).Error("failed to list secrets", zap.Error(err))
+			return err
+		}
+		for _, secret := range page.SecretList {
+			res <- describeSecretDetail(ctx, client, secret)
+		}
 	}
 
 	return nil
@@ -79,20 +85,6 @@ func describeSecretDetail(ctx context.Context, client *secretsmanager.Client, se
 		Secret: secret,
 		Policy: policy,
 	}
-}
-
-// listSecrets retrieves all Secrets Manager secrets.
-func listSecrets(ctx context.Context, c *secretsmanager.Client) ([]types.SecretListEntry, error) {
-	var secrets []types.SecretListEntry
-	paginator := secretsmanager.NewListSecretsPaginator(c, &secretsmanager.ListSecretsInput{})
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-		secrets = append(secrets, page.SecretList...)
-	}
-	return secrets, nil
 }
 
 // getResourcePolicy retrieves the resource policy for a secret.

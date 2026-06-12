@@ -53,35 +53,30 @@ type FileSystemDetail struct {
 	Aliases []types.Alias
 }
 
+// GetFileSystemDetail streams each FSx file system detail as the
+// DescribeFileSystems pagination yields it and its alias lookup completes,
+// avoiding the 30s consumer idle timeout in core-sdk schema/platform.go.
 func GetFileSystemDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	client := service.(*collector.Services).FSx
 
-	fileSystemDetails, err := describeFileSystemDetails(ctx, client)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeFileSystemDetails error", zap.Error(err))
-		return err
+	input := &fsx.DescribeFileSystemsInput{}
+	for {
+		output, err := client.DescribeFileSystems(ctx, input)
+		if err != nil {
+			log.CtxLogger(ctx).Warn("describeFileSystems error", zap.Error(err))
+			return err
+		}
+		for _, fileSystem := range output.FileSystems {
+			res <- FileSystemDetail{
+				FileSystem: fileSystem,
+				Aliases:    describeFileSystemAliases(ctx, client, fileSystem),
+			}
+		}
+		if output.NextToken == nil {
+			return nil
+		}
+		input.NextToken = output.NextToken
 	}
-
-	for _, fileSystemDetail := range fileSystemDetails {
-		res <- fileSystemDetail
-	}
-	return nil
-}
-
-func describeFileSystemDetails(ctx context.Context, c *fsx.Client) (fileSystemDetails []FileSystemDetail, err error) {
-
-	fileSystems, err := describeFileSystem(ctx, c)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeFileSystem error", zap.Error(err))
-		return nil, err
-	}
-	for _, fileSystem := range fileSystems {
-		fileSystemDetails = append(fileSystemDetails, FileSystemDetail{
-			FileSystem: fileSystem,
-			Aliases:    describeFileSystemAliases(ctx, c, fileSystem),
-		})
-	}
-	return fileSystemDetails, nil
 }
 
 func describeFileSystemAliases(ctx context.Context, c *fsx.Client, system types.FileSystem) (aliases []types.Alias) {
@@ -103,25 +98,4 @@ func describeFileSystemAliases(ctx context.Context, c *fsx.Client, system types.
 	}
 
 	return aliases
-}
-
-func describeFileSystem(ctx context.Context, c *fsx.Client) (fileSystems []types.FileSystem, err error) {
-	input := &fsx.DescribeFileSystemsInput{}
-	output, err := c.DescribeFileSystems(ctx, input)
-	if err != nil {
-		log.CtxLogger(ctx).Warn("describeFileSystems error", zap.Error(err))
-		return nil, err
-	}
-	fileSystems = append(fileSystems, output.FileSystems...)
-	for output.NextToken != nil {
-		input.NextToken = output.NextToken
-		output, err = c.DescribeFileSystems(ctx, input)
-		if err != nil {
-			log.CtxLogger(ctx).Warn("describeFileSystems error", zap.Error(err))
-			return nil, err
-		}
-		fileSystems = append(fileSystems, output.FileSystems...)
-	}
-
-	return fileSystems, nil
 }

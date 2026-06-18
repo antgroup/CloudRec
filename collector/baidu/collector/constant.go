@@ -32,4 +32,6 @@ const (
 	BLS            = "BLS"
 	CFW            = "CFW"
 	CCERBAC        = "CCERBAC"
+	ENI            = "ENI"
+	ACL            = "ACL"
 )

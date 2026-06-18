@@ -19,6 +19,7 @@ const (
 	ECS                              = "ECS"
 	ECSImage                         = "ECS Image"
 	ECSSnapshot                      = "ECS Snapshot"
+	ENI                              = "ENI"
 	Redis                            = "Redis"
 	CDN                              = "CDN"
 	ActionTrail                      = "ActionTrail"

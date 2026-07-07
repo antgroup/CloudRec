@@ -176,15 +176,14 @@
             <if test="resourceType != null">
                 resource_type = #{resourceType,jdbcType=VARCHAR},
             </if>
-            <if test="address != null">
-                address = #{address,jdbcType=VARCHAR},
-            </if>
+            <!-- address/resource_name mirror the latest collector snapshot: write unconditionally
+                 (like deleted_at) so a value that disappears upstream, e.g. a released public IP,
+                 is cleared instead of leaving a stale value behind -->
+            address = #{address,jdbcType=VARCHAR},
             <if test="resourceId != null">
                 resource_id = #{resourceId,jdbcType=VARCHAR},
             </if>
-            <if test="resourceName != null">
-                resource_name = #{resourceName,jdbcType=VARCHAR},
-            </if>
+            resource_name = #{resourceName,jdbcType=VARCHAR},
             <if test="version != null">
                 version = #{version,jdbcType=VARCHAR},
             </if>

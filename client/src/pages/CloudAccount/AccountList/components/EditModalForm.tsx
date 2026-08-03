@@ -55,10 +55,10 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
     if (!platformConfig) return;
 
     if (platformConfig.type === 'json') {
-      const jsonStr = value.credentialsJson || '{}';
+      const jsonStr = value.credential || '{}';
       setJsonValue(jsonStr);
       form.setFieldsValue({
-        credentials: { credentialsJson: jsonStr }
+        credentials: { credential: jsonStr }
       });
     } else {
       const currentCredentials = form.getFieldValue('credentials') || {};
@@ -111,7 +111,7 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
     // The voucher information is processed only when it is visible in the voucher editor
     if (extendEditorVisible) {
       if (platformConfig.type === 'json') {
-        postBody.credentialsObj = { credentialsJson: credentials?.credentialsJson || jsonValue };
+        postBody.credentialsObj = { credential: credentials?.credential || jsonValue };
       } else {
         const credentialsData: Partial<CloudAccountCredentials> = { ...(credentials || {}) };
         platformConfig.fields.forEach((field: { name: string }) => {
@@ -156,8 +156,8 @@ const EditDrawerForm: React.FC<IEditFormProps> = (props) => {
         enableInverseSelection: rest.enableInverseSelection || false
       };
 
-      if (platform && PLATFORM_CONFIGS[platform]?.type === 'json' && credentialMap?.credentialsJson) {
-        setJsonValue(credentialMap.credentialsJson);
+      if (platform && PLATFORM_CONFIGS[platform]?.type === 'json' && credentialMap?.credential) {
+        setJsonValue(credentialMap.credential);
       }
 
       form.setFieldsValue(formData);

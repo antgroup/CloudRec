@@ -22,7 +22,7 @@ const CloudCredentialEditor: React.FC<CloudCredentialEditorProps> = ({
   };
   const handleJsonChange = (jsonValue: string) => {
     const validJsonValue = jsonValue?.trim() || '{}';
-    onChange?.({ credentialsJson: validJsonValue } as CloudAccountCredentials);
+    onChange?.({ credential: validJsonValue } as CloudAccountCredentials);
   };
 
   if (accountId && !visible) {
@@ -44,9 +44,9 @@ const CloudCredentialEditor: React.FC<CloudCredentialEditorProps> = ({
   if (type === 'json') {
     return (
       <ProFormText
-        name="credentialsJson"
+        name="credential"
         label="GCP KEY"
-        initialValue={value?.credentialsJson || '{}'}
+        initialValue={value?.credential || '{}'}
         rules={[{
           required: true,
           validator: async (_: any, value: string) => {
@@ -62,7 +62,7 @@ const CloudCredentialEditor: React.FC<CloudCredentialEditorProps> = ({
         }]}
       >
         <JSONEditor
-          value={value?.credentialsJson || '{}'}
+          value={value?.credential || '{}'}
           onChange={handleJsonChange}
           editorStyle={{ height: '240px' }}
           editorKey="CREDENTIALS_JSON_EDITOR"

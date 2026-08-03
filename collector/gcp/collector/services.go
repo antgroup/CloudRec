@@ -157,7 +157,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.GetWLogger().Warn(fmt.Sprintf("Failed to create vpc client: %v", err))
 		}
 		s.VpcAccessService = svc
-	case AccessPolicy, Perimeter:
+	case AccessPolicy, Perimeter, UserAccessBinding:
 		ACMSvc, err := accesscontextmanager.NewClient(ctx, clientOption)
 		if err != nil {
 			log.GetWLogger().Warn(fmt.Sprintf("Failed to create access context manager client: %v", err))

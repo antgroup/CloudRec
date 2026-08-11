@@ -103,7 +103,9 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("SearchProjects error", zap.Error(err))
 			s.Projects = append(s.Projects, &resourcemanagerpb.Project{ProjectId: param.ProjectId})
-			//return err
+			// project is nil on error; appending it would make every resource
+			// collector nil-dereference project.ProjectId later on.
+			continue
 		}
 		s.Projects = append(s.Projects, project)
 	}

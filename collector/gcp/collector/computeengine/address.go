@@ -20,7 +20,6 @@ import (
 	"github.com/core-sdk/log"
 	"github.com/core-sdk/schema"
 	"context"
-	"fmt"
 	"github.com/cloudrec/gcp/collector"
 	"github.com/cloudrec/gcp/utils"
 	"go.uber.org/zap"
@@ -39,21 +38,32 @@ func GetAddressResource() schema.Resource {
 
 			for _, project := range projects {
 				projectId := project.ProjectId
-				loadBalanceDict := LoadBalanceDict{}
-				loadBalanceDict.getAllDict(ctx, svc, projectId)
 
+				// List the addresses before building the load balancer dictionary.
+				// getAllDict costs eight AggregatedList calls per project, and in an
+				// org-wide scan the overwhelming majority of projects hold no address
+				// at all, so paying that up front is what pushes the whole resource
+				// type past its context deadline.
+				addresses := make([]*compute.Address, 0)
 				resp := svc.Addresses.AggregatedList(projectId).MaxResults(100)
 				if err := resp.Pages(ctx, func(page *compute.AddressAggregatedList) error {
 					for _, item := range page.Items {
-						for _, address := range item.Addresses {
-							detail := buildAddressDetail(address, &loadBalanceDict)
-							res <- detail
-						}
+						addresses = append(addresses, item.Addresses...)
 					}
 					return nil
 				}); err != nil {
 					log.CtxLogger(ctx).Warn("GetAddressResource error", zap.Error(err))
 					continue
+				}
+				if len(addresses) == 0 {
+					continue
+				}
+
+				loadBalanceDict := LoadBalanceDict{}
+				loadBalanceDict.getAllDict(ctx, svc, projectId)
+
+				for _, address := range addresses {
+					res <- buildAddressDetail(ctx, address, &loadBalanceDict)
 				}
 			}
 
@@ -138,6 +148,7 @@ func (d *LoadBalanceDict) getAllForwardingRules() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllForwardingRules error", zap.Error(_err))
 		return
 	}
 }
@@ -157,6 +168,7 @@ func (d *LoadBalanceDict) getAllTargetHttpProxies() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllTargetHttpProxies error", zap.Error(_err))
 		return
 	}
 }
@@ -176,6 +188,7 @@ func (d *LoadBalanceDict) getAllTargetHttpsProxies() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllTargetHttpsProxies error", zap.Error(_err))
 		return
 	}
 }
@@ -195,6 +208,7 @@ func (d *LoadBalanceDict) getAllTargetTcpProxies() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllTargetTcpProxies error", zap.Error(_err))
 		return
 	}
 }
@@ -212,6 +226,7 @@ func (d *LoadBalanceDict) getAllTargetSslProxies() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllTargetSslProxies error", zap.Error(_err))
 		return
 	}
 }
@@ -231,6 +246,7 @@ func (d *LoadBalanceDict) getAllUrlMaps() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllUrlMaps error", zap.Error(_err))
 		return
 	}
 }
@@ -250,6 +266,7 @@ func (d *LoadBalanceDict) getAllBackendServices() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllBackendServices error", zap.Error(_err))
 		return
 	}
 }
@@ -269,11 +286,12 @@ func (d *LoadBalanceDict) getAllSecurityPolicies() {
 		}
 		return nil
 	}); _err != nil {
+		log.CtxLogger(ctx).Warn("getAllSecurityPolicies error", zap.Error(_err))
 		return
 	}
 }
 
-func buildAddressDetail(address *compute.Address, loadBalanceDict *LoadBalanceDict) (detail *AddressDetail) {
+func buildAddressDetail(ctx context.Context, address *compute.Address, loadBalanceDict *LoadBalanceDict) (detail *AddressDetail) {
 
 	detail = &AddressDetail{
 		Address:            address,
@@ -293,7 +311,15 @@ func buildAddressDetail(address *compute.Address, loadBalanceDict *LoadBalanceDi
 		rId := utils.GetResourceID(user)
 		switch rType {
 		case "forwardingRules":
+			// Every lookup below can miss: the dictionary is assembled from a
+			// separate set of AggregatedList calls, any of which may have failed
+			// or been truncated. A map miss yields a nil pointer, so it must be
+			// checked before use rather than dereferenced.
 			forwardingRule := loadBalanceDict.forwardingRulesDict[rId]
+			if forwardingRule == nil {
+				log.CtxLogger(ctx).Debug("forwardingRule missing from dict", zap.String("forwardingRule", rId))
+				continue
+			}
 			forwardingRuleTargetType := utils.GetResourceType(forwardingRule.Target)
 			forwardingRuleTargetId := utils.GetResourceID(forwardingRule.Target)
 
@@ -302,55 +328,72 @@ func buildAddressDetail(address *compute.Address, loadBalanceDict *LoadBalanceDi
 			// 1. Application Load Balancers
 			// [Traffic] --> [Forwarding Rule] --> [Target HTTP/HTTPS proxy] --> [URL Map] --> [Backend Service]
 			// todo: there are too many place to set service T^T
-			case "targetHttpProxies":
-				fmt.Println("No Support")
-				continue
-			case "targetHttpsProxies":
-				fmt.Println("No Support")
+			case "targetHttpProxies", "targetHttpsProxies":
+				log.CtxLogger(ctx).Debug("application load balancer target is not supported yet",
+					zap.String("targetType", forwardingRuleTargetType))
 				continue
 
 			// 2 Proxy Network Load Balancers
 			//	[Traffic] --> [Forwarding Rule] --> [Target TCP/SSL proxy] --> [Backend Service]
 			case "targetTcpProxies":
 				tmpTargetTcpProxy := loadBalanceDict.targetTcpProxiesDict[forwardingRuleTargetId]
-				tmpBackendService := loadBalanceDict.backendServiceDict[utils.GetResourceID(tmpTargetTcpProxy.Service)]
-				tmpSecurityPolicy := loadBalanceDict.securityPolicyDict[utils.GetResourceID(tmpBackendService.SecurityPolicy)]
+				if tmpTargetTcpProxy == nil {
+					log.CtxLogger(ctx).Debug("targetTcpProxy missing from dict", zap.String("targetTcpProxy", forwardingRuleTargetId))
+					continue
+				}
 
 				detail.ForwardingRules = append(detail.ForwardingRules, forwardingRule)
 				detail.TargetTcpProxies = append(detail.TargetTcpProxies, tmpTargetTcpProxy)
-				detail.BackendServices = append(detail.BackendServices, tmpBackendService)
-				detail.SecurityPolicies = append(detail.SecurityPolicies, tmpSecurityPolicy)
+				appendBackendService(ctx, detail, loadBalanceDict, utils.GetResourceID(tmpTargetTcpProxy.Service))
 			case "targetSslProxies":
 				tmpTargetSslProxy := loadBalanceDict.targetSslProxiesDict[forwardingRuleTargetId]
-				tmpBackendService := loadBalanceDict.backendServiceDict[utils.GetResourceID(tmpTargetSslProxy.Service)]
-				tmpSecurityPolicy := loadBalanceDict.securityPolicyDict[utils.GetResourceID(tmpBackendService.SecurityPolicy)]
+				if tmpTargetSslProxy == nil {
+					log.CtxLogger(ctx).Debug("targetSslProxy missing from dict", zap.String("targetSslProxy", forwardingRuleTargetId))
+					continue
+				}
 
 				detail.ForwardingRules = append(detail.ForwardingRules, forwardingRule)
 				detail.TargetSslProxies = append(detail.TargetSslProxies, tmpTargetSslProxy)
-				detail.BackendServices = append(detail.BackendServices, tmpBackendService)
-				detail.SecurityPolicies = append(detail.SecurityPolicies, tmpSecurityPolicy)
+				appendBackendService(ctx, detail, loadBalanceDict, utils.GetResourceID(tmpTargetSslProxy.Service))
 
 			// 3. Passthrough Network Load Balancers
 			// [Traffic] --> [Forwarding Rule] --> [Backend Service]
 			case "backendServices":
-				tmpBackendService := loadBalanceDict.backendServiceDict[forwardingRuleTargetId]
-				tmpSecurityPolicy := loadBalanceDict.securityPolicyDict[utils.GetResourceID(tmpBackendService.SecurityPolicy)]
-
 				detail.ForwardingRules = append(detail.ForwardingRules, forwardingRule)
-				detail.BackendServices = append(detail.BackendServices, tmpBackendService)
-				detail.SecurityPolicies = append(detail.SecurityPolicies, tmpSecurityPolicy)
+				appendBackendService(ctx, detail, loadBalanceDict, forwardingRuleTargetId)
 			// 4. Other use case
 			default:
-				fmt.Println("Unknown ForwardingRule Target Type")
+				log.CtxLogger(ctx).Debug("unknown forwardingRule target type", zap.String("targetType", forwardingRuleTargetType))
 				continue
 			}
 
 		default:
-			fmt.Println("Unknown Address User Type")
+			log.CtxLogger(ctx).Debug("unknown address user type", zap.String("userType", rType))
 			continue
 		}
 
 	}
 
 	return
+}
+
+// appendBackendService resolves a backend service and its Cloud Armor policy out
+// of the dictionary and appends whatever could be resolved to detail. Entries the
+// dictionary cannot resolve are skipped rather than appended as nil, which would
+// otherwise put a null into the persisted resource JSON.
+func appendBackendService(ctx context.Context, detail *AddressDetail, loadBalanceDict *LoadBalanceDict, backendServiceId string) {
+	backendService := loadBalanceDict.backendServiceDict[backendServiceId]
+	if backendService == nil {
+		log.CtxLogger(ctx).Debug("backendService missing from dict", zap.String("backendService", backendServiceId))
+		return
+	}
+	detail.BackendServices = append(detail.BackendServices, backendService)
+
+	// A backend service with no Cloud Armor policy attached is perfectly normal,
+	// so an unresolved policy is not worth reporting.
+	securityPolicy := loadBalanceDict.securityPolicyDict[utils.GetResourceID(backendService.SecurityPolicy)]
+	if securityPolicy == nil {
+		return
+	}
+	detail.SecurityPolicies = append(detail.SecurityPolicies, securityPolicy)
 }

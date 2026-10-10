@@ -64,7 +64,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   'GCP': {
     type: 'json',
     fields: [
-      { name: 'credentialsJson', label: 'GCP KEY', required: true }
+      { name: 'credential', label: 'GCP KEY', required: true }
     ]
   },
   'ALI_CLOUD_PRIVATE': {

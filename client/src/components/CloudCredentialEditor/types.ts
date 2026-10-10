@@ -31,7 +31,7 @@ export interface CloudAccountCredentials {
   evsEndpoint?: string;
   vpcEndpoint?: string;
   obsEndpoint?: string;
-  credentialsJson?: string;
+  credential?: string;
 }
 
 export interface CloudAccountFormData {

@@ -103,7 +103,9 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 		if err != nil {
 			log.CtxLogger(ctx).Warn("SearchProjects error", zap.Error(err))
 			s.Projects = append(s.Projects, &resourcemanagerpb.Project{ProjectId: param.ProjectId})
-			//return err
+			// project is nil on error; appending it would make every resource
+			// collector nil-dereference project.ProjectId later on.
+			continue
 		}
 		s.Projects = append(s.Projects, project)
 	}
@@ -157,7 +159,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 			log.GetWLogger().Warn(fmt.Sprintf("Failed to create vpc client: %v", err))
 		}
 		s.VpcAccessService = svc
-	case AccessPolicy, Perimeter:
+	case AccessPolicy, Perimeter, UserAccessBinding:
 		ACMSvc, err := accesscontextmanager.NewClient(ctx, clientOption)
 		if err != nil {
 			log.GetWLogger().Warn(fmt.Sprintf("Failed to create access context manager client: %v", err))

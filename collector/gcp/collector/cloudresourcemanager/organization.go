@@ -22,9 +22,6 @@ import (
 	"cloud.google.com/go/resourcemanager/apiv3"
 	"cloud.google.com/go/resourcemanager/apiv3/resourcemanagerpb"
 	"context"
-	"errors"
-	"fmt"
-	"google.golang.org/api/iterator"
 
 	"github.com/core-sdk/log"
 	"github.com/cloudrec/gcp/collector"
@@ -42,9 +39,6 @@ func GetOrganizationResource() schema.Resource {
 			svc := service.(*collector.Services).OrganizationsClient
 
 			for organization, err := range SearchOrganizations(ctx, svc) {
-				if errors.Is(err, iterator.Done) {
-					return fmt.Errorf("get 0 organization")
-				}
 				if err != nil {
 					log.CtxLogger(ctx).Warn("SearchOrganizations error", zap.Error(err))
 					return err
@@ -70,10 +64,31 @@ type OrganizationDetail struct {
 	IAMPolicy    *iampb.Policy
 }
 
+// SearchOrganizations lists the organizations visible to the caller.
+//
+// The API returns an empty result rather than an error when the caller has no
+// organization-level permission, which would otherwise make Organization, User
+// AccessBinding, Access Policy and Perimeter all collect zero resources without
+// leaving a trace in the log. Warn once in that case so "no permission" can be
+// told apart from "no such resource".
 func SearchOrganizations(ctx context.Context, svc *resourcemanager.OrganizationsClient) iter.Seq2[*resourcemanagerpb.Organization, error] {
-
-	a := svc.SearchOrganizations(ctx, &resourcemanagerpb.SearchOrganizationsRequest{}).All()
-	return a
+	return func(yield func(*resourcemanagerpb.Organization, error) bool) {
+		found := false
+		for organization, err := range svc.SearchOrganizations(ctx, &resourcemanagerpb.SearchOrganizationsRequest{}).All() {
+			if err == nil {
+				found = true
+			}
+			if !yield(organization, err) {
+				return
+			}
+		}
+		if !found {
+			log.CtxLogger(ctx).Warn("SearchOrganizations returned no organization, " +
+				"the service account is most likely missing organization-level permission " +
+				"(resourcemanager.organizations.get); Organization, User AccessBinding, " +
+				"Access Policy and Perimeter will all collect nothing")
+		}
+	}
 }
 
 func getOrgIAMPolicy(ctx context.Context, svc *resourcemanager.OrganizationsClient, OrgName string) *iampb.Policy {

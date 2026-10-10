@@ -37,7 +37,7 @@
         <druid.version>1.2.24</druid.version>
         <json.path.version>2.9.0</json.path.version>
         <commons.exec.version>1.4.0</commons.exec.version>
-        <fastjson.version>1.2.83</fastjson.version>
+        <fastjson.version>1.2.83_noneautotype</fastjson.version>
         <commons-codec.version>1.9</commons-codec.version>
         <mariadb.version>3.5.10</mariadb.version>
         <!-- Includes Tomcat security fixes released after Spring Boot 3.5.16. -->

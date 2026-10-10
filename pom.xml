@@ -42,7 +42,7 @@
         <spring-boot-starter-aop.version>3.3.5</spring-boot-starter-aop.version>
         <spring-boot-starter-web.version>3.3.5</spring-boot-starter-web.version>
         <jakarta.servlet-api.version>5.0.0</jakarta.servlet-api.version>
-        <mysql-connector-java.version>8.0.11</mysql-connector-java.version>
+        <mysql.version>9.7.0</mysql.version>
         <junit.version>4.12</junit.version>
         <easyexcel.version>3.3.4</easyexcel.version>
         <poi.version>3.17</poi.version>
@@ -72,11 +72,6 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>easyexcel</artifactId>
                 <version>${easyexcel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql-connector-java.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.servlet</groupId>

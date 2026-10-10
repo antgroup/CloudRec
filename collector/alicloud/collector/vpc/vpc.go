@@ -50,8 +50,8 @@ type Detail struct {
 func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res chan<- any) error {
 	cli := service.(*collector.Services).VPC
 	req := vpc.CreateDescribeVpcsRequest()
+	req.Scheme = "HTTPS"
 	req.QueryParams["product"] = "Vpc"
-	req.SetHTTPSInsecure(true)
 	req.PageSize = requests.NewInteger(50)
 	req.PageNumber = requests.NewInteger(1)
 	count := 0

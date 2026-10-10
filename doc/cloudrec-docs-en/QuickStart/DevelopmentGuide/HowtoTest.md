@@ -118,7 +118,6 @@ func GetEcsData() schema.Resource {
 			req.PageNumber = requests.NewInteger(1)
 			req.Scheme = "HTTPS"
 			req.QueryParams["product"] = "Ecs"
-			req.SetHTTPSInsecure(true)
 
 			count := 0
 			for {
@@ -172,6 +171,5 @@ RunOnlyOnce: false
 # Access token, which is used to authenticate the request. You can get it from the server
 AccessToken: "change your access token"
 ```
-
 
 

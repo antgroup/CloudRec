@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package security
+package collector
 
 import (
 	"crypto/tls"
@@ -25,23 +25,27 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
-	"time"
 
-	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
-	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
-	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
+	sdklog "github.com/core-sdk/log"
+	"go.uber.org/zap"
 )
 
 // Exercise signed SDK requests using disposable loopback TLS endpoints.
-func TestSignedRequestVerifiesTLSPeer(t *testing.T) {
+func TestResourceGroupRequestVerifiesTLSPeer(t *testing.T) {
+	previousLogger := sdklog.GetWLogger()
+	sdklog.SetWLogger(zap.NewNop())
+	t.Cleanup(func() { sdklog.SetWLogger(previousLogger) })
 	var accepted atomic.Int32
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accepted.Add(1)
 		if r.URL.Query().Get("Signature") == "" {
-			t.Error("SDK request did not include a signature")
+			t.Error("resource-group request did not include a signature")
+		}
+		if r.URL.Query().Get("Action") != "ListResourceGroup" {
+			t.Error("unexpected business operation")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		io.WriteString(w, `{"RequestId":"local-test","Credentials":{"SecurityToken":"placeholder"}}`)
+		io.WriteString(w, `{"successResponse":true,"data":[{"id":1,"organizationId":1}]}`)
 	}))
 	server.Config.ErrorLog = log.New(io.Discard, "", 0)
 	server.StartTLS()
@@ -60,9 +64,8 @@ func TestSignedRequestVerifiesTLSPeer(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			config := sdk.NewConfig().WithTimeout(2 * time.Second).WithAutoRetry(false)
-			client, err := sdk.NewClientWithOptions("local-test", config,
-				credentials.NewAccessKeyCredential("placeholder-access-key", "placeholder-secret"))
+			client, err := CreateBaseClient("local-test", strings.TrimPrefix(server.URL, "https://"),
+				"placeholder-access-key", "placeholder-secret")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -72,25 +75,18 @@ func TestSignedRequestVerifiesTLSPeer(t *testing.T) {
 			}}
 			defer transport.CloseIdleConnections()
 			client.SetTransport(transport)
-			request := requests.NewCommonRequest()
-			request.Scheme = "HTTPS"
-			request.Domain = strings.TrimPrefix(server.URL, "https://")
-			request.Version = "2015-04-01"
-			request.ApiName = "AssumeRole"
-			request.Method = "GET"
-			request.QueryParams["RoleArn"] = "placeholder-role"
 			before := accepted.Load()
-			_, err = client.ProcessCommonRequest(request)
+			response := ListResourceGroup(client, strings.TrimPrefix(server.URL, "https://"))
 			if tc.wantError {
-				if err == nil {
-					t.Fatal("expected TLS verification to reject the request")
+				if len(response.Data) != 0 {
+					t.Fatal("rejected request produced business data")
 				}
 				if accepted.Load() != before {
 					t.Fatal("rejected peer received the signed request")
 				}
 			} else {
-				if err != nil {
-					t.Fatal(err)
+				if len(response.Data) != 1 || response.Data[0].Id != 1 {
+					t.Fatal("trusted request did not produce expected resource-group data")
 				}
 				if accepted.Load() != before+1 {
 					t.Fatal("trusted peer did not receive the request")

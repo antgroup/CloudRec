@@ -39,7 +39,7 @@
         <commons.exec.version>1.4.0</commons.exec.version>
         <fastjson.version>1.2.83</fastjson.version>
         <commons-codec.version>1.9</commons-codec.version>
-        <mysql.version>9.7.0</mysql.version>
+        <mariadb.version>3.5.10</mariadb.version>
         <easyexcel.version>3.3.4</easyexcel.version>
         <poi.version>3.17</poi.version>
         <poi-ooxml.version>3.17</poi-ooxml.version>

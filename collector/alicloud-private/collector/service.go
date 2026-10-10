@@ -43,7 +43,6 @@ func CreateBaseClient(region, endpoint, ak, sk string) (client *sdk.Client, err 
 	//request.ApiName = "GetOrganizationList"
 	request.ApiName = "ListResourceGroup"
 	request.QueryParams["Product"] = "ascm" // Specify product
-	request.SetHTTPSInsecure(true)
 	request.TransToAcsRequest()
 	client, err = sdk.NewClientWithOptions(region, getSdkConfig(), credentials.NewAccessKeyCredential(ak, sk))
 
@@ -194,7 +193,6 @@ func ListResourceGroup(client *sdk.Client, endPoint string) Response {
 	//request.ApiName = "GetOrganizationList"
 	request.ApiName = "ListResourceGroup"
 	request.QueryParams["Product"] = "ascm" // Specify product
-	request.SetHTTPSInsecure(true)
 	request.TransToAcsRequest()
 	resp := responses.BaseResponse{}
 	err := client.DoAction(request, &resp)

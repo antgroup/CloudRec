@@ -27,9 +27,9 @@ server.url=http://localhost:8080
 # mybatis config
 mybatis.mapper-locations=classpath:/mapper/*Mapper.xml
 mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
-spring.datasource.url=jdbc:mysql://localhost:3306/cloudrec_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+spring.datasource.url=jdbc:mariadb://localhost:3306/cloudrec_db?sslMode=disable&connectionTimeZone=Asia/Shanghai&preserveInstants=true&allowPublicKeyRetrieval=true&allowLocalInfile=false
 spring.datasource.username=root
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
 spring.datasource.password=root
 
 opa.url=http://localhost:8181/

@@ -55,7 +55,6 @@ func ListEcsResource(ctx context.Context, service schema.ServiceInterface, res c
 	req.PageNumber = requests.NewInteger(1)
 	req.Scheme = "HTTPS"
 	req.QueryParams["product"] = "Ecs"
-	req.SetHTTPSInsecure(true)
 
 	count := 0
 	for {
@@ -111,7 +110,6 @@ func describeNetworkInterfaces(ctx context.Context, cli *ecs.Client, instanceId 
 	req := ecs.CreateDescribeNetworkInterfacesRequest()
 	req.Scheme = "HTTPS"
 	req.QueryParams["product"] = "Ecs"
-	req.SetHTTPSInsecure(true)
 	req.PageSize = requests.NewInteger(constant.DefaultPageSize)
 	req.PageNumber = requests.NewInteger(constant.DefaultPage)
 	req.InstanceId = instanceId

@@ -68,7 +68,6 @@ const (
 
 func getHttpConfig() (httpConfig *config.HttpConfig) {
 	httpConfig = config.DefaultHttpConfig()
-	httpConfig.WithIgnoreSSLVerification(true)
 	httpConfig.WithTimeout(DefaultTimeout)
 	dialContext := func(ctx context.Context, network string, addr string) (net.Conn, error) {
 		return net.Dial(network, addr)

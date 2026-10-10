@@ -9,8 +9,8 @@
             <property name="suppressAllComments" value="true"/>
         </commentGenerator>
         <!-- 配置连接信息 -->
-        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://localhost:3306/cloudrec_db"
+        <jdbcConnection driverClass="org.mariadb.jdbc.Driver"
+                        connectionURL="jdbc:mariadb://localhost:3306/cloudrec_db?sslMode=disable&amp;connectionTimeZone=Asia/Shanghai&amp;preserveInstants=true&amp;allowPublicKeyRetrieval=true&amp;allowLocalInfile=false"
                         userId="root"
                         password="DB_PASSWORD"/>
 

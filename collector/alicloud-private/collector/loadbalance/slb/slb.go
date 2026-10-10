@@ -62,7 +62,6 @@ func GetInstanceDetail(ctx context.Context, service schema.ServiceInterface, res
 	req.PageNumber = requests.NewInteger(constant.DefaultPage)
 	req.Scheme = "HTTPS"
 	req.QueryParams["product"] = "SLB"
-	req.SetHTTPSInsecure(true)
 	count := 0
 	for {
 		resp, err := svc.SlbClient.DescribeLoadBalancers(req)
@@ -98,7 +97,6 @@ func describeLoadBalancerAttribute(ctx context.Context, client *slb.Client, load
 	req := slb.CreateDescribeLoadBalancerAttributeRequest()
 	req.Scheme = "HTTPS"
 	req.QueryParams["product"] = "SLB"
-	req.SetHTTPSInsecure(true)
 	req.LoadBalancerId = loadBalancerId
 	resp, err := client.DescribeLoadBalancerAttribute(req)
 	if err != nil {
@@ -114,7 +112,6 @@ func describeWithResourceGroup(ctx context.Context, client *slb.Client, loadBala
 	req := slb.CreateDescribeLoadBalancerAttributeRequest()
 	req.Scheme = "HTTPS"
 	req.QueryParams["product"] = "SLB"
-	req.SetHTTPSInsecure(true)
 	req.LoadBalancerId = loadBalancerId
 
 	// env SQA need this, env UAT dont
@@ -148,7 +145,6 @@ func listListeners(ctx context.Context, client *slb.Client, loadBalancerId strin
 	request.LoadBalancerId = &loadBalancerIds
 	request.Scheme = "HTTPS"
 	request.QueryParams["product"] = "SLB"
-	request.SetHTTPSInsecure(true)
 	count := 0
 	for {
 		resp, err := client.DescribeLoadBalancerListeners(request)
@@ -187,7 +183,6 @@ func describeAccessControlListAttribute(ctx context.Context, client *slb.Client,
 	req.Headers["x-acs-resourceGroupId"] = resourceGroupId
 	req.Scheme = "HTTPS"
 	req.QueryParams["product"] = "SLB"
-	req.SetHTTPSInsecure(true)
 	req.AclId = aclId
 	resp, err := client.DescribeAccessControlListAttribute(req)
 	if err != nil {

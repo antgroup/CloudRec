@@ -84,7 +84,8 @@ server.url=http: //localhost:8080
 # mybatis config
 mybatis.mapper-locations=classpath:/mapper/*Mapper.xml
 mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
-spring.datasource.url=jdbc: mysql: //localhost:3306/cloudrec_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+spring.datasource.url=jdbc:mariadb://localhost:3306/cloudrec_db?sslMode=disable&connectionTimeZone=Asia/Shanghai&preserveInstants=true&allowPublicKeyRetrieval=true&allowLocalInfile=false
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
 spring.datasource.username=username
 spring.datasource.password=password
 
@@ -99,6 +100,18 @@ job.scheduler.type=local
 # If configured, the system rules are automatically initialized
 cloudrec.rule.path=
 ```
+
+The application uses MariaDB Connector/J 3.5.10 to connect to the existing MySQL 8.0 database. The `jdbc:mariadb:` URL selects the Java driver; it does not require a MariaDB server or a database upgrade. Update both the URL and driver class in any external properties file when installing this application version. `connectionTimeZone` replaces the previous `serverTimezone` option, and `preserveInstants=true` retains timestamp conversion. These settings do not change the database session time zone or require loading MySQL time zone tables.
+
+The example above disables TLS for local development. For a remote database, configure `sslMode=verify-full` and a trusted CA with `serverSslCert`, for example:
+
+```properties
+spring.datasource.url=jdbc:mariadb://db.example.com:3306/cloudrec_db?sslMode=verify-full&serverSslCert=/path/to/database-ca.pem&connectionTimeZone=Asia/Shanghai&preserveInstants=true&allowLocalInfile=false
+```
+
+Connector/J 3.5.10 has a known credential disclosure issue, [CONJ-1345](https://jira.mariadb.org/browse/CONJ-1345): JDBC metadata URLs can contain the connection password, even when it is supplied separately. Avoid recording `DatabaseMetaData.getURL()` in logs or diagnostics. Track the upstream 3.5.11 fix for a subsequent driver update.
+
+See [JDBC compatibility checks](DevelopmentGuide/JDBCCompatibility.md) for the disposable MySQL 8.0.40 test setup and coverage.
 
 3. executes the startup command: loads both the default configuration and the specified file
 
@@ -142,7 +155,6 @@ nohup java -jar cloudrec.jar --spring.config.additional-location=file:./cloudrec
 4. Refresh the page after execution, which means that the collection side is deployed successfully.
 
 ![1742466881203-9fd94424-55bf-4364-8609-7eb3c928e380.png](./img/kAQLq4-kvdz3norp/1742466881203-9fd94424-55bf-4364-8609-7eb3c928e380-430404.png)
-
 
 
 

@@ -239,7 +239,7 @@ func (s *Services) InitServices(cloudAccountParam schema.CloudAccountParam) (err
 	ctx = context.WithValue(ctx, constant.ResourceType, cloudAccountParam.ResourceType)
 	switch cloudAccountParam.ResourceType {
 
-	case ECS, SecurityGroup, ECSImage, ECSSnapshot:
+	case ECS, SecurityGroup, ECSImage, ECSSnapshot, ENI:
 		s.ECS, err = ecs.NewClientWithAccessKey(param.Region, param.AK, param.SK)
 		if err != nil {
 			log.CtxLogger(ctx).Warn("init ecs client failed", zap.Error(err))

@@ -156,6 +156,7 @@ func GetPlatformConfig() *schema.Platform {
 			ecs.GetSecurityGroupData(),
 			ecs.GetImagesResource(),
 			ecs.GetSnapshotsResource(),
+			ecs.GetNetworkInterfaceResource(),
 			nat.GetNatResource(),
 			oss.GetBucketResource(),
 			slb.GetSLBResource(),
